@@ -10,7 +10,7 @@ O nosso grupo foca o desenvolvimento nos seguintes módulos específicos do cade
 
 ## Stack Tecnológica e Standards
 Para garantir a interoperabilidade e modularidade exigida pelo cliente, adotamos os seguintes padrões:
-* **Arquitetura:** Baseada em micro-serviços e contentores **Docker**.
+* **Arquitetura:** Monolítica modular orientada a serviços (Service-Oriented) com deploy em contentores **Docker**.
 * **Modelo de Dados:** Harmonização seguindo **Smart Data Models** (FIWARE) e protocolo **NGSI-LD**.
 * **Segurança:** Implementação de protocolos **TLS 1.2+**, encriptação **AES-256** e conformidade com a **Diretiva NIS2**.
 
