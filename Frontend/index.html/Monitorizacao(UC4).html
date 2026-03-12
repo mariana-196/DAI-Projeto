@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PGU - Monitorização em Tempo Real (TUB)</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
+        
+        /* Cabeçalho */
+        .header { 
+            background: linear-gradient(135deg, #0D47A1 0%, #002171 100%); 
+            color: white; padding: 15px 25px; font-size: 20px; font-weight: 600; 
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .header-left { display: flex; align-items: center; }
+        .header img { height: 40px; margin-right: 20px; }
+        .btn-voltar { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.3s; }
+        .btn-voltar:hover { background: rgba(255,255,255,0.3); }
+
+        .container { display: flex; padding: 25px; gap: 25px; max-width: 1400px; margin: 0 auto; }
+        
+        .card { background: white; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); padding: 25px; }
+        h3 { margin-top: 0; color: #0D47A1; font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+        /* Coluna da Frota (Esquerda) */
+        .frota-section { flex: 2; }
+        
+        /* Cartão de cada Autocarro */
+        .bus-item { border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; transition: 0.3s; }
+        .bus-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: bold; font-size: 16px; }
+        .bus-badge { padding: 5px 10px; border-radius: 6px; font-size: 13px; font-weight: bold; }
+        
+        /* Barras de Progresso */
+        .progress-container { width: 100%; background-color: #e2e8f0; border-radius: 8px; height: 20px; overflow: hidden; margin-bottom: 10px; position: relative; }
+        .progress-bar { height: 100%; transition: width 0.4s ease, background-color 0.4s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; }
+        
+        .stats { display: flex; justify-content: space-between; font-size: 13px; color: #666; }
+
+        /* Coluna do Simulador IoT (Direita) */
+        .iot-section { flex: 1; background-color: #f8fafc; border: 2px dashed #cbd5e1; }
+        
+        .btn-simulador { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; font-size: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-in { background-color: #2E7D32; color: white; }
+        .btn-in:hover { background-color: #1B5E20; }
+        .btn-out { background-color: #f59e0b; color: white; }
+        .btn-out:hover { background-color: #d97706; }
+        .btn-error { background-color: #dc2626; color: white; }
+        .btn-error:hover { background-color: #b91c1c; }
+        .btn-signal { background-color: #475569; color: white; }
+        .btn-signal:hover { background-color: #334155; }
+
+        /* Caixas de Alerta */
+        .alert-box { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; display: none; }
+        .alert-error { background-color: #fee2e2; color: #dc2626; border-left: 4px solid #dc2626; }
+        .alert-warning { background-color: #fff7ed; color: #c2410c; border-left: 4px solid #f59e0b; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <img src="tubwhite.png" alt="Logótipo TUB">
+            Monitorização da Lotação em Tempo Real (UC4.1)
+        </div>
+        <a href="index.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar ao Dashboard</a>
+    </div>
+
+    <div class="container">
+        
+        <div class="card frota-section">
+            <h3><i class="fa-solid fa-bus"></i> Estado da Frota em Circulação</h3>
+            
+            <div class="alert-box alert-error" id="aviso-anomalia">
+                <strong><i class="fa-solid fa-bug"></i> Anomalia de Hardware (Fluxo A1):</strong> Leitura IoT detetou valor negativo. Corrigido automaticamente para 0 e evento registado na auditoria.
+            </div>
+
+            <div class="alert-box alert-warning" id="aviso-sinal">
+                <strong><i class="fa-solid fa-tower-broadcast"></i> Falha de Comunicação (Fluxo A2):</strong> Sinal perdido com o Autocarro #405. Estado alterado para Indisponível.
+            </div>
+
+            <div class="bus-item" id="bus-405-card">
+                <div class="bus-header">
+                    <span><i class="fa-solid fa-wifi" id="wifi-icon" style="color: #2E7D32; margin-right: 8px;"></i> Autocarro #405 (Linha 2)</span>
+                    <span class="bus-badge" id="badge-405" style="background-color: #e2e8f0; color: #333;">NORMAL</span>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="bar-405" style="width: 20%; background-color: #2E7D32;">20%</div>
+                </div>
+                
+                <div class="stats">
+                    <span id="txt-lota-405">Ocupação: 10 passageiros</span>
+                    <span>Capacidade Máxima: 50</span>
+                </div>
+            </div>
+
+            <div class="bus-item">
+                <div class="bus-header">
+                    <span><i class="fa-solid fa-wifi" style="color: #2E7D32; margin-right: 8px;"></i> Autocarro #112 (Linha 43)</span>
+                    <span class="bus-badge" style="background-color: #fee2e2; color: #dc2626;">CRÍTICO</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: 95%; background-color: #dc2626;">95%</div>
+                </div>
+                <div class="stats">
+                    <span>Ocupação: 76 passageiros</span>
+                    <span>Capacidade Máxima: 80</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card iot-section">
+            <h3><i class="fa-solid fa-microchip"></i> Simulador Wavecom (IoT)</h3>
+            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Envie eventos simulados para o Autocarro #405 para testar a resposta do sistema em tempo real.</p>
+            
+            <button class="btn-simulador btn-in" onclick="alterarPassageiros(1)"><i class="fa-solid fa-person-walking-arrow-right"></i> +1 Passageiro (Entrada)</button>
+            <button class="btn-simulador btn-out" onclick="alterarPassageiros(-1)"><i class="fa-solid fa-person-walking-arrow-loop-left"></i> -1 Passageiro (Saída)</button>
+            
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+            <p style="font-size: 13px; font-weight: bold; margin-bottom: 10px;">Testar Fluxos Alternativos</p>
+            
+            <button class="btn-simulador btn-error" onclick="forcarAnomalia()"><i class="fa-solid fa-calculator"></i> Forçar Erro Negativo [A1]</button>
+            <button class="btn-simulador btn-signal" onclick="perderSinal()"><i class="fa-solid fa-tower-broadcast"></i> Simular Perda de Sinal [A2]</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Lógica do UC4.1 - Contagem em Tempo Real
+        let passageiros = 10;
+        const capacidadeMaxima = 50;
+        let sinalAtivo = true;
+
+        function atualizarUI() {
+            const bar = document.getElementById('bar-405');
+            const txt = document.getElementById('txt-lota-405');
+            const badge = document.getElementById('badge-405');
+            
+            // Calcula a percentagem
+            let percentagem = (passageiros / capacidadeMaxima) * 100;
+            
+            // Atualiza o texto
+            txt.innerText = `Ocupação: ${passageiros} passageiros`;
+            bar.innerText = `${Math.round(percentagem)}%`;
+            bar.style.width = `${percentagem}%`;
+
+            // Lógica de Cores (Verde < 70%, Laranja < 90%, Vermelho >= 90%)
+            if (percentagem >= 90) {
+                bar.style.backgroundColor = '#dc2626'; // Vermelho
+                badge.style.backgroundColor = '#fee2e2'; badge.style.color = '#dc2626';
+                badge.innerText = 'CRÍTICO';
+            } else if (percentagem >= 70) {
+                bar.style.backgroundColor = '#f59e0b'; // Laranja
+                badge.style.backgroundColor = '#fef3c7'; badge.style.color = '#d97706';
+                badge.innerText = 'MODERADO';
+            } else {
+                bar.style.backgroundColor = '#2E7D32'; // Verde
+                badge.style.backgroundColor = '#e2e8f0'; badge.style.color = '#333';
+                badge.innerText = 'NORMAL';
+            }
+        }
+
+        function alterarPassageiros(valor) {
+            if (!sinalAtivo) return; // Se não há sinal, os sensores não atualizam
+            
+            document.getElementById('aviso-anomalia').style.display = 'none';
+            
+            // NOVO: Regra de negócio para não ultrapassar a capacidade máxima
+            if (passageiros + valor > capacidadeMaxima) {
+                passageiros = capacidadeMaxima; // Trava a lotação no limite máximo
+            } 
+            // Prevenção extra para o botão de saída normal não disparar valores negativos do nada
+            else if (passageiros + valor < 0 && valor === -1) {
+                passageiros = 0; 
+            } 
+            else {
+                passageiros += valor;
+            }
+
+            atualizarUI();
+        }
+
+        // Fluxo [A1] - Leitura de dados incoerente (Negativo)
+        function forcarAnomalia() {
+            if (!sinalAtivo) return;
+            
+            // Subtrai um valor exagerado para forçar o negativo de forma abrupta
+            passageiros -= 20; 
+            
+            if (passageiros < 0) {
+                // O Sistema corrige automaticamente para zero (Passo 2 do Fluxo A1)
+                passageiros = 0; 
+                document.getElementById('aviso-anomalia').style.display = 'block';
+            }
+            atualizarUI();
+        }
+
+        // Fluxo [A2] - Sinal IoT perdido
+        function perderSinal() {
+            sinalAtivo = false;
+            
+            // O Sistema altera o estado para "Indisponível"
+            document.getElementById('aviso-sinal').style.display = 'block';
+            document.getElementById('wifi-icon').style.color = '#94a3b8'; // Fica cinzento
+            document.getElementById('wifi-icon').classList.replace('fa-wifi', 'fa-link-slash');
+            
+            const badge = document.getElementById('badge-405');
+            badge.style.backgroundColor = '#94a3b8'; badge.style.color = 'white';
+            badge.innerText = 'INDISPONÍVEL';
+            
+            document.getElementById('bar-405').style.backgroundColor = '#94a3b8';
+        }
+    </script>
+</body>
+</html>
