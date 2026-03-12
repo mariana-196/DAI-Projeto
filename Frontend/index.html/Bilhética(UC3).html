@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Bilhética (TUB)</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
+        
+        /* Cabeçalho */
+        .header { 
+            background: linear-gradient(135deg, #0D47A1 0%, #002171 100%); 
+            color: white; padding: 15px 25px; font-size: 20px; font-weight: 600; 
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .header-left { display: flex; align-items: center; }
+        .header img { height: 40px; margin-right: 20px; }
+        .btn-voltar { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 14px; transition: background 0.3s; }
+        .btn-voltar:hover { background: rgba(255,255,255,0.3); }
+
+        .container { padding: 25px; max-width: 1400px; margin: 0 auto; }
+        
+        /* Navegação por Tabs */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { 
+            padding: 12px 25px; background: white; border: 1px solid #ddd; border-bottom: none; 
+            border-radius: 8px 8px 0 0; cursor: pointer; font-size: 15px; font-weight: 600; color: #555;
+            transition: 0.2s; display: flex; align-items: center; gap: 8px;
+        }
+        .tab-btn.active { background: #0D47A1; color: white; border-color: #0D47A1; }
+        .tab-btn:hover:not(.active) { background: #f0f2f5; }
+
+        /* Conteúdo das Tabs */
+        .tab-content { display: none; background: white; padding: 25px; border-radius: 0 8px 8px 8px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
+        .tab-content.active { display: block; }
+
+        /* Estilos Internos (Botões, Inputs, Erros) */
+        h3 { margin-top: 0; color: #0D47A1; font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 12px; margin-bottom: 20px; }
+        .toolbar { display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-end; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 13px; color: #555; font-weight: 600; }
+        .form-group input, .form-group select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; min-width: 150px; }
+        
+        .btn-action { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; transition: 0.3s; color: white; }
+        .btn-primary { background-color: #0D47A1; }
+        .btn-primary:hover { background-color: #002171; }
+        .btn-success { background-color: #2E7D32; }
+        .btn-success:hover { background-color: #1B5E20; }
+        
+        .error-box, .info-box { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; display: none; }
+        .error-box { background-color: #fee2e2; color: #dc2626; border-left: 4px solid #dc2626; }
+        .info-box { background-color: #e0f2fe; color: #0284c7; border-left: 4px solid #0284c7; }
+
+        /* Área do Mapa e Gráficos */
+        #map-fluxos { height: 500px; border-radius: 8px; border: 1px solid #ddd; z-index: 1; }
+        .chart-container { height: 400px; width: 100%; }
+        
+        /* Loader Simulado para Importação */
+        .loader-area { text-align: center; padding: 40px; display: none; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #0D47A1; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <img src="tubwhite.png" alt="Logótipo TUB">
+            Plataforma de Gestão Urbana (TUB) - Módulo de Bilhética
+        </div>
+        <a href="index.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar ao Dashboard</a>
+    </div>
+
+    <div class="container">
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('tab-importacao', this)"><i class="fa-solid fa-cloud-arrow-down"></i> Importação (UC3.1)</button>
+            <button class="tab-btn" onclick="openTab('tab-analise', this)"><i class="fa-solid fa-chart-line"></i> Procura vs Oferta (UC3.2)</button>
+            <button class="tab-btn" onclick="openTab('tab-mapas', this)"><i class="fa-solid fa-map-location-dot"></i> Mapas de Fluxos (UC3.3)</button>
+        </div>
+
+        <div id="tab-importacao" class="tab-content active">
+            <h3>Integração com Sistema Externo de Bilhética</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Ligue-se à API externa para descarregar, normalizar e anonimizar os registos de validações de passes e bilhetes.</p>
+            
+            <div class="error-box" id="erro-importacao"><strong><i class="fa-solid fa-triangle-exclamation"></i> Falha de Comunicação (Fluxo [A1]):</strong> Não foi possível estabelecer ligação à API da Plataforma de Bilhética. Verifique as credenciais.</div>
+            <div class="info-box" id="sucesso-importacao" style="background-color: #dcfce7; color: #166534; border-color: #166534;"><strong><i class="fa-solid fa-check"></i> Sucesso:</strong> Lote de dados importado, anonimizado (RGPD) e gravado na base de dados central.</div>
+
+            <div class="toolbar" id="import-toolbar">
+                <div class="form-group">
+                    <label>Período de Extração</label>
+                    <select id="periodo-extracao">
+                        <option value="ontem">Ontem (D-1)</option>
+                        <option value="semana">Última Semana</option>
+                        <option value="erro">Simular Erro de API (Fluxo A1)</option>
+                    </select>
+                </div>
+                <button class="btn-action btn-success" onclick="simularImportacao()"><i class="fa-solid fa-plug"></i> Iniciar Importação Manual</button>
+            </div>
+
+            <div class="loader-area" id="loader-importacao">
+                <div class="spinner"></div>
+                <strong style="color: #0D47A1;">A ligar à API e a anonimizar dados...</strong>
+            </div>
+        </div>
+
+        <div id="tab-analise" class="tab-content">
+            <h3>KPIs e Desempenho da Rede</h3>
+            
+            <div class="info-box" id="info-analise"><strong>Aviso (Fluxo [A1]):</strong> Não existem dados correspondentes aos critérios de pesquisa selecionados (ex: dia de greve).</div>
+
+            <div class="toolbar">
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="data-analise" value="2026-03-12">
+                </div>
+                <div class="form-group">
+                    <label>Linha / Carreira</label>
+                    <select id="linha-analise">
+                        <option value="2">Linha 2 - Ponte de Prado / Celeirós</option>
+                        <option value="vazia">Linha 99 - (Simular Sem Dados)</option>
+                    </select>
+                </div>
+                <button class="btn-action btn-primary" onclick="gerarGrafico()"><i class="fa-solid fa-bolt"></i> Gerar Análise</button>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="graficoProcura"></canvas>
+            </div>
+        </div>
+
+        <div id="tab-mapas" class="tab-content">
+            <h3>Matriz Origem-Destino e Pressão em Paragens</h3>
+            
+            <div class="error-box" id="erro-mapa"><strong>Aviso (Fluxo [A1]):</strong> Amostra insuficiente para inferência matemática de Origem/Destino neste período. Alargue o intervalo temporal.</div>
+
+            <div class="toolbar">
+                <div class="form-group">
+                    <label>Tipo de Visualização</label>
+                    <select id="tipo-mapa">
+                        <option value="calor">Mapa de Calor (Pressão de Entradas)</option>
+                        <option value="erro">Fluxos O/D (Simular Amostra Insuficiente)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Bloco Horário</label>
+                    <select>
+                        <option>Manhã (07:00 - 10:00)</option>
+                        <option>Tarde (17:00 - 20:00)</option>
+                    </select>
+                </div>
+                <button class="btn-action btn-primary" onclick="gerarMapa()"><i class="fa-solid fa-layer-group"></i> Renderizar Mapa GIS</button>
+            </div>
+
+            <div id="map-fluxos"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // Lógica de Navegação das Tabs
+        function openTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+            
+            // Corrige o tamanho do mapa quando a tab é aberta
+            if(tabId === 'tab-mapas' && mapFluxos) {
+                setTimeout(() => { mapFluxos.invalidateSize(); }, 100);
+            }
+        }
+
+        // UC3.1 - Simulação de Importação com Fluxo de Erro
+        function simularImportacao() {
+            const select = document.getElementById('periodo-extracao').value;
+            const erroBox = document.getElementById('erro-importacao');
+            const sucessoBox = document.getElementById('sucesso-importacao');
+            const loader = document.getElementById('loader-importacao');
+            const toolbar = document.getElementById('import-toolbar');
+
+            erroBox.style.display = 'none';
+            sucessoBox.style.display = 'none';
+            toolbar.style.display = 'none';
+            loader.style.display = 'block';
+
+            setTimeout(() => {
+                loader.style.display = 'none';
+                toolbar.style.display = 'flex';
+                if (select === 'erro') {
+                    erroBox.style.display = 'block'; // Ativa o Fluxo [A1]
+                } else {
+                    sucessoBox.style.display = 'block'; // Sucesso Normal
+                }
+            }, 2000);
+        }
+
+        // UC3.2 - Inicialização e Atualização do Gráfico
+        let grafico;
+        function initGrafico() {
+            const ctx = document.getElementById('graficoProcura').getContext('2d');
+            grafico = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['07:00', '08:00', '09:00', '10:00', '11:00'],
+                    datasets: [
+                        { label: 'Procura Real (Validações)', data: [50, 200, 180, 80, 60], borderColor: '#0D47A1', backgroundColor: 'rgba(13, 71, 161, 0.1)', fill: true, tension: 0.4 },
+                        { label: 'Oferta Planeada (Lugares)', data: [100, 220, 220, 100, 100], borderColor: '#2E7D32', borderDash: [5, 5], tension: 0.4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+        initGrafico();
+
+        function gerarGrafico() {
+            const linha = document.getElementById('linha-analise').value;
+            const infoBox = document.getElementById('info-analise');
+            infoBox.style.display = 'none';
+
+            if (linha === 'vazia') {
+                infoBox.style.display = 'block'; // Ativa o Fluxo [A1] do UC3.2
+                grafico.data.datasets[0].data = [0,0,0,0,0];
+                grafico.update();
+            } else {
+                grafico.data.datasets[0].data = [Math.random()*100+20, Math.random()*200+50, 180, 80, 60];
+                grafico.update();
+            }
+        }
+
+        // UC3.3 - Inicialização do Mapa GIS
+        var mapFluxos = L.map('map-fluxos').setView([41.5503, -8.4200], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapFluxos);
+        
+        // Simulação de "Mapa de Calor" desenhando círculos
+        var layerCalor = L.layerGroup([
+            L.circle([41.5510, -8.4220], {color: 'red', fillColor: '#f03', fillOpacity: 0.5, radius: 300}).bindPopup('Paragem Central - Alta Pressão'),
+            L.circle([41.5450, -8.4100], {color: 'orange', fillColor: 'orange', fillOpacity: 0.5, radius: 150}).bindPopup('Universidade do Minho - Média Pressão')
+        ]);
+
+        function gerarMapa() {
+            const tipo = document.getElementById('tipo-mapa').value;
+            const erroBox = document.getElementById('erro-mapa');
+            erroBox.style.display = 'none';
+
+            if (tipo === 'erro') {
+                erroBox.style.display = 'block'; // Ativa o Fluxo [A1] do UC3.3
+                if (mapFluxos.hasLayer(layerCalor)) mapFluxos.removeLayer(layerCalor);
+            } else {
+                layerCalor.addTo(mapFluxos); // Mostra os círculos de calor
+            }
+        }
+    </script>
+</body>
+</html>

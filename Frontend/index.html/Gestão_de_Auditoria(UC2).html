@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoria e Registos (TUB)</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            background-color: #f4f7f6; 
+            color: #333; 
+        }
+        
+        /* Cabeçalho */
+        .header { 
+            background: linear-gradient(135deg, #0D47A1 0%, #002171 100%); 
+            color: white; 
+            padding: 15px 25px; 
+            font-size: 20px; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .header-left { display: flex; align-items: center; }
+        .header img { height: 40px; margin-right: 20px; }
+        
+        /* Botão Voltar */
+        .btn-voltar {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .btn-voltar:hover { background: rgba(255,255,255,0.3); }
+
+        /* Layout Principal */
+        .container { 
+            display: flex; 
+            padding: 25px; 
+            gap: 25px; 
+            box-sizing: border-box;
+        }
+        
+        /* Estilo base para os painéis */
+        .card { 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05); 
+            padding: 20px; 
+        }
+        
+        .card h3 { 
+            margin-top: 0; 
+            color: #0D47A1; 
+            font-size: 18px; 
+            border-bottom: 2px solid #f0f2f5; 
+            padding-bottom: 12px; 
+            margin-bottom: 20px; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Área Principal (UC2.1 e UC2.2) */
+        .main-section { flex: 3; }
+        
+        /* Filtros e Pesquisa */
+        .filtros-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 13px; color: #555; font-weight: 600; }
+        .form-group input, .form-group select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .btn-action {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .btn-pesquisar { background-color: #0D47A1; color: white; }
+        .btn-pesquisar:hover { background-color: #002171; }
+        .btn-exportar { background-color: #2E7D32; color: white; margin-left: auto; }
+        .btn-exportar:hover { background-color: #1B5E20; }
+
+        /* Tabela de Logs (UC2.1) */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        th { background-color: #f8f9fa; color: #555; font-weight: 600; }
+        tr:hover { background-color: #f4f7f6; cursor: pointer; }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-info { background: #e3f2fd; color: #0D47A1; }
+        .badge-warning { background: #fff3e0; color: #e65100; }
+        .badge-critical { background: #ffebee; color: #c62828; }
+
+        /* Área Lateral (UC2.3) */
+        .sidebar { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Mensagem de Erro (Fluxo Alternativo) */
+        .error-box {
+            background-color: #fee2e2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #dc2626;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none; /* Escondido por defeito */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <img src="tubwhite.png" alt="Logótipo TUB">
+            Plataforma de Gestão Urbana (TUB) - Módulo de Auditoria
+        </div>
+        <a href="index.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar ao Dashboard</a>
+    </div>
+
+    <div class="container">
+        
+        <div class="card main-section">
+            <h3><i class="fa-solid fa-list-check"></i> Histórico de Ações (Logs)</h3>
+            
+            <div class="error-box" id="msg-erro"></div>
+
+            <div class="filtros-bar">
+                <div class="form-group">
+                    <label>Data Início</label>
+                    <input type="date" id="data-inicio">
+                </div>
+                <div class="form-group">
+                    <label>Data Fim</label>
+                    <input type="date" id="data-fim">
+                </div>
+                <div class="form-group">
+                    <label>Módulo</label>
+                    <select id="filtro-modulo">
+                        <option value="todos">Todos os Módulos</option>
+                        <option value="auth">Autenticação (UC1)</option>
+                        <option value="bilhetica">Bilhética (UC3)</option>
+                    </select>
+                </div>
+                <button class="btn-action btn-pesquisar" onclick="pesquisarLogs()"><i class="fa-solid fa-magnifying-glass"></i> Pesquisar</button>
+                <button class="btn-action btn-exportar" onclick="exportarRelatorio()"><i class="fa-solid fa-file-csv"></i> Exportar (CSV)</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data / Hora</th>
+                        <th>Utilizador</th>
+                        <th>Ação</th>
+                        <th>Módulo</th>
+                        <th>IP Origem</th>
+                        <th>Nível</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr onclick="mostrarDetalhes('Login com sucesso efetuado pelo Admin.')">
+                        <td>12/03/2026 08:30:12</td>
+                        <td>admin@tub.pt</td>
+                        <td>Início de Sessão</td>
+                        <td>Autenticação</td>
+                        <td>192.168.1.45</td>
+                        <td><span class="badge badge-info">INFO</span></td>
+                    </tr>
+                    <tr onclick="mostrarDetalhes('Tentativa de login falhada. Password incorreta.')">
+                        <td>12/03/2026 09:15:00</td>
+                        <td>operador2@tub.pt</td>
+                        <td>Falha de Autenticação</td>
+                        <td>Autenticação</td>
+                        <td>85.240.12.5</td>
+                        <td><span class="badge badge-warning">AVISO</span></td>
+                    </tr>
+                    <tr onclick="mostrarDetalhes('Exportação massiva de dados de validações de passes.')">
+                        <td>12/03/2026 10:05:40</td>
+                        <td>admin@tub.pt</td>
+                        <td>Exportação (CSV)</td>
+                        <td>Bilhética</td>
+                        <td>192.168.1.45</td>
+                        <td><span class="badge badge-critical">SENSÍVEL</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <p style="font-size: 12px; color: #888; text-align: right; margin-top: 15px;">Mostrando 1-3 de 345 registos (Página 1)</p>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <h3><i class="fa-solid fa-shield-halved"></i> Alertas de Segurança</h3>
+                <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Monitorização ativa de comportamentos anómalos no sistema.</p>
+                
+                <div style="border: 1px solid #ddd; border-radius: 6px; padding: 12px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <strong>Força Bruta</strong>
+                        <span class="badge badge-warning">ATIVO</span>
+                    </div>
+                    <span style="font-size: 12px; color: #555;">Dispara se > 5 logins falhados em 5 min.</span>
+                </div>
+
+                <div style="border: 1px solid #ddd; border-radius: 6px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <strong>Acesso Fora de Horas</strong>
+                        <span class="badge" style="background: #eee; color: #888;">INATIVO</span>
+                    </div>
+                    <span style="font-size: 12px; color: #555;">Logins entre as 01:00 e as 05:00.</span>
+                </div>
+
+                <button class="btn-action" style="background: white; border: 1px dashed #0D47A1; color: #0D47A1; width: 100%; justify-content: center; margin-top: 15px;" onclick="alert('Funcionalidade de criar alerta (UC2.3) selecionada.')">
+                    <i class="fa-solid fa-plus"></i> Novo Alerta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função do UC2.1 (Fluxo Normal Passo 7)
+        function mostrarDetalhes(detalhe) {
+            alert("Detalhes do Registo (UC2.1):\n\n" + detalhe);
+        }
+
+        // Função de Pesquisa
+        function pesquisarLogs() {
+            // Simula o processamento do Passo 4 do UC2.1
+            alert("A pesquisar na base de dados de auditoria com os filtros aplicados...");
+        }
+
+        // Função do UC2.2 (Fluxo Alternativo A1 - Parâmetros Inválidos)
+        function exportarRelatorio() {
+            const dataInicio = document.getElementById('data-inicio').value;
+            const dataFim = document.getElementById('data-fim').value;
+            const msgErro = document.getElementById('msg-erro');
+
+            // Limpa a mensagem de erro
+            msgErro.style.display = 'none';
+
+            // Simulação da validação do UC2.2 - Passo 4 / Fluxo A1
+            if (dataInicio && dataFim && dataInicio > dataFim) {
+                msgErro.innerHTML = '<strong><i class="fa-solid fa-circle-exclamation"></i> Erro de Exportação:</strong> A Data de Início não pode ser posterior à Data de Fim.';
+                msgErro.style.display = 'block';
+                return; // Interrompe a exportação
+            }
+
+            if (!dataInicio || !dataFim) {
+                alert("Para simular o sucesso da exportação, preencha datas válidas (ex: 01/03/2026 a 12/03/2026).");
+                return;
+            }
+
+            // Fluxo Normal - Sucesso
+            alert("A compilar registos... Ficheiro CSV gerado e transferido com sucesso! (UC2.2)");
+        }
+    </script>
+</body>
+</html>
