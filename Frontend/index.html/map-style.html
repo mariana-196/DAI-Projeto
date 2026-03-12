@@ -12,7 +12,8 @@
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f6f9; color: #333; }
-        .header { background-color: #0D47A1; color: white; padding: 15px 20px; font-size: 24px; font-weight: bold; }
+        .header { background-color: #0D47A1; color: white; padding: 10px 20px; font-size: 22px; font-weight: bold; display: flex; align-items: center; }
+        .header img { height: 40px; margin-right: 20px; } /* Estilo para o logótipo no header */
         .container { display: flex; padding: 20px; gap: 20px; height: 85vh; }
         
         /* Área do Mapa (UC 5.1 e UC 4.1) */
@@ -28,12 +29,13 @@
 <body>
 
     <div class="header">
-        🚌 PGU - Dashboard Operacional (Protótipo I)
+        <img src="tubwhite.png" alt="Logótipo TUB">
+        Plataforma de Gestão Urbana (TUB) - Protótipo I
     </div>
 
     <div class="container">
         <div class="map-section">
-            <h3>Visão Geral da Frota (UC5.1)</h3>
+            <h3>Mapa Geral em Tempo Real (UC5.1)</h3>
             <div id="map"></div>
         </div>
 
@@ -55,15 +57,13 @@
 
     <script>
         // 1. INICIAR O MAPA DE BRAGA
-        // Coordenadas centrais de Braga: 41.5503, -8.4200
         var map = L.map('map').setView([41.5503, -8.4200], 14);
 
-        // Carregar o mapa de ruas do OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Adicionar um marcador a fingir que é um autocarro (UC4.1)
+        // Adicionar um marcador (UC4.1)
         var autocarro = L.marker([41.5510, -8.4220]).addTo(map)
             .bindPopup('<b>Autocarro #405</b><br>Lotação: 95,5% <br>Estado: Crítico')
             .openPopup();
@@ -73,10 +73,10 @@
         var meuGrafico = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['08:00', '09:00', '10:00', '11:00'],
+                labels: ['08:00', '09:00', '10:00', '11:00', '12:00'],
                 datasets: [{
                     label: 'Validações (Passageiros)',
-                    data: [120, 190, 60, 45],
+                    data: [120, 190, 60, 45, 150],
                     backgroundColor: '#0D47A1'
                 }]
             }
