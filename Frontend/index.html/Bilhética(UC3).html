@@ -182,27 +182,32 @@
         }
 
         // UC3.1 - Simulação de Importação com Fluxo de Erro
-        function simularImportacao() {
-            const select = document.getElementById('periodo-extracao').value;
+        async function simularImportacao() {
+            const periodo = document.getElementById('periodo-extracao').value;
             const erroBox = document.getElementById('erro-importacao');
             const sucessoBox = document.getElementById('sucesso-importacao');
             const loader = document.getElementById('loader-importacao');
             const toolbar = document.getElementById('import-toolbar');
 
+        // Reset visual
             erroBox.style.display = 'none';
             sucessoBox.style.display = 'none';
             toolbar.style.display = 'none';
             loader.style.display = 'block';
 
-            setTimeout(() => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/bilhetica/importar?periodo=${periodo}`);
+                if (!response.ok) throw new Error();
+        
+                const data = await response.json();
                 loader.style.display = 'none';
                 toolbar.style.display = 'flex';
-                if (select === 'erro') {
-                    erroBox.style.display = 'block'; // Ativa o Fluxo [A1]
-                } else {
-                    sucessoBox.style.display = 'block'; // Sucesso Normal
-                }
-            }, 2000);
+                sucessoBox.style.display = 'block';
+            } catch (error) {
+                loader.style.display = 'none';
+                toolbar.style.display = 'flex';
+                erroBox.style.display = 'block';
+            }
         }
 
         // UC3.2 - Inicialização e Atualização do Gráfico
@@ -223,18 +228,29 @@
         }
         initGrafico();
 
-        function gerarGrafico() {
+        async function gerarGrafico() {
             const linha = document.getElementById('linha-analise').value;
             const infoBox = document.getElementById('info-analise');
-            infoBox.style.display = 'none';
-
+    
             if (linha === 'vazia') {
-                infoBox.style.display = 'block'; // Ativa o Fluxo [A1] do UC3.2
+                infoBox.style.display = 'block';
                 grafico.data.datasets[0].data = [0,0,0,0,0];
                 grafico.update();
-            } else {
-                grafico.data.datasets[0].data = [Math.random()*100+20, Math.random()*200+50, 180, 80, 60];
+            return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/bilhetica/procura-oferta');
+                const data = await response.json();
+
+        // Atualiza o gráfico com dados do JAVA
+                grafico.data.labels = data.labels;
+                grafico.data.datasets[0].data = data.procura;
+                grafico.data.datasets[1].data = data.oferta;
                 grafico.update();
+                infoBox.style.display = 'none';
+            } catch (error) {
+                console.error("Erro ao carregar gráfico:", error);
             }
         }
 
