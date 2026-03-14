@@ -197,35 +197,14 @@
                         <th>Nível</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr onclick="mostrarDetalhes('Login com sucesso efetuado pelo Admin.')">
-                        <td>12/03/2026 08:30:12</td>
-                        <td>admin@tub.pt</td>
-                        <td>Início de Sessão</td>
-                        <td>Autenticação</td>
-                        <td>192.168.1.45</td>
-                        <td><span class="badge badge-info">INFO</span></td>
-                    </tr>
-                    <tr onclick="mostrarDetalhes('Tentativa de login falhada. Password incorreta.')">
-                        <td>12/03/2026 09:15:00</td>
-                        <td>operador2@tub.pt</td>
-                        <td>Falha de Autenticação</td>
-                        <td>Autenticação</td>
-                        <td>85.240.12.5</td>
-                        <td><span class="badge badge-warning">AVISO</span></td>
-                    </tr>
-                    <tr onclick="mostrarDetalhes('Exportação massiva de dados de validações de passes.')">
-                        <td>12/03/2026 10:05:40</td>
-                        <td>admin@tub.pt</td>
-                        <td>Exportação (CSV)</td>
-                        <td>Bilhética</td>
-                        <td>192.168.1.45</td>
-                        <td><span class="badge badge-critical">SENSÍVEL</span></td>
+                <tbody id="tabela-logs-corpo">
+                    <tr onclick="mostrarDetalhes('A carregar dados do sistema...')">
+                        <td colspan="6" style="text-align:center;">Ligue o servidor Java na porta 8081 para ver os logs.</td>
                     </tr>
                 </tbody>
             </table>
             
-            <p style="font-size: 12px; color: #888; text-align: right; margin-top: 15px;">Mostrando 1-3 de 345 registos (Página 1)</p>
+            <p id="contador-logs" style="font-size: 12px; color: #888; text-align: right; margin-top: 15px;">Mostrando 0 registos</p>
         </div>
 
         <div class="sidebar">
@@ -257,31 +236,68 @@
     </div>
 
     <script>
-        // Função do UC2.1 (Fluxo Normal Passo 7)
+        // Função do UC2.1 (Fluxo Normal Passo 7) - Mantida original
         function mostrarDetalhes(detalhe) {
             alert("Detalhes do Registo (UC2.1):\n\n" + detalhe);
         }
 
-        // Função de Pesquisa
-        function pesquisarLogs() {
-            // Simula o processamento do Passo 4 do UC2.1
-            alert("A pesquisar na base de dados de auditoria com os filtros aplicados...");
+        // --- PONTE JAVA INTEGRADA PARA PESQUISA ---
+        async function pesquisarLogs() {
+            const inicio = document.getElementById('data-inicio').value;
+            const fim = document.getElementById('data-fim').value;
+            const modulo = document.getElementById('filtro-modulo').value;
+            const tbody = document.getElementById('tabela-logs-corpo');
+            const msgErro = document.getElementById('msg-erro');
+            const contador = document.getElementById('contador-logs');
+
+            msgErro.style.display = 'none';
+
+            try {
+                // Chamada ao teu AuditoriaController
+                const response = await fetch(`http://localhost:8081/api/auditoria?modulo=${modulo}&inicio=${inicio}&fim=${fim}`);
+                const logs = await response.json();
+
+                tbody.innerHTML = ""; // Limpa a tabela para meter os dados do Java
+
+                logs.forEach(log => {
+                    // Escolhe a badge certa baseada no nível vindo do Java
+                    let badgeClass = "badge-info";
+                    if (log.nivel === "AVISO") badgeClass = "badge-warning";
+                    if (log.nivel === "SENSÍVEL" || log.nivel === "CRÍTICO") badgeClass = "badge-critical";
+
+                    tbody.innerHTML += `
+                        <tr onclick="mostrarDetalhes('${log.detalhes}')">
+                            <td>${log.dataHora}</td>
+                            <td>${log.utilizador}</td>
+                            <td>${log.acao}</td>
+                            <td>${log.modulo}</td>
+                            <td>${log.ip}</td>
+                            <td><span class="badge ${badgeClass}">${log.nivel}</span></td>
+                        </tr>
+                    `;
+                });
+
+                contador.innerText = `Mostrando ${logs.length} registos encontrados no Java.`;
+
+            } catch (error) {
+                console.error("Erro ao ligar ao Java:", error);
+                msgErro.innerHTML = '<strong><i class="fa-solid fa-wifi"></i> Erro:</strong> Não foi possível comunicar com o Java local (Porta 8081).';
+                msgErro.style.display = 'block';
+            }
         }
 
-        // Função do UC2.2 (Fluxo Alternativo A1 - Parâmetros Inválidos)
+        // Função do UC2.2 (Fluxo Alternativo A1) - Mantida original
         function exportarRelatorio() {
             const dataInicio = document.getElementById('data-inicio').value;
             const dataFim = document.getElementById('data-fim').value;
             const msgErro = document.getElementById('msg-erro');
 
-            // Limpa a mensagem de erro
             msgErro.style.display = 'none';
 
-            // Simulação da validação do UC2.2 - Passo 4 / Fluxo A1
             if (dataInicio && dataFim && dataInicio > dataFim) {
                 msgErro.innerHTML = '<strong><i class="fa-solid fa-circle-exclamation"></i> Erro de Exportação:</strong> A Data de Início não pode ser posterior à Data de Fim.';
                 msgErro.style.display = 'block';
-                return; // Interrompe a exportação
+                return; 
             }
 
             if (!dataInicio || !dataFim) {
@@ -289,9 +305,11 @@
                 return;
             }
 
-            // Fluxo Normal - Sucesso
-            alert("A compilar registos... Ficheiro CSV gerado e transferido com sucesso! (UC2.2)");
+            alert("A compilar registos do Java... Ficheiro CSV gerado com sucesso! (UC2.2)");
         }
+
+        // Carregar os logs assim que a página abrir
+        window.onload = pesquisarLogs;
     </script>
 </body>
 </html>

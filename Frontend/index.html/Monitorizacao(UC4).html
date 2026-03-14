@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PGU - Monitorização em Tempo Real (TUB)</title>
+    <title>Monitorização em Tempo Real (TUB)</title>
     
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -136,7 +136,29 @@
         const capacidadeMaxima = 50;
         let sinalAtivo = true;
 
-        function atualizarUI() {
+        // --- PONTE JAVA: SINCRONIZAÇÃO EM TEMPO REAL ---
+        async function sincronizarComJava(evento) {
+            const dados = {
+                idAutocarro: 405,
+                lotacao: passageiros,
+                capacidade: capacidadeMaxima,
+                sinal: sinalAtivo,
+                tipoEvento: evento // Ex: "ENTRADA", "SAIDA", "ERRO_NEGATIVO", "PERDA_SINAL"
+            };
+
+            try {
+                // Envia o estado atual para o Backend na porta 8081
+                await fetch('http://localhost:8081/api/monitorizacao/atualizar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+            } catch (error) {
+                console.warn("Java Offline: A simular localmente...");
+            }
+        }
+
+        function atualizarUI(eventoOrigem = "UPDATE") {
             const bar = document.getElementById('bar-405');
             const txt = document.getElementById('txt-lota-405');
             const badge = document.getElementById('badge-405');
@@ -163,18 +185,19 @@
                 badge.style.backgroundColor = '#e2e8f0'; badge.style.color = '#333';
                 badge.innerText = 'NORMAL';
             }
+
+            // Sempre que a UI atualiza, avisamos o Java
+            sincronizarComJava(eventoOrigem);
         }
 
         function alterarPassageiros(valor) {
-            if (!sinalAtivo) return; // Se não há sinal, os sensores não atualizam
+            if (!sinalAtivo) return; 
             
             document.getElementById('aviso-anomalia').style.display = 'none';
             
-            // NOVO: Regra de negócio para não ultrapassar a capacidade máxima
             if (passageiros + valor > capacidadeMaxima) {
-                passageiros = capacidadeMaxima; // Trava a lotação no limite máximo
+                passageiros = capacidadeMaxima; 
             } 
-            // Prevenção extra para o botão de saída normal não disparar valores negativos do nada
             else if (passageiros + valor < 0 && valor === -1) {
                 passageiros = 0; 
             } 
@@ -182,31 +205,26 @@
                 passageiros += valor;
             }
 
-            atualizarUI();
+            atualizarUI(valor > 0 ? "ENTRADA" : "SAIDA");
         }
 
-        // Fluxo [A1] - Leitura de dados incoerente (Negativo)
         function forcarAnomalia() {
             if (!sinalAtivo) return;
             
-            // Subtrai um valor exagerado para forçar o negativo de forma abrupta
             passageiros -= 20; 
             
             if (passageiros < 0) {
-                // O Sistema corrige automaticamente para zero (Passo 2 do Fluxo A1)
                 passageiros = 0; 
                 document.getElementById('aviso-anomalia').style.display = 'block';
             }
-            atualizarUI();
+            atualizarUI("ERRO_NEGATIVO");
         }
 
-        // Fluxo [A2] - Sinal IoT perdido
         function perderSinal() {
             sinalAtivo = false;
             
-            // O Sistema altera o estado para "Indisponível"
             document.getElementById('aviso-sinal').style.display = 'block';
-            document.getElementById('wifi-icon').style.color = '#94a3b8'; // Fica cinzento
+            document.getElementById('wifi-icon').style.color = '#94a3b8';
             document.getElementById('wifi-icon').classList.replace('fa-wifi', 'fa-link-slash');
             
             const badge = document.getElementById('badge-405');
@@ -214,6 +232,9 @@
             badge.innerText = 'INDISPONÍVEL';
             
             document.getElementById('bar-405').style.backgroundColor = '#94a3b8';
+
+            // Avisa o Java que o autocarro perdeu o sinal
+            sincronizarComJava("PERDA_SINAL");
         }
     </script>
 </body>

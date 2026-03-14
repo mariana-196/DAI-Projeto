@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PGU - Gestão de Utilizadores (TUB)</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
+        
+        /* Cabeçalho */
+        .header { 
+            background: linear-gradient(135deg, #0D47A1 0%, #002171 100%); 
+            color: white; padding: 15px 25px; font-size: 20px; font-weight: 600; 
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .header-left { display: flex; align-items: center; }
+        .header img { height: 40px; margin-right: 20px; }
+        .btn-voltar { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.3s; }
+        .btn-voltar:hover { background: rgba(255,255,255,0.3); }
+
+        .container { display: flex; padding: 25px; gap: 25px; max-width: 1400px; margin: 0 auto; }
+        
+        .card { background: white; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); padding: 25px; }
+        h3 { margin-top: 0; color: #0D47A1; font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+        /* Layout Dividido */
+        .lista-section { flex: 2; }
+        .form-section { flex: 1; background-color: #f8fafc; border: 1px solid #e2e8f0; }
+
+        /* Tabela de Utilizadores */
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #555; font-weight: 600; }
+        tr:hover { background-color: #f4f7f6; cursor: pointer; }
+        
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .badge-admin { background: #fee2e2; color: #dc2626; }
+        .badge-op { background: #e0f2fe; color: #0284c7; }
+        .badge-ativo { background: #dcfce7; color: #166534; }
+        
+        /* Formulários (UC1.2.1 e UC1.2.2) */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; color: #555; font-weight: 600; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+        
+        .btn-action { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; color: white; margin-bottom: 10px; }
+        .btn-save { background-color: #2E7D32; }
+        .btn-save:hover { background-color: #1B5E20; }
+        .btn-permissions { background-color: #0D47A1; }
+        .btn-permissions:hover { background-color: #002171; }
+
+        /* Caixas de Alerta */
+        .alert-box { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; display: none; }
+        .alert-error { background-color: #fee2e2; color: #dc2626; border-left: 4px solid #dc2626; }
+        .alert-success { background-color: #dcfce7; color: #166534; border-left: 4px solid #166534; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <img src="tubwhite.png" alt="Logótipo TUB">
+            Plataforma de Gestão Urbana - Gestão de Acessos (UC1.2)
+        </div>
+        <a href="index.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar ao Dashboard</a>
+    </div>
+
+    <div class="container">
+        
+        <div class="card lista-section">
+            <h3><i class="fa-solid fa-users"></i> Contas Registadas</h3>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Perfil (Papel)</th>
+                        <th>Estado</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-corpo">
+                    <tr><td colspan="5" style="text-align:center;">A ligar ao sistema central...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card form-section">
+            <h3><i class="fa-solid fa-user-gear"></i> Criar / Editar Conta</h3>
+            
+            <div class="alert-box alert-error" id="aviso-erro"></div>
+            <div class="alert-box alert-success" id="aviso-sucesso">
+                <strong><i class="fa-solid fa-check"></i> Sucesso:</strong> Dados de utilizador e permissões guardados na base de dados.
+            </div>
+
+            <div class="form-group">
+                <label>Nome Completo</label>
+                <input type="text" id="input-nome" placeholder="Ex: João Costa">
+            </div>
+            <div class="form-group">
+                <label>Email Profissional</label>
+                <input type="email" id="input-email" placeholder="Ex: joao@tub.pt">
+            </div>
+            
+            <div class="form-group">
+                <label>Palavra-passe Inicial</label>
+                <input type="password" id="input-password" placeholder="Definir palavra-passe">
+            </div>
+            
+            <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
+
+            <div class="form-group">
+                <label>Atribuir Perfil (Papel)</label>
+                <select id="input-perfil">
+                    <option value="OPERADOR">Operador TUB (Acesso a Dashboard e Bilhética)</option>
+                    <option value="ADMIN">Administrador (Acesso Total + Auditoria)</option>
+                </select>
+            </div>
+
+            <button class="btn-action btn-save" onclick="guardarConta()"><i class="fa-solid fa-flo

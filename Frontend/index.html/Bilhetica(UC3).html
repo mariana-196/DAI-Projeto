@@ -168,41 +168,46 @@
     </div>
 
     <script>
-        // Lógica de Navegação das Tabs
+        // Lógica de Navegação das Tabs (Original)
         function openTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             btnElement.classList.add('active');
             
-            // Corrige o tamanho do mapa quando a tab é aberta
             if(tabId === 'tab-mapas' && mapFluxos) {
                 setTimeout(() => { mapFluxos.invalidateSize(); }, 100);
             }
         }
 
-        // UC3.1 - Simulação de Importação com Fluxo de Erro
+        // --- PONTE JAVA: UC3.1 - IMPORTAÇÃO REAL ---
         async function simularImportacao() {
-            const periodo = document.getElementById('periodo-extracao').value;
+            const select = document.getElementById('periodo-extracao').value;
             const erroBox = document.getElementById('erro-importacao');
             const sucessoBox = document.getElementById('sucesso-importacao');
             const loader = document.getElementById('loader-importacao');
             const toolbar = document.getElementById('import-toolbar');
 
-        // Reset visual
             erroBox.style.display = 'none';
             sucessoBox.style.display = 'none';
             toolbar.style.display = 'none';
             loader.style.display = 'block';
 
             try {
-                const response = await fetch(`http://localhost:8080/api/bilhetica/importar?periodo=${periodo}`);
-                if (!response.ok) throw new Error();
-        
-                const data = await response.json();
-                loader.style.display = 'none';
-                toolbar.style.display = 'flex';
-                sucessoBox.style.display = 'block';
+                // Chamada real ao Java
+                const response = await fetch(`http://localhost:8081/api/bilhetica/importar?periodo=${select}`, { method: 'POST' });
+                
+                // Mantemos o delay para o utilizador ver o spinner (como no design original)
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    toolbar.style.display = 'flex';
+                    if (response.ok && select !== 'erro') {
+                        sucessoBox.style.display = 'block';
+                    } else {
+                        erroBox.style.display = 'block';
+                    }
+                }, 1500);
+
             } catch (error) {
                 loader.style.display = 'none';
                 toolbar.style.display = 'flex';
@@ -210,7 +215,7 @@
             }
         }
 
-        // UC3.2 - Inicialização e Atualização do Gráfico
+        // --- PONTE JAVA: UC3.2 - GRÁFICO DINÂMICO ---
         let grafico;
         function initGrafico() {
             const ctx = document.getElementById('graficoProcura').getContext('2d');
@@ -231,49 +236,60 @@
         async function gerarGrafico() {
             const linha = document.getElementById('linha-analise').value;
             const infoBox = document.getElementById('info-analise');
-    
+            infoBox.style.display = 'none';
+
             if (linha === 'vazia') {
                 infoBox.style.display = 'block';
                 grafico.data.datasets[0].data = [0,0,0,0,0];
                 grafico.update();
-            return;
+                return;
             }
 
             try {
-                const response = await fetch('http://localhost:8080/api/bilhetica/procura-oferta');
-                const data = await response.json();
-
-        // Atualiza o gráfico com dados do JAVA
-                grafico.data.labels = data.labels;
-                grafico.data.datasets[0].data = data.procura;
-                grafico.data.datasets[1].data = data.oferta;
+                // Vai buscar dados reais ao Java
+                const response = await fetch(`http://localhost:8081/api/bilhetica/analise?linha=${linha}`);
+                const dadosReais = await response.json();
+                
+                grafico.data.datasets[0].data = dadosReais.procura;
                 grafico.update();
-                infoBox.style.display = 'none';
-            } catch (error) {
-                console.error("Erro ao carregar gráfico:", error);
+            } catch (e) {
+                // Fallback (mantém a simulação original se o Java estiver offline)
+                grafico.data.datasets[0].data = [Math.random()*100+20, Math.random()*200+50, 180, 80, 60];
+                grafico.update();
             }
         }
 
-        // UC3.3 - Inicialização do Mapa GIS
+        // --- PONTE JAVA: UC3.3 - MAPA REAL ---
         var mapFluxos = L.map('map-fluxos').setView([41.5503, -8.4200], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapFluxos);
         
-        // Simulação de "Mapa de Calor" desenhando círculos
-        var layerCalor = L.layerGroup([
-            L.circle([41.5510, -8.4220], {color: 'red', fillColor: '#f03', fillOpacity: 0.5, radius: 300}).bindPopup('Paragem Central - Alta Pressão'),
-            L.circle([41.5450, -8.4100], {color: 'orange', fillColor: 'orange', fillOpacity: 0.5, radius: 150}).bindPopup('Universidade do Minho - Média Pressão')
-        ]);
+        var layerCalor = L.layerGroup();
 
-        function gerarMapa() {
+        async function gerarMapa() {
             const tipo = document.getElementById('tipo-mapa').value;
             const erroBox = document.getElementById('erro-mapa');
             erroBox.style.display = 'none';
+            layerCalor.clearLayers();
 
             if (tipo === 'erro') {
-                erroBox.style.display = 'block'; // Ativa o Fluxo [A1] do UC3.3
-                if (mapFluxos.hasLayer(layerCalor)) mapFluxos.removeLayer(layerCalor);
-            } else {
-                layerCalor.addTo(mapFluxos); // Mostra os círculos de calor
+                erroBox.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8081/api/bilhetica/mapa');
+                const pontos = await response.json();
+                
+                pontos.forEach(p => {
+                    L.circle([p.lat, p.lng], { color: p.cor, fillColor: p.cor, fillOpacity: 0.5, radius: p.raio })
+                     .bindPopup(p.nome)
+                     .addTo(layerCalor);
+                });
+                layerCalor.addTo(mapFluxos);
+            } catch (e) {
+                // Simulação Original
+                L.circle([41.5510, -8.4220], {color: 'red', radius: 300}).bindPopup('Paragem Central').addTo(layerCalor);
+                layerCalor.addTo(mapFluxos);
             }
         }
     </script>
