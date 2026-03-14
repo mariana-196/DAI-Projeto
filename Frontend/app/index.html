@@ -116,10 +116,10 @@
             Dashboard Operacional
         </div>
         <div class="nav-menu">
-            <a href="utilizadores.html" class="nav-btn"><i class="fa-solid fa-users"></i> Gestão de Acessos</a>
-            <a href="auditoria.html" class="nav-btn"><i class="fa-solid fa-shield-halved"></i> Auditoria</a>
-            <a href="bilhetica.html" class="nav-btn"><i class="fa-solid fa-ticket"></i> Bilhética</a>
-            <a href="monitorizacao.html" class="nav-btn"><i class="fa-solid fa-bus"></i> Tempo Real</a>
+            <a href="Utilizadores(UC1.2).html" class="nav-btn"><i class="fa-solid fa-users"></i> Gestão de Acessos</a>
+            <a href="Gestao_de_Auditoria(UC2).html" class="nav-btn"><i class="fa-solid fa-shield-halved"></i> Auditoria</a>
+            <a href="Bilhetica(UC3).html" class="nav-btn"><i class="fa-solid fa-ticket"></i> Bilhética</a>
+            <a href="Monitorizacao(UC4).html" class="nav-btn"><i class="fa-solid fa-bus"></i> Tempo Real</a>
             <button class="nav-btn btn-logout" onclick="expirarSessao()"><i class="fa-solid fa-power-off"></i> Sair</button>
         </div>
     </div>
@@ -189,14 +189,12 @@
         // --- PONTE JAVA: CARREGAR DADOS REAIS ---
         async function atualizarDashboard() {
             try {
-                // 1. Vai buscar KPIs
                 const resKpi = await fetch('http://localhost:8081/api/dashboard/kpis');
                 const kpis = await resKpi.json();
                 document.getElementById('val-viaturas').innerHTML = `${kpis.ativas} <span style="font-size: 16px; color: #94a3b8; font-weight: 500;">/ ${kpis.total}</span>`;
                 document.getElementById('kpi-pontualidade').innerText = kpis.pontualidade + "%";
                 document.getElementById('val-validacoes').innerText = kpis.validacoes.toLocaleString();
 
-                // 2. Vai buscar Posições da Frota (Mapa)
                 const resFrota = await fetch('http://localhost:8081/api/frota/posicoes');
                 const frota = await resFrota.json();
                 markersGroup.clearLayers();
@@ -207,11 +205,9 @@
                      .bindPopup(`<b>Viatura #${v.id}</b><br>Linha: ${v.linha}<br>Estado: ${v.status}`);
                 });
 
-                // 3. Vai buscar Alertas
                 const resAlertas = await fetch('http://localhost:8081/api/alertas');
                 const alertas = await resAlertas.json();
                 const containerAlertas = document.getElementById('centro-alertas');
-                // Mantém o título
                 containerAlertas.innerHTML = '<h3><i class="fa-solid fa-bell"></i> Centro de Alertas Unificado</h3>';
                 
                 alertas.forEach(a => {
@@ -231,20 +227,20 @@
                 });
 
             } catch (error) {
-                console.warn("Backend offline. Ativando modo simulação.");
-                // Se o Java falhar, preenchemos com valores de exemplo para a demo não ficar vazia
+                console.warn("Backend offline.");
                 document.getElementById('val-viaturas').innerText = "84 / 90";
                 document.getElementById('kpi-pontualidade').innerText = "92%";
                 document.getElementById('val-validacoes').innerText = "12.450";
             }
         }
 
-        // --- SIMULADORES DE FLUXOS ORIGINAIS (Preservados) ---
+        // --- SIMULADORES E NAVEGAÇÃO ---
         function simularFalhaDB() {
             document.getElementById('conteudo-dashboard').style.display = 'none';
             document.getElementById('erro-db').style.display = 'block';
         }
 
+        // REDIRECIONA PARA O LOGIN REAL
         function expirarSessao() {
             alert("Aviso do Sistema (Fluxo A2): A sua sessão expirou.");
             window.location.href = 'Login(UC1).html';
@@ -256,20 +252,17 @@
         }
 
         function perderSinalGPS() {
-            // Aplica filtro cinzento via CSS dinâmico (mantido do original)
             const style = document.createElement('style');
             style.innerHTML = '.filtro-cinzento { filter: grayscale(100%) opacity(50%); }';
             document.head.appendChild(style);
-            atualizarDashboard(); // Recarrega para aplicar a classe
+            atualizarDashboard(); 
         }
 
         async function syncAlerta(id) {
             alert("Sucesso: Estado do alerta #" + id + " sincronizado com o Java.");
         }
 
-        // Inicia
         window.onload = atualizarDashboard;
-        // Atualiza a cada 30 segundos
         setInterval(atualizarDashboard, 30000);
     </script>
 </body>

@@ -25,7 +25,22 @@
         }
         .header-left { display: flex; align-items: center; }
         .header img { height: 40px; margin-right: 20px; }
-        .btn-voltar { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 14px; transition: background 0.3s; }
+        
+        /* Botão Voltar ao Dashboard */
+        .btn-voltar { 
+            background: rgba(255,255,255,0.2); 
+            color: white; 
+            border: none; 
+            padding: 8px 15px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            font-size: 14px; 
+            transition: background 0.3s; 
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
         .btn-voltar:hover { background: rgba(255,255,255,0.3); }
 
         .container { padding: 25px; max-width: 1400px; margin: 0 auto; }
@@ -168,7 +183,7 @@
     </div>
 
     <script>
-        // Lógica de Navegação das Tabs (Original)
+        // Lógica de Navegação das Tabs
         function openTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -180,7 +195,7 @@
             }
         }
 
-        // --- PONTE JAVA: UC3.1 - IMPORTAÇÃO REAL ---
+        // --- PONTE JAVA: UC3.1 - IMPORTAÇÃO ---
         async function simularImportacao() {
             const select = document.getElementById('periodo-extracao').value;
             const erroBox = document.getElementById('erro-importacao');
@@ -194,10 +209,8 @@
             loader.style.display = 'block';
 
             try {
-                // Chamada real ao Java
                 const response = await fetch(`http://localhost:8081/api/bilhetica/importar?periodo=${select}`, { method: 'POST' });
                 
-                // Mantemos o delay para o utilizador ver o spinner (como no design original)
                 setTimeout(() => {
                     loader.style.display = 'none';
                     toolbar.style.display = 'flex';
@@ -215,7 +228,7 @@
             }
         }
 
-        // --- PONTE JAVA: UC3.2 - GRÁFICO DINÂMICO ---
+        // --- PONTE JAVA: UC3.2 - GRÁFICO ---
         let grafico;
         function initGrafico() {
             const ctx = document.getElementById('graficoProcura').getContext('2d');
@@ -246,20 +259,17 @@
             }
 
             try {
-                // Vai buscar dados reais ao Java
                 const response = await fetch(`http://localhost:8081/api/bilhetica/analise?linha=${linha}`);
                 const dadosReais = await response.json();
-                
                 grafico.data.datasets[0].data = dadosReais.procura;
                 grafico.update();
             } catch (e) {
-                // Fallback (mantém a simulação original se o Java estiver offline)
                 grafico.data.datasets[0].data = [Math.random()*100+20, Math.random()*200+50, 180, 80, 60];
                 grafico.update();
             }
         }
 
-        // --- PONTE JAVA: UC3.3 - MAPA REAL ---
+        // --- PONTE JAVA: UC3.3 - MAPA ---
         var mapFluxos = L.map('map-fluxos').setView([41.5503, -8.4200], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapFluxos);
         
@@ -287,7 +297,6 @@
                 });
                 layerCalor.addTo(mapFluxos);
             } catch (e) {
-                // Simulação Original
                 L.circle([41.5510, -8.4220], {color: 'red', radius: 300}).bindPopup('Paragem Central').addTo(layerCalor);
                 layerCalor.addTo(mapFluxos);
             }
