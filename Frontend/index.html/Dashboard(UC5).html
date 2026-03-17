@@ -11,12 +11,11 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        /* Fonte Inter para aspeto moderno - PRESERVADO */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         body { font-family: 'Inter', 'Segoe UI', sans-serif; margin: 0; background-color: #f1f5f9; color: #334155; }
         
-        /* CABEÇALHO - PRESERVADO */
+        /* CABEÇALHO */
         .header { 
             background: linear-gradient(135deg, #0D47A1 0%, #002171 100%); 
             color: white; 
@@ -54,7 +53,7 @@
         
         .erro-global { display: none; background: #fef2f2; color: #991b1b; padding: 20px; border-radius: 12px; border: 1px solid #fecaca; box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.1); margin-bottom: 25px; font-size: 16px; text-align: center; font-weight: 500; }
 
-        /* Row de KPIs - PRESERVADO */
+        /* Row de KPIs*/
         .kpi-row { display: flex; gap: 25px; margin-bottom: 25px; }
         .kpi-card { flex: 1; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 20px; border: 1px solid #e2e8f0; transition: transform 0.2s; }
         .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08); }
@@ -69,7 +68,7 @@
         .kpi-label { font-size: 13px; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
         .kpi-note { font-size: 11px; color: #ea580c; display: none; background: #fff7ed; padding: 4px 8px; border-radius: 4px; border: 1px solid #fed7aa; margin-top: 5px; }
 
-        /* Layout Principal - PRESERVADO */
+        /* Layout Principal */
         .main-grid { display: flex; gap: 25px; height: 550px; }
         .card { background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 25px; display: flex; flex-direction: column; border: 1px solid #e2e8f0; }
         h3 { margin-top: 0; color: #0D47A1; font-size: 17px; font-weight: 600; padding-bottom: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; }
@@ -77,7 +76,7 @@
         .map-col { flex: 2; }
         #map { flex: 1; border-radius: 12px; border: 1px solid #e2e8f0; z-index: 1; }
 
-        /* Centro de Alertas - PRESERVADO */
+        /* Centro de Alertas */
         .alert-col { flex: 1; overflow-y: auto; padding-right: 5px; }
         .alert-col::-webkit-scrollbar { width: 6px; }
         .alert-col::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -102,7 +101,7 @@
         .alerta-actions select { flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; }
         .btn-update { background: #f8fafc; color: #0D47A1; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; }
 
-        /* Botões de Teste (Dev Tools) - PRESERVADO */
+        /* Botões de Teste (Dev Tools) */
         .dev-tools { background: #ffffff; border: 1px dashed #cbd5e1; padding: 15px 25px; border-radius: 12px; margin-bottom: 25px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         .dev-title { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
         .btn-test { background: #f1f5f9; color: #475569; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; }
@@ -181,7 +180,7 @@
     </div>
 
     <script>
-        // --- INICIALIZAÇÃO DO MAPA (Preservado) ---
+        // --- INICIALIZAÇÃO DO MAPA ---
         var map = L.map('map').setView([41.5503, -8.4200], 14);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
         var markersGroup = L.layerGroup().addTo(map);
@@ -190,6 +189,7 @@
         async function atualizarDashboard() {
             try {
                 const resKpi = await fetch('http://localhost:8081/api/dashboard/kpis');
+                if (!resKpi.ok) throw new Error("Erro de rede");
                 const kpis = await resKpi.json();
                 document.getElementById('val-viaturas').innerHTML = `${kpis.ativas} <span style="font-size: 16px; color: #94a3b8; font-weight: 500;">/ ${kpis.total}</span>`;
                 document.getElementById('kpi-pontualidade').innerText = kpis.pontualidade + "%";
@@ -227,10 +227,35 @@
                 });
 
             } catch (error) {
-                console.warn("Backend offline.");
-                document.getElementById('val-viaturas').innerText = "84 / 90";
+                console.warn("Backend offline. A usar dados simulados.");
+                document.getElementById('val-viaturas').innerHTML = `84 <span style="font-size: 16px; color: #94a3b8; font-weight: 500;">/ 90</span>`;
                 document.getElementById('kpi-pontualidade').innerText = "92%";
                 document.getElementById('val-validacoes').innerText = "12.450";
+
+                // Adicionar alertas simulados para o professor ver a ligação ao UC4 e UC5.3
+                const containerAlertas = document.getElementById('centro-alertas');
+                containerAlertas.innerHTML = '<h3><i class="fa-solid fa-bell"></i> Centro de Alertas Unificado</h3>';
+                
+                const alertasSimulados = [
+                    { id: 1, titulo: "Lotação Crítica (IoT)", estado: "Pendente", descricao: "O Autocarro #112 (Linha 43) atingiu 95% da capacidade máxima.", prioridade: "ALTA" },
+                    { id: 2, titulo: "Perda de Sinal GPS", estado: "Em Análise", descricao: "O Autocarro #405 deixou de transmitir a localização há 5 minutos.", prioridade: "ALTA" }
+                ];
+
+                alertasSimulados.forEach(a => {
+                    const priorityClass = a.prioridade === 'ALTA' ? 'priority-high' : 'priority-low';
+                    containerAlertas.innerHTML += `
+                        <div class="alerta-item ${priorityClass}">
+                            <div class="alerta-header">
+                                <span class="alerta-title">${a.titulo}</span>
+                                <span class="badge badge-pendente">${a.estado}</span>
+                            </div>
+                            <p class="alerta-desc">${a.descricao}</p>
+                            <div class="alerta-actions">
+                                <select><option>Resolver</option><option>Ignorar</option></select>
+                                <button class="btn-update" onclick="syncAlerta(${a.id})"><i class="fa-solid fa-check"></i> Salvar</button>
+                            </div>
+                        </div>`;
+                });
             }
         }
 
@@ -259,7 +284,7 @@
         }
 
         async function syncAlerta(id) {
-            alert("Sucesso: Estado do alerta #" + id + " sincronizado com o Java.");
+            alert("Sucesso: Estado do alerta #" + id + " atualizado.");
         }
 
         window.onload = atualizarDashboard;
