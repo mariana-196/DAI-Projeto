@@ -1,0 +1,5 @@
+com\tub\model\DisplayPanel.class
+com\tub\adapter\WavecomAdapter.class
+com\tub\model\PassengerCount.class
+com\tub\adapter\BilheticaAdapter.class
+com\tub\model\Validation.class

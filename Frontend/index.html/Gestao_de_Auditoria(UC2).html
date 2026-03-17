@@ -6,7 +6,6 @@
     <title>Auditoria e Registos (TUB)</title>
     
     <link rel="icon" type="image/png" href="favicon.png">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -17,7 +16,6 @@
             color: #333; 
         }
         
-        /* Cabeçalho */
         .header { 
             background: linear-gradient(135deg, #0D47A1 0%, #002171 100%); 
             color: white; 
@@ -32,7 +30,6 @@
         .header-left { display: flex; align-items: center; }
         .header img { height: 40px; margin-right: 20px; }
         
-        /* Botão Voltar */
         .btn-voltar {
             background: rgba(255,255,255,0.2);
             color: white;
@@ -46,7 +43,6 @@
         }
         .btn-voltar:hover { background: rgba(255,255,255,0.3); }
 
-        /* Layout Principal */
         .container { 
             display: flex; 
             padding: 25px; 
@@ -54,7 +50,6 @@
             box-sizing: border-box;
         }
         
-        /* Estilo base para os painéis */
         .card { 
             background: white; 
             border-radius: 12px; 
@@ -74,15 +69,14 @@
             gap: 10px;
         }
 
-        /* Área Principal (UC2.1 e UC2.2) */
         .main-section { flex: 3; }
         
-        /* Filtros e Pesquisa */
         .filtros-bar {
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
             align-items: flex-end;
+            flex-wrap: wrap;
         }
         .form-group { display: flex; flex-direction: column; gap: 5px; }
         .form-group label { font-size: 13px; color: #555; font-weight: 600; }
@@ -108,7 +102,6 @@
         .btn-exportar { background-color: #2E7D32; color: white; margin-left: auto; }
         .btn-exportar:hover { background-color: #1B5E20; }
 
-        /* Tabela de Logs (UC2.1) */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -132,10 +125,8 @@
         .badge-warning { background: #fff3e0; color: #e65100; }
         .badge-critical { background: #ffebee; color: #c62828; }
 
-        /* Área Lateral (UC2.3) */
-        .sidebar { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+        .sidebar { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 250px; }
         
-        /* Mensagem de Erro (Fluxo Alternativo) */
         .error-box {
             background-color: #fee2e2;
             color: #dc2626;
@@ -144,7 +135,7 @@
             border-left: 4px solid #dc2626;
             margin-bottom: 20px;
             font-size: 14px;
-            display: none; /* Escondido por defeito */
+            display: none; 
         }
     </style>
 </head>
@@ -153,7 +144,7 @@
     <div class="header">
         <div class="header-left">
             <img src="tubwhite.png" alt="Logótipo TUB">
-            Plataforma de Gestão Urbana (TUB) - Módulo de Auditoria
+            Plataforma de Gestão Urbana (TUB) - Auditoria (UC2)
         </div>
         <a href="index.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar ao Dashboard</a>
     </div>
@@ -180,6 +171,7 @@
                         <option value="todos">Todos os Módulos</option>
                         <option value="auth">Autenticação (UC1)</option>
                         <option value="bilhetica">Bilhética (UC3)</option>
+                        <option value="iot">Sensores IoT (UC4)</option>
                     </select>
                 </div>
                 <button class="btn-action btn-pesquisar" onclick="pesquisarLogs()"><i class="fa-solid fa-magnifying-glass"></i> Pesquisar</button>
@@ -198,8 +190,8 @@
                     </tr>
                 </thead>
                 <tbody id="tabela-logs-corpo">
-                    <tr onclick="mostrarDetalhes('A carregar dados do sistema...')">
-                        <td colspan="6" style="text-align:center;">Ligue o servidor Java na porta 8081 para ver os logs.</td>
+                    <tr>
+                        <td colspan="6" style="text-align:center;">A aguardar ligação ao servidor...</td>
                     </tr>
                 </tbody>
             </table>
@@ -236,12 +228,12 @@
     </div>
 
     <script>
-        // Função do UC2.1 (Fluxo Normal Passo 7) - Mantida original
+        // Função do UC2.1 (Fluxo Normal)
         function mostrarDetalhes(detalhe) {
             alert("Detalhes do Registo (UC2.1):\n\n" + detalhe);
         }
 
-        // --- PONTE JAVA INTEGRADA PARA PESQUISA ---
+        // Função para pesquisar e carregar logs da API
         async function pesquisarLogs() {
             const inicio = document.getElementById('data-inicio').value;
             const fim = document.getElementById('data-fim').value;
@@ -251,42 +243,58 @@
             const contador = document.getElementById('contador-logs');
 
             msgErro.style.display = 'none';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">A carregar dados do servidor...</td></tr>';
 
             try {
-                // Chamada ao teu AuditoriaController
-                const response = await fetch(`http://localhost:8081/api/auditoria?modulo=${modulo}&inicio=${inicio}&fim=${fim}`);
+                let url = `http://localhost:8081/api/auditoria?modulo=${modulo}`;
+                if (inicio) url += `&inicio=${inicio}`;
+                if (fim) url += `&fim=${fim}`;
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Erro na comunicação com o servidor.");
+                
                 const logs = await response.json();
-
-                tbody.innerHTML = ""; // Limpa a tabela para meter os dados do Java
-
-                logs.forEach(log => {
-                    // Escolhe a badge certa baseada no nível vindo do Java
-                    let badgeClass = "badge-info";
-                    if (log.nivel === "AVISO") badgeClass = "badge-warning";
-                    if (log.nivel === "SENSÍVEL" || log.nivel === "CRÍTICO") badgeClass = "badge-critical";
-
-                    tbody.innerHTML += `
-                        <tr onclick="mostrarDetalhes('${log.detalhes}')">
-                            <td>${log.data}</td>
-                            <td>${log.utilizador}</td>
-                            <td>${log.acao}</td>
-                            <td>${log.modulo}</td>
-                            <td>${log.ip}</td>
-                            <td><span class="badge ${badgeClass}">${log.nivel}</span></td>
-                        </tr>
-                    `;
-                });
-
-                contador.innerText = `Mostrando ${logs.length} registos encontrados no Java.`;
+                renderizarTabela(logs, tbody, contador);
 
             } catch (error) {
                 console.error("Erro ao ligar ao Java:", error);
-                msgErro.innerHTML = '<strong><i class="fa-solid fa-wifi"></i> Erro:</strong> Não foi possível comunicar com o Java local (Porta 8081).';
+                msgErro.innerHTML = '<strong><i class="fa-solid fa-wifi"></i> Erro Técnico (Fluxo Alternativo):</strong> Não foi possível comunicar com a base de dados de auditoria.';
                 msgErro.style.display = 'block';
+                
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Falha ao carregar registos. Verifique a ligação.</td></tr>';
+                contador.innerText = "Mostrando 0 registos.";
             }
         }
 
-        // Função do UC2.2 (Fluxo Alternativo A1) - Mantida original
+        function renderizarTabela(logs, tbody, contador) {
+            tbody.innerHTML = "";
+            
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum registo encontrado para os filtros selecionados.</td></tr>';
+                contador.innerText = "Mostrando 0 registos.";
+                return;
+            }
+
+            logs.forEach(log => {
+                let badgeClass = "badge-info";
+                if (log.nivel === "AVISO") badgeClass = "badge-warning";
+                if (log.nivel === "SENSÍVEL" || log.nivel === "CRÍTICO") badgeClass = "badge-critical";
+
+                tbody.innerHTML += `
+                    <tr onclick="mostrarDetalhes('${log.detalhes}')">
+                        <td>${log.data}</td>
+                        <td>${log.utilizador}</td>
+                        <td>${log.acao}</td>
+                        <td>${log.modulo}</td>
+                        <td>${log.ip}</td>
+                        <td><span class="badge ${badgeClass}">${log.nivel}</span></td>
+                    </tr>
+                `;
+            });
+            contador.innerText = `Mostrando ${logs.length} registo(s).`;
+        }
+
+        // Função do UC2.2 (Fluxo Alternativo A1)
         function exportarRelatorio() {
             const dataInicio = document.getElementById('data-inicio').value;
             const dataFim = document.getElementById('data-fim').value;
@@ -295,50 +303,21 @@
             msgErro.style.display = 'none';
 
             if (dataInicio && dataFim && dataInicio > dataFim) {
-                msgErro.innerHTML = '<strong><i class="fa-solid fa-circle-exclamation"></i> Erro de Exportação:</strong> A Data de Início não pode ser posterior à Data de Fim.';
+                msgErro.innerHTML = '<strong><i class="fa-solid fa-circle-exclamation"></i> Erro de Exportação (Fluxo A1):</strong> A Data de Início não pode ser posterior à Data de Fim.';
                 msgErro.style.display = 'block';
                 return; 
             }
 
             if (!dataInicio || !dataFim) {
-                alert("Para simular o sucesso da exportação, preencha datas válidas (ex: 01/03/2026 a 12/03/2026).");
+                alert("Por favor, preencha as datas de início e fim para exportar.");
                 return;
             }
 
-            alert("A compilar registos do Java... Ficheiro CSV gerado com sucesso! (UC2.2)");
+            alert("A compilar registos... Ficheiro CSV gerado com sucesso! (UC2.2)");
         }
 
-    </script>
-
-        <script>
-        async function carregarAuditoria() {
-            const corpoTabela = document.querySelector('tbody');
-            try {
-                // Chamada ao teu Java na porta 8081
-                const resposta = await fetch('http://localhost:8081/api/auditoria/logs');
-                const logs = await resposta.json();
-
-                corpoTabela.innerHTML = ''; // Limpa a mensagem de erro
-
-                logs.forEach(log => {
-                    corpoTabela.innerHTML += `
-                        <tr>
-                            <td>${log.data}</td>        <td>${log.utilizador}</td>
-                            <td>${log.acao}</td>
-                            <td>${log.modulo}</td>
-                            <td>${log.ip}</td>          <td><span class="nivel">${log.nivel}</span></td>
-                        </tr>`;
-                });
-            } catch (erro) {
-                console.error("Erro na auditoria:", erro);
-                corpoTabela.innerHTML = '<tr><td colspan="6" style="color:red; text-align:center;">Erro: O servidor Java (8081) não responde.</td></tr>';
-            }
-        }
-
-        window.onload = () => {
-            carregarAuditoria();
-            // pesquisarLogs(); // Descomenta esta se quiseres que a outra também corra
-        };
+        // Tenta carregar os logs logo ao iniciar a página
+        window.onload = pesquisarLogs;
     </script>
 </body>
 </html>
