@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Utilizadores (TUB)</title>
+    <title>PGU - Gestão de Utilizadores (TUB)</title>
     
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,7 +27,7 @@
         h3 { margin-top: 0; color: #0D47A1; font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
 
         .lista-section { flex: 2; }
-        .form-section { flex: 1; background-color: #f8fafc; border: 1px solid #e2e8f0; }
+        .form-section { flex: 1; background-color: #f8fafc; border: 1px solid #e2e8f0; height: fit-content; }
 
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid #eee; }
@@ -42,24 +42,24 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 13px; color: #555; font-weight: 600; margin-bottom: 5px; }
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+        .form-group input:read-only { background-color: #e2e8f0; color: #64748b; cursor: not-allowed; }
         
         .btn-action { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; color: white; margin-bottom: 10px; }
         .btn-save { background-color: #2E7D32; }
         .btn-save:hover { background-color: #1B5E20; }
         .btn-cancel { background-color: #94a3b8; }
         .btn-cancel:hover { background-color: #64748b; }
-        .btn-permissions { background-color: #0D47A1; }
+        
+        /* Botão Eliminar agora no formulário */
+        .btn-delete-form { background-color: #dc2626; display: none; }
+        .btn-delete-form:hover { background-color: #991b1b; }
 
         .alert-box { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; display: none; }
         .alert-error { background-color: #fee2e2; color: #dc2626; border-left: 4px solid #dc2626; }
         .alert-success { background-color: #dcfce7; color: #166534; border-left: 4px solid #166534; }
         
-        /* Botões de Ação na Tabela */
-        .btn-tbl { border: none; background: none; cursor: pointer; font-size: 14px; transition: 0.2s; }
-        .btn-edit { color: #0D47A1; margin-right: 10px; }
-        .btn-edit:hover { color: #002171; }
-        .btn-delete { color: #dc2626; }
-        .btn-delete:hover { color: #991b1b; }
+        .btn-tbl { border: none; background: none; cursor: pointer; font-size: 14px; color: #0D47A1; transition: 0.2s; padding: 5px; }
+        .btn-tbl:hover { color: #002171; transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -67,7 +67,7 @@
     <div class="header">
         <div class="header-left">
             <img src="tubwhite.png" alt="Logótipo TUB">
-            Gestão de Utilizadores e Perfis (UC1.2)
+            Gestão de Utilizadores e Perfis
         </div>
         <a href="Dashboard(UC5).html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar ao Dashboard</a>
     </div>
@@ -83,26 +83,24 @@
                         <th>Email</th>
                         <th>Perfil</th>
                         <th>Estado</th>
-                        <th>Ações</th>
+                        <th>Editar</th>
                     </tr>
                 </thead>
                 <tbody id="tabela-corpo">
-                    <tr><td colspan="5">A carregar dados do servidor...</td></tr>
+                    <tr><td colspan="5">A carregar dados...</td></tr>
                 </tbody>
             </table>
         </div>
 
         <div class="card form-section">
-            <h3><i class="fa-solid fa-user-gear"></i> Criar / Editar Conta</h3>
+            <h3 id="form-title"><i class="fa-solid fa-user-plus"></i> Criar Nova Conta</h3>
             
             <div class="alert-box alert-error" id="aviso-erro"></div>
-            <div class="alert-box alert-success" id="aviso-sucesso">
-                <strong><i class="fa-solid fa-check"></i> Sucesso:</strong> Operação concluída e registada na Auditoria.
-            </div>
+            <div class="alert-box alert-success" id="aviso-sucesso"></div>
 
             <div class="form-group">
                 <label>Nome Completo</label>
-                <input type="text" id="input-nome" placeholder="Nome do funcionário">
+                <input type="text" id="input-nome" placeholder="Ex: João Silva">
             </div>
             <div class="form-group">
                 <label>Email Profissional</label>
@@ -111,34 +109,41 @@
             <div class="form-group">
                 <label>Palavra-passe</label>
                 <input type="password" id="input-password" placeholder="Definir password">
+                <small id="pass-hint" style="font-size: 11px; color: #888; display: none;">Deixe em branco para não alterar.</small>
             </div>
             
-            <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-
             <div class="form-group">
-                <label>Atribuir Perfil (Papel)</label>
+                <label>Perfil (Papel)</label>
                 <select id="input-perfil">
-                    <option value="" disabled selected>Selecionar Perfil...</option>
+                    <option value="" disabled selected>Selecionar...</option>
                     <option value="OP">Operador TUB</option>
                     <option value="ADMIN">Administrador</option>
                 </select>
             </div>
 
-            <button class="btn-action btn-save" onclick="guardarConta()"><i class="fa-solid fa-floppy-disk"></i> Guardar Alterações</button>
-            <button class="btn-action btn-cancel" onclick="cancelarOperacao()"><i class="fa-solid fa-xmark"></i> Cancelar Operação [A1]</button>
-            <button class="btn-action btn-permissions" onclick="simularErroDB()"><i class="fa-solid fa-database"></i> Erro de Gravação [UC1.2.2]</button>
+            <button class="btn-action btn-save" onclick="guardarConta()" id="btn-save-text">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar Utilizador
+            </button>
+            
+            <button class="btn-action btn-cancel" onclick="limparFormulario()">
+                <i class="fa-solid fa-eraser"></i> Limpar / Cancelar
+            </button>
+
+            <button class="btn-action btn-delete-form" id="btn-eliminar" onclick="eliminarUtilizador()">
+                <i class="fa-solid fa-trash-can"></i> Eliminar Esta Conta
+            </button>
         </div>
 
     </div>
 
     <script>
-        // 1. Carregar tabela via API Java
+        let editMode = false;
+
         async function carregarTabela() {
             const corpoTabela = document.getElementById('tabela-corpo');
             try {
                 const resposta = await fetch('http://localhost:8081/api/utilizadores');
-                if(!resposta.ok) throw new Error("Erro na resposta do servidor");
-                
+                if(!resposta.ok) throw new Error();
                 const utilizadores = await resposta.json();
                 corpoTabela.innerHTML = ''; 
 
@@ -153,133 +158,108 @@
                             <td><span class="badge ${classeBadge}">${textoCargo}</span></td>
                             <td><span class="badge badge-ativo">Ativo</span></td>
                             <td>
-                                <button class="btn-tbl btn-edit" title="Editar" 
-                                        onclick="preencherFormulario('${user.nome}', '${user.email}', '${user.cargo}')">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <button class="btn-tbl btn-delete" title="Eliminar" 
-                                        onclick="eliminarUtilizador('${user.email}')">
-                                    <i class="fa-solid fa-trash-can"></i>
+                                <button class="btn-tbl" title="Editar" onclick="ativarEdicao('${user.nome}', '${user.email}', '${user.cargo}')">
+                                    <i class="fa-solid fa-user-pen"></i> 
                                 </button>
                             </td>
                         </tr>`;
                 });
             } catch (erro) {
-                // Fallback de demonstração (Caso o Java esteja offline na apresentação)
-                corpoTabela.innerHTML = `
-                    <tr>
-                        <td>Carlos Silva</td>
-                        <td>admin@tub.pt</td>
-                        <td><span class="badge badge-admin">Administrador</span></td>
-                        <td><span class="badge badge-ativo">Ativo</span></td>
-                        <td>
-                            <button class="btn-tbl btn-edit" onclick="preencherFormulario('Carlos Silva', 'admin@tub.pt', 'ADMIN')"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="btn-tbl btn-delete" onclick="eliminarUtilizador('admin@tub.pt')"><i class="fa-solid fa-trash-can"></i></button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Ana Pereira</td>
-                        <td>operador1@tub.pt</td>
-                        <td><span class="badge badge-op">Operador TUB</span></td>
-                        <td><span class="badge badge-ativo">Ativo</span></td>
-                        <td>
-                            <button class="btn-tbl btn-edit" onclick="preencherFormulario('Ana Pereira', 'operador1@tub.pt', 'OP')"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="btn-tbl btn-delete" onclick="eliminarUtilizador('operador1@tub.pt')"><i class="fa-solid fa-trash-can"></i></button>
-                        </td>
-                    </tr>`;
-                console.warn("Backend offline. A mostrar dados de demonstração.");
+                corpoTabela.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">Erro de ligação ao Java.</td></tr>`;
             }
         }
 
-        // Função para preencher o formulário (UC 1.2.1 - Passo 2)
-        function preencherFormulario(nome, email, cargo) {
-            document.getElementById('aviso-erro').style.display = 'none';
-            document.getElementById('aviso-sucesso').style.display = 'none';
-
+        function ativarEdicao(nome, email, cargo) {
+            editMode = true;
+            
+            // UI de Edição
+            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-user-gear"></i> Editar Dados Pessoais';
+            document.getElementById('btn-save-text').innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizar Dados';
+            document.getElementById('pass-hint').style.display = 'block';
+            document.getElementById('btn-eliminar').style.display = 'flex'; // MOSTRA BOTÃO ELIMINAR
+            
+            // Preencher campos
             document.getElementById('input-nome').value = nome;
             document.getElementById('input-email').value = email;
+            document.getElementById('input-email').readOnly = true;
             document.getElementById('input-perfil').value = cargo;
-            document.getElementById('input-password').value = ''; // Password limpa por segurança
+            document.getElementById('input-password').value = '';
             
+            document.getElementById('aviso-erro').style.display = 'none';
+            document.getElementById('aviso-sucesso').style.display = 'none';
             document.getElementById('input-nome').focus();
         }
 
-        // Função para eliminar utilizador (Novo TC13)
-        async function eliminarUtilizador(email) {
-            if (confirm(`Ação Crítica: Deseja eliminar permanentemente o utilizador ${email}?`)) {
-                try {
-                    const resposta = await fetch(`http://localhost:8081/api/utilizadores/eliminar/${email}`, {
-                        method: 'DELETE'
-                    });
+        function limparFormulario() {
+            editMode = false;
+            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-user-plus"></i> Criar Nova Conta';
+            document.getElementById('btn-save-text').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Guardar Utilizador';
+            document.getElementById('pass-hint').style.display = 'none';
+            document.getElementById('btn-eliminar').style.display = 'none'; // ESCONDE BOTÃO ELIMINAR
+            
+            document.getElementById('input-nome').value = '';
+            document.getElementById('input-email').value = '';
+            document.getElementById('input-email').readOnly = false;
+            document.getElementById('input-password').value = '';
+            document.getElementById('input-perfil').selectedIndex = 0;
+            
+            document.getElementById('aviso-erro').style.display = 'none';
+            document.getElementById('aviso-sucesso').style.display = 'none';
+        }
 
+        async function eliminarUtilizador() {
+            const email = document.getElementById('input-email').value;
+            if (confirm(`Atenção: Deseja eliminar permanentemente a conta ${email}?`)) {
+                try {
+                    const resposta = await fetch(`http://localhost:8081/api/utilizadores/eliminar/${email}`, { method: 'DELETE' });
                     if (resposta.ok) {
-                        alert("Utilizador removido e evento registado na auditoria.");
+                        alert("Utilizador removido com sucesso.");
                         carregarTabela();
-                    } else {
-                        throw new Error();
+                        limparFormulario();
                     }
                 } catch (e) {
-                    alert("Simulação: Utilizador removido da lista local.");
-                    // Remove da tabela visualmente se o Java falhar para não estragar a demo
-                    carregarTabela(); 
+                    alert("Erro ao comunicar com o servidor para eliminar.");
                 }
             }
         }
 
-        // 2. Guardar a conta (Criar ou Atualizar)
         async function guardarConta() {
             const nome = document.getElementById('input-nome').value;
             const email = document.getElementById('input-email').value;
             const password = document.getElementById('input-password').value;
             const perfil = document.getElementById('input-perfil').value;
-            
             const avisoErro = document.getElementById('aviso-erro');
             const avisoSucesso = document.getElementById('aviso-sucesso');
-            
-            avisoErro.style.display = 'none';
-            avisoSucesso.style.display = 'none';
 
             if (!nome || !email || !perfil) {
-                avisoErro.innerHTML = '<strong>Erro (Fluxo A2):</strong> Preencha os campos obrigatórios (Nome, Email e Perfil).';
+                avisoErro.innerText = "Campos Nome, Email e Perfil são obrigatórios.";
                 avisoErro.style.display = 'block';
                 return;
             }
 
             const userObj = { nome, email, password, cargo: perfil };
+            const url = editMode ? 'http://localhost:8081/api/utilizadores/atualizar' : 'http://localhost:8081/api/utilizadores/guardar';
 
             try {
-                const resposta = await fetch('http://localhost:8081/api/utilizadores/guardar', {
+                const resposta = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(userObj)
                 });
 
                 if (resposta.ok) {
+                    avisoSucesso.innerText = editMode ? "Utilizador atualizado!" : "Utilizador criado!";
                     avisoSucesso.style.display = 'block';
+                    avisoErro.style.display = 'none';
                     carregarTabela();
-                    cancelarOperacao(); // Limpa campos
+                    setTimeout(limparFormulario, 1500);
                 } else {
                     throw new Error();
                 }
-            } catch (erro) {
-                avisoErro.innerHTML = '<strong>Erro (Fluxo A1):</strong> Falha na persistência. Verifique se o email já existe.';
+            } catch (e) {
+                avisoErro.innerText = "Erro ao guardar dados. Verifique a ligação.";
                 avisoErro.style.display = 'block';
             }
-        }
-
-        function cancelarOperacao() {
-            document.getElementById('input-nome').value = '';
-            document.getElementById('input-email').value = '';
-            document.getElementById('input-password').value = '';
-            document.getElementById('input-perfil').selectedIndex = 0;
-            document.getElementById('aviso-erro').style.display = 'none';
-        }
-
-        function simularErroDB() {
-            const avisoErro = document.getElementById('aviso-erro');
-            document.getElementById('aviso-sucesso').style.display = 'none';
-            avisoErro.innerHTML = '<strong>Erro Técnico (Fluxo A1 - UC1.2.2):</strong> Falha de comunicação com MySQL. Alterações não guardadas.';
-            avisoErro.style.display = 'block';
         }
 
         window.onload = carregarTabela;
