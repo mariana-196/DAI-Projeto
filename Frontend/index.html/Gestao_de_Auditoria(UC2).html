@@ -267,7 +267,7 @@
 
                     tbody.innerHTML += `
                         <tr onclick="mostrarDetalhes('${log.detalhes}')">
-                            <td>${log.dataHora}</td>
+                            <td>${log.data}</td>
                             <td>${log.utilizador}</td>
                             <td>${log.acao}</td>
                             <td>${log.modulo}</td>
@@ -308,8 +308,37 @@
             alert("A compilar registos do Java... Ficheiro CSV gerado com sucesso! (UC2.2)");
         }
 
-        // Carregar os logs assim que a página abrir
-        window.onload = pesquisarLogs;
+    </script>
+
+        <script>
+        async function carregarAuditoria() {
+            const corpoTabela = document.querySelector('tbody');
+            try {
+                // Chamada ao teu Java na porta 8081
+                const resposta = await fetch('http://localhost:8081/api/auditoria/logs');
+                const logs = await resposta.json();
+
+                corpoTabela.innerHTML = ''; // Limpa a mensagem de erro
+
+                logs.forEach(log => {
+                    corpoTabela.innerHTML += `
+                        <tr>
+                            <td>${log.data}</td>        <td>${log.utilizador}</td>
+                            <td>${log.acao}</td>
+                            <td>${log.modulo}</td>
+                            <td>${log.ip}</td>          <td><span class="nivel">${log.nivel}</span></td>
+                        </tr>`;
+                });
+            } catch (erro) {
+                console.error("Erro na auditoria:", erro);
+                corpoTabela.innerHTML = '<tr><td colspan="6" style="color:red; text-align:center;">Erro: O servidor Java (8081) não responde.</td></tr>';
+            }
+        }
+
+        window.onload = () => {
+            carregarAuditoria();
+            // pesquisarLogs(); // Descomenta esta se quiseres que a outra também corra
+        };
     </script>
 </body>
 </html>

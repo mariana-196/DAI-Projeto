@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/utilizadores")
-@CrossOrigin(origins = "*") // Permite que o teu HTML (Frontend) fale com o Java
+@CrossOrigin(origins = "http://127.0.0.1:5500") // Permite que o teu HTML (Frontend) fale com o Java
 public class UtilizadorController {
 
     // Esta lista finge que é a nossa base de dados por agora

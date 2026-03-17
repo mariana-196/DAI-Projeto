@@ -122,4 +122,59 @@
                 </select>
             </div>
 
-            <button class="btn-action btn-save" onclick="guardarConta()"><i class="fa-solid fa-flo
+
+        <script>
+            // 1. Função para carregar os utilizadores na tabela ao abrir a página
+                async function carregarTabela() {
+                const corpoTabela = document.getElementById('tabela-corpo');
+            try {
+                const resposta = await fetch('http://localhost:8081/api/utilizadores');
+                const utilizadores = await resposta.json();
+
+                corpoTabela.innerHTML = ''; // Limpa o "A ligar..."
+
+                utilizadores.forEach(user => {
+                    corpoTabela.innerHTML += `
+                        <tr>
+                            <td>${user.nome}</td>
+                            <td>${user.email}</td>
+                            <td>${user.cargo}</td>
+                            <td><span style="color: green">Ativo</span></td>
+                            <td><button style="cursor:pointer">Editar</button></td>
+                        </tr>`;
+            });
+            } catch (erro) {
+                corpoTabela.innerHTML = '<tr><td colspan="5" style="color:red">Erro ao ligar ao Servidor Java (Porta 8081)</td></tr>';
+            }
+            }
+
+    // 2. Função para o botão "Guardar" (que já tens no HTML na linha 125)
+            async function guardarConta() {
+            const novoUser = {
+                nome: document.getElementById('input-nome').value,
+                email: document.getElementById('input-email').value,
+                password: document.getElementById('input-password').value,
+                cargo: document.getElementById('input-perfil').value
+            };
+
+            try {
+                const resposta = await fetch('http://localhost:8081/api/utilizadores/guardar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(novoUser)
+            });
+
+            if (resposta.ok) {
+                alert("Utilizador guardado com sucesso!");
+                carregarTabela(); // Atualiza a tabela sozinho!
+            }
+            } catch (erro) {
+                alert("Erro ao guardar utilizador.");
+            }
+    }
+
+    // Iniciar a tabela mal a página abre
+    window.onload = carregarTabela;
+    </script>
+
+    <button class="btn-action btn-save" onclick="guardarConta()"><i class="fa-solid fa-flo
