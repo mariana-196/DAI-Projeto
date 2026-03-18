@@ -248,38 +248,42 @@
         }
 
         // Função para pesquisar e carregar logs da API
-        async function pesquisarLogs() {
-    // Fui buscar os elementos só para limpar e mostrar loading
-    const tbody = document.getElementById('tabela-logs-corpo');
-    const msgErro = document.getElementById('msg-erro');
-    const contador = document.getElementById('contador-logs');
 
-    msgErro.style.display = 'none';
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">A carregar dados do servidor...</td></tr>';
+    async function pesquisarLogs() {
+        const tbody = document.getElementById('tabela-logs-corpo');
+        const msgErro = document.getElementById('msg-erro');
+        const contador = document.getElementById('contador-logs');
 
-    try {
-        // Correção 1 e 2: Porta 8080 (se for a padrão) e caminho completo com /logs
-        // Se mudaste mesmo a porta para 8081 no Java, volta a trocar aqui!
-        const url = 'http://localhost:8080/api/auditoria/logs'; 
+        // Esconde a caixa de erro e mostra a mensagem de carregamento
+        msgErro.style.display = 'none';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">A carregar dados do servidor...</td></tr>';
 
-        const response = await fetch(url);
-        
-        if (!response.ok) throw new Error("Erro na comunicação com o servidor.");
-        
-        const logs = await response.json();
-        
-        // Podes usar a tua função renderizarTabela diretamente!
-        renderizarTabela(logs, tbody, contador);
+        try {
+            // O URL exato que já vimos que está a funcionar no teu Java!
+            const url = 'http://localhost:8081/api/auditoria/logs'; 
 
-    } catch (error) {
-        console.error("Erro ao ligar ao Java:", error);
-        msgErro.innerHTML = '<strong><i class="fa-solid fa-wifi"></i> Erro Técnico:</strong> Não foi possível comunicar com o backend.';
-        msgErro.style.display = 'block';
+            const response = await fetch(url);
         
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Falha ao carregar registos. Verifique se o Spring Boot está a correr.</td></tr>';
-        contador.innerText = "Mostrando 0 registos.";
+            // Se a resposta não for 200 OK, atira um erro para ir para o catch
+            if (!response.ok) throw new Error("Erro na comunicação com o servidor.");
+        
+            // Converte a resposta do Java para JSON
+            const logs = await response.json();
+        
+            // Chama a função que desenha as linhas da tabela (que já tens no teu código)
+            renderizarTabela(logs, tbody, contador);
+
+        } catch (error) {
+            console.error("Erro ao ligar ao Java:", error);
+        
+            // Mostra o erro bonitinho no ecrã se o Java estiver desligado
+            msgErro.innerHTML = '<strong><i class="fa-solid fa-wifi"></i> Erro Técnico (Fluxo Alternativo):</strong> Não foi possível comunicar com a base de dados de auditoria.';
+            msgErro.style.display = 'block';
+        
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Falha ao carregar registos. Verifique a ligação.</td></tr>';
+            contador.innerText = "Mostrando 0 registos.";
+        }
     }
-}
 
         function renderizarTabela(logs, tbody, contador) {
             tbody.innerHTML = "";
