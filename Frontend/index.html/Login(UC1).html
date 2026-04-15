@@ -12,7 +12,7 @@
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            /* Fundo com gradiente moderno */
+            
             background: linear-gradient(135deg, #0D47A1 0%, #002171 100%); 
             display: flex; 
             justify-content: center; 
@@ -144,7 +144,7 @@
     </div>
 
     <script>
-        // Função para mostrar/ocultar a palavra-passe (Igual ao original)
+        // Função para mostrar/ocultar a palavra-passe 
         function toggleVisibility() {
             const passwordInput = document.getElementById('password');
             const eyeIcon = document.getElementById('eye-icon');
@@ -171,7 +171,7 @@
             btn.disabled = true;
 
             try {
-                // Chamada real ao teu Backend Java
+                // Chamada real ao Backend Java
                 const response = await fetch('http://localhost:8081/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -195,7 +195,7 @@
             }
         }
 
-        // Função que preserva exatamente o comportamento de erro que o teu colega escreveu
+        // Função que preserva exatamente o comportamento de erro 
         function executarFluxoErroOriginal() {
             const errorMsg = document.getElementById('error-msg');
             const passwordInput = document.getElementById('password');
@@ -204,7 +204,7 @@
             errorMsg.style.display = 'block';
             passwordInput.value = '';
             
-            // Garante que a pass volta a ficar oculta (Lógica original)
+            // Garante que a pass volta a ficar oculta 
             passwordInput.type = 'password';
             eyeIcon.classList.remove('fa-eye-slash');
             eyeIcon.classList.add('fa-eye');
