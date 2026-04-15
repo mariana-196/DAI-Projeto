@@ -1,33 +1,42 @@
 package com.tub.controller;
 
+import com.tub.model.RegistoAuditoria;
+import com.tub.service.AuditService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-import java.util.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auditoria")
 @CrossOrigin(origins = "http://127.0.0.1:5500")
 public class AuditoriaController {
 
-    @GetMapping("/logs")
-    public List<Map<String, String>> getLogs() {
-        List<Map<String, String>> logs = new ArrayList<>();
+    private final AuditService auditService;
 
-        // Dados para a tua Auditoria bombar no browser
-        logs.add(createLog("12/03/2026 08:30:12", "admin@tub.pt", "Início de Sessão", "Autenticação", "192.168.1.45", "INFO"));
-        logs.add(createLog("12/03/2026 09:15:00", "operador2@tub.pt", "Falha de Autenticação", "Autenticação", "85.240.12.5", "AVISO"));
-        logs.add(createLog("13/03/2026 10:05:40", "admin@tub.pt", "Exportação (CSV)", "Bilhética", "192.168.1.45", "CRÍTICO"));
-
-        return logs;
+    public AuditoriaController(AuditService auditService) {
+        this.auditService = auditService;
     }
 
-    private Map<String, String> createLog(String data, String user, String acao, String modulo, String ip, String nivel) {
-        Map<String, String> log = new HashMap<>();
-        log.put("data", data);
-        log.put("utilizador", user);
-        log.put("acao", acao);
-        log.put("modulo", modulo);
-        log.put("ip", ip);
-        log.put("nivel", nivel);
-        return log;
+    @GetMapping("/logs")
+    public List<RegistoAuditoria> getLogs(
+            @RequestParam(required = false) String utilizador,
+            @RequestParam(required = false) String acao,
+            @RequestParam(required = false) String modulo,
+            @RequestParam(required = false) String nivel,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime dataInicio,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime dataFim
+    ) {
+        return auditService.pesquisarLogs(utilizador, acao, modulo, nivel, dataInicio, dataFim);
+    }
+
+    @PostMapping("/logs")
+    public RegistoAuditoria criarLog(@RequestBody RegistoAuditoria registo) {
+        return auditService.guardarLog(registo);
     }
 }
