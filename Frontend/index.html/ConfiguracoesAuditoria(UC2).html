@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configurações de Auditoria</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #1f3b57;
+      color: white;
+      padding: 20px 30px;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 0 20px 40px;
+    }
+
+    section {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    h1, h2, h3 {
+      margin-top: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #1f3b57;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #2b537a;
+    }
+
+    .danger {
+      background: #b42318;
+    }
+
+    .danger:hover {
+      background: #8f1c13;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #eef2f6;
+    }
+
+    .message {
+      margin-top: 12px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Gestão de Configurações de Auditoria</h1>
+  </header>
+
+  <main>
+    <section>
+      <h2>Políticas Globais de Auditoria</h2>
+      <div class="grid">
+        <div>
+          <label for="nivelMinimo">Nível mínimo</label>
+          <select id="nivelMinimo">
+            <option value="INFO">INFO</option>
+            <option value="AVISO">AVISO</option>
+            <option value="CRITICO">CRITICO</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="diasRetencao">Dias de retenção</label>
+          <input type="number" id="diasRetencao" min="1" />
+        </div>
+
+        <div>
+          <label for="emailNotificacao">Email de notificação</label>
+          <input type="email" id="emailNotificacao" />
+        </div>
+
+        <div>
+          <label for="politicaNotificacoesAtivas">Notificações ativas</label>
+          <select id="politicaNotificacoesAtivas">
+            <option value="true">Sim</option>
+            <option value="false">Não</option>
+          </select>
+        </div>
+      </div>
+
+      <button onclick="guardarPoliticas()">Guardar políticas</button>
+      <div id="msgPoliticas" class="message"></div>
+    </section>
+
+    <section>
+      <h2>Configuração Global de Notificações</h2>
+      <div class="grid">
+        <div>
+          <label for="configNotificacoesAtivas">Notificações ativas</label>
+          <select id="configNotificacoesAtivas">
+            <option value="true">Sim</option>
+            <option value="false">Não</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="canalDefault">Canal default</label>
+          <select id="canalDefault">
+            <option value="EMAIL">EMAIL</option>
+            <option value="SISTEMA">SISTEMA</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="severidadeMinimaGlobal">Severidade mínima global</label>
+          <select id="severidadeMinimaGlobal">
+            <option value="INFO">INFO</option>
+            <option value="AVISO">AVISO</option>
+            <option value="CRITICO">CRITICO</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="emailDestinoDefault">Email destino default</label>
+          <input type="email" id="emailDestinoDefault" />
+        </div>
+      </div>
+
+      <button onclick="guardarConfigNotificacoes()">Guardar configuração</button>
+      <div id="msgConfig" class="message"></div>
+    </section>
+
+    <section>
+      <h2>Regras de Notificação</h2>
+
+      <h3>Nova regra</h3>
+      <div class="grid">
+        <div>
+          <label for="tipoEvento">Tipo de evento</label>
+          <input type="text" id="tipoEvento" />
+        </div>
+
+        <div>
+          <label for="destinatario">Destinatário</label>
+          <input type="email" id="destinatario" />
+        </div>
+
+        <div>
+          <label for="ativa">Ativa</label>
+          <select id="ativa">
+            <option value="true">Sim</option>
+            <option value="false">Não</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="canal">Canal</label>
+          <select id="canal">
+            <option value="EMAIL">EMAIL</option>
+            <option value="SISTEMA">SISTEMA</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="severidadeMinima">Severidade mínima</label>
+          <select id="severidadeMinima">
+            <option value="INFO">INFO</option>
+            <option value="AVISO">AVISO</option>
+            <option value="CRITICO">CRITICO</option>
+          </select>
+        </div>
+      </div>
+
+      <button onclick="criarRegra()">Criar regra</button>
+      <div id="msgRegras" class="message"></div>
+
+      <h3>Lista de regras</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Evento</th>
+            <th>Destinatário</th>
+            <th>Ativa</th>
+            <th>Canal</th>
+            <th>Severidade</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaRegras"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const API = "http://localhost:8081/api/auditoria";
+
+    async function carregarPoliticas() {
+      const res = await fetch(`${API}/politicas`);
+      const data = await res.json();
+
+      document.getElementById("nivelMinimo").value = data.nivelMinimo;
+      document.getElementById("diasRetencao").value = data.diasRetencao;
+      document.getElementById("emailNotificacao").value = data.emailNotificacao ?? "";
+      document.getElementById("politicaNotificacoesAtivas").value = String(data.notificacoesAtivas);
+    }
+
+    async function guardarPoliticas() {
+      const body = {
+        nivelMinimo: document.getElementById("nivelMinimo").value,
+        diasRetencao: parseInt(document.getElementById("diasRetencao").value, 10),
+        notificacoesAtivas: document.getElementById("politicaNotificacoesAtivas").value === "true",
+        emailNotificacao: document.getElementById("emailNotificacao").value
+      };
+
+      await fetch(`${API}/politicas`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      document.getElementById("msgPoliticas").textContent = "Políticas guardadas com sucesso.";
+    }
+
+    async function carregarConfigNotificacoes() {
+      const res = await fetch(`${API}/config-notificacoes`);
+      const data = await res.json();
+
+      document.getElementById("configNotificacoesAtivas").value = String(data.notificacoesAtivas);
+      document.getElementById("canalDefault").value = data.canalDefault;
+      document.getElementById("severidadeMinimaGlobal").value = data.severidadeMinimaGlobal;
+      document.getElementById("emailDestinoDefault").value = data.emailDestinoDefault ?? "";
+    }
+
+    async function guardarConfigNotificacoes() {
+      const body = {
+        notificacoesAtivas: document.getElementById("configNotificacoesAtivas").value === "true",
+        canalDefault: document.getElementById("canalDefault").value,
+        severidadeMinimaGlobal: document.getElementById("severidadeMinimaGlobal").value,
+        emailDestinoDefault: document.getElementById("emailDestinoDefault").value
+      };
+
+      await fetch(`${API}/config-notificacoes`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      document.getElementById("msgConfig").textContent = "Configuração guardada com sucesso.";
+    }
+
+    async function carregarRegras() {
+      const res = await fetch(`${API}/notificacoes`);
+      const regras = await res.json();
+
+      const tbody = document.getElementById("tabelaRegras");
+      tbody.innerHTML = "";
+
+      regras.forEach(regra => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${regra.id}</td>
+          <td>${regra.tipoEvento}</td>
+          <td>${regra.destinatario}</td>
+          <td>${regra.ativa ? "Sim" : "Não"}</td>
+          <td>${regra.canal}</td>
+          <td>${regra.severidadeMinima}</td>
+          <td>
+            <button onclick="apagarRegra(${regra.id})" class="danger">Apagar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function criarRegra() {
+      const body = {
+        tipoEvento: document.getElementById("tipoEvento").value,
+        destinatario: document.getElementById("destinatario").value,
+        ativa: document.getElementById("ativa").value === "true",
+        canal: document.getElementById("canal").value,
+        severidadeMinima: document.getElementById("severidadeMinima").value
+      };
+
+      await fetch(`${API}/notificacoes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      document.getElementById("msgRegras").textContent = "Regra criada com sucesso.";
+      document.getElementById("tipoEvento").value = "";
+      document.getElementById("destinatario").value = "";
+      document.getElementById("ativa").value = "true";
+      document.getElementById("canal").value = "EMAIL";
+      document.getElementById("severidadeMinima").value = "INFO";
+
+      carregarRegras();
+    }
+
+    async function apagarRegra(id) {
+      await fetch(`${API}/notificacoes/${id}`, {
+        method: "DELETE"
+      });
+
+      carregarRegras();
+    }
+
+    async function init() {
+      await carregarPoliticas();
+      await carregarConfigNotificacoes();
+      await carregarRegras();
+    }
+
+    init();
+  </script>
+</body>
+</html>
