@@ -150,6 +150,26 @@
         .alert-success { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
         
         .char-counter { font-size: 11px; color: var(--text-muted); text-align: right; margin-top: 4px; font-weight: 500; }
+
+        /* Estilo do link de histórico */
+        .btn-history-link {
+            margin-left: auto; 
+            font-size: 12px; 
+            text-decoration: none; 
+            color: var(--primary); 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+            background: #eff6ff; 
+            padding: 5px 12px; 
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        .btn-history-link:hover {
+            background: #dbeafe;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -193,7 +213,13 @@
         </div>
 
         <div class="card form-section">
-            <h3><span class="h3-icon"><i class="fa-solid fa-bullhorn"></i></span> Emitir Aviso (UC 6.2)</h3>
+            <h3>
+                <span class="h3-icon"><i class="fa-solid fa-bullhorn"></i></span> 
+                Emitir Aviso (UC 6.2)
+                <a href="HistoricoMensagens.html" class="btn-history-link">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Histórico
+                </a>
+            </h3>
             
             <div class="alert-box alert-error" id="aviso-erro"><i class="fa-solid fa-circle-exclamation"></i> <span id="erro-texto"></span></div>
             <div class="alert-box alert-success" id="aviso-sucesso"><i class="fa-solid fa-circle-check"></i> <span id="sucesso-texto"></span></div>
@@ -226,7 +252,6 @@
     <script>
         let perfilAtual = 'ADMIN';
 
-        // Variáveis atualizadas para bater certo com a classe Java DisplayPanel
         let paineis = [
             { panelId: 'PMD-01', location: 'Avenida Central (Sentido N)', status: 'ONLINE', message: 'L43: 02 MIN <br> L02: 05 MIN', urgente: false },
             { panelId: 'PMD-02', location: 'Universidade do Minho (Campus)', status: 'ONLINE', message: 'L02: 01 MIN <br> L07: 12 MIN', urgente: false },
@@ -261,24 +286,22 @@
             const selecaoAtual = dropdown.value;
             
             try {
-                // Ligação à porta 8080 do teu Spring Boot
                 const resposta = await fetch('http://localhost:8080/api/paineis');
                 if(resposta.ok) paineis = await resposta.json();
             } catch (erro) {
-                console.info("Info: Servidor Java Offline. A correr mock de simulação.");
+                console.info("Info: A correr em modo de simulação.");
             }
 
             corpoTabela.innerHTML = '';
-            
             dropdown.innerHTML = '<option value="TODOS">Transmitir para TODO O PARQUE (Broadcast)</option>';
 
             paineis.forEach(p => {
                 let badgeClass = 'badge-online';
                 let estadoTexto = 'Ligado';
                 let ecraClass = p.urgente ? 'painel-ecra urgente' : 'painel-ecra';
-                let displayConteudo = p.message; // Atualizado para p.message
+                let displayConteudo = p.message;
 
-                if (p.status === 'DEGRADADO' || p.status === 'OFFLINE') { // Atualizado para p.status
+                if (p.status === 'DEGRADADO' || p.status === 'OFFLINE') {
                     badgeClass = 'badge-degradado';
                     estadoTexto = 'Sem Sinal';
                     ecraClass = 'painel-ecra desligado';
@@ -298,9 +321,7 @@
                 }
             });
 
-            if (selecaoAtual) {
-                dropdown.value = selecaoAtual;
-            }
+            if (selecaoAtual) { dropdown.value = selecaoAtual; }
         }
 
         async function publicarMensagem() {
@@ -310,7 +331,7 @@
             avisoSucesso.style.display = 'none';
 
             if (perfilAtual !== 'ADMIN') {
-                document.getElementById('erro-texto').innerHTML = '<strong>Acesso Bloqueado (BR-ACC-02):</strong> O perfil Operador não tem permissões de escrita na Plataforma DMS.';
+                document.getElementById('erro-texto').innerHTML = '<strong>Acesso Bloqueado:</strong> Apenas Administradores podem publicar.';
                 avisoErro.style.display = 'flex';
                 return;
             }
@@ -326,13 +347,7 @@
             }
 
             try {
-                // Atualizado para coincidir com a estrutura Java
-                const payload = { 
-                    panelId: destino, 
-                    message: mensagem, 
-                    status: 'ONLINE' 
-                };
-                
+                const payload = { panelId: destino, message: mensagem, status: 'ONLINE', urgente: urgente };
                 const resposta = await fetch('http://localhost:8080/api/paineis/publicar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -342,34 +357,29 @@
             } catch (e) {
                 paineis.forEach(p => {
                     if ((destino === 'TODOS' || p.panelId === destino) && p.status !== 'DEGRADADO') {
-                        p.message = mensagem;
-                        p.urgente = urgente;
+                        p.message = mensagem; p.urgente = urgente;
                     }
                 });
             }
 
-            document.getElementById('sucesso-texto').innerHTML = 'Mensagem reencaminhada para a rede DMS com sucesso.';
+            document.getElementById('sucesso-texto').innerHTML = 'Mensagem reencaminhada com sucesso.';
             avisoSucesso.style.display = 'flex';
             document.getElementById('input-mensagem').value = '';
             document.getElementById('input-urgente').checked = false;
-            atualizarContador();
-            
-            carregarDados();
+            atualizarContador(); carregarDados();
             setTimeout(() => { avisoSucesso.style.display = 'none'; }, 3000);
         }
 
         function simularQuedaPainel() {
-            paineis[2].status = 'DEGRADADO'; // Atualizado para p.status
+            paineis[2].status = 'DEGRADADO';
             paineis[2].urgente = false;
             carregarDados();
-            
             const avisoErro = document.getElementById('aviso-erro');
-            document.getElementById('erro-texto').innerHTML = '<strong>Alerta:</strong> Ligação perdida com o hardware PMD-03 (Estação CP).';
+            document.getElementById('erro-texto').innerHTML = '<strong>Alerta:</strong> Ligação perdida com PMD-03.';
             avisoErro.style.display = 'flex';
             setTimeout(() => { avisoErro.style.display = 'none'; }, 4000);
         }
 
-        // Simula a chegada dos autocarros
         setInterval(() => {
             paineis.forEach(p => {
                 if (p.status === 'ONLINE' && !p.urgente && p.message.includes('MIN')) {

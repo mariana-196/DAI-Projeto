@@ -1,11 +1,14 @@
 C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\model\Utilizador.java
 C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\adapter\BilheticaAdapter.java
 C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\repository\EventoPMDRepository.java
+C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\service\PainelService.java
 C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\controller\AuditoriaController.java
+C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\repository\DisplayPanelRepository.java
 C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\service\AuthService.java
 C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\repository\RegistoAuditoriaRepository.java
 C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\service\AuditService.java
 C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\model\PassengerCount.java
+C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\controller\PainelController.java
 C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\service\ExtractionService.java
 C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\model\RegraAlerta.java
 C:\Users\gonca\OneDrive\Documentos\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\repository\LoteBilheticaRepository.java
