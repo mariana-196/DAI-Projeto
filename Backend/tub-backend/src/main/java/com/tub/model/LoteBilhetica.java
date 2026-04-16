@@ -20,8 +20,9 @@ public class LoteBilhetica {
     @Column(nullable = false)
     private String origem;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String estado; // RECEBIDO, VALIDADO, PROCESSADO, ERRO
+    private EstadoSincronizacao estado;// RECEBIDO, VALIDADO, PROCESSADO, ERRO
 
     public LoteBilhetica() {}
 
@@ -36,6 +37,6 @@ public class LoteBilhetica {
     public String getOrigem() { return origem; }
     public void setOrigem(String origem) { this.origem = origem; }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public EstadoSincronizacao getEstado() { return estado; }
+    public void setEstado(EstadoSincronizacao estado) { this.estado = estado; }
 }
