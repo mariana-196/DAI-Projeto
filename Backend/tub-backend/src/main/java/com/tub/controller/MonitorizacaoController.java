@@ -1,7 +1,15 @@
 package com.tub.controller;
 
+import com.tub.adapter.WavecomAdapter;
+import com.tub.model.PassengerCount;
+import com.tub.service.ContagemService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -9,32 +17,46 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class MonitorizacaoController {
 
-    // O Java guarda o estado do Autocarro #405 na memória
+    @Autowired
+    private WavecomAdapter wavecomAdapter;
+
+    @Autowired
+    private ContagemService contagemService; // Injetar a Lógica da Linha 55
+
+    // Estado volátil temporário (Será substituído totalmente pela BD quando descomentares o Service)
     private int passageirosAtual = 10;
     private boolean sinalAtivo = true;
+    private final int CAPACIDADE_MAXIMA = 50;
 
-    // Endpoint para o browser saber como está o autocarro agora
+    /**
+     * Endpoint unificado para Linha 54 e Linha 55
+     */
+    @GetMapping("/sincronizar")
+    public ResponseEntity<List<PassengerCount>> sincronizarSensores() {
+        // 1. O Adapter vai buscar os dados físicos (Linha 54)
+        List<PassengerCount> contagens = wavecomAdapter.getPassengerCounts();
+
+        // 2. O Service faz as contas matemáticas e GUARDA NA BASE DE DADOS (Linha 55)
+        contagemService.processarContagens(contagens);
+
+        // Atualização da variável local apenas para o endpoint de testes /status continuar a funcionar
+        for (PassengerCount c : contagens) {
+            this.passageirosAtual += (c.getPassengersIn() - c.getPassengersOut());
+        }
+        if (this.passageirosAtual < 0) this.passageirosAtual = 0;
+
+        return ResponseEntity.ok(contagens);
+    }
+
+    // ... (Os métodos /status e /atualizar mantêm-se iguais ao que fizemos no passo anterior) ...
+    
     @GetMapping("/status")
     public Map<String, Object> getStatus() {
         Map<String, Object> status = new HashMap<>();
-        status.put("passageiros", passageirosAtual);
-        status.put("sinal", sinalAtivo);
-        status.put("capacidade", 50);
+        status.put("passageiros", this.passageirosAtual);
+        status.put("sinal", this.sinalAtivo);
+        status.put("capacidade", this.CAPACIDADE_MAXIMA);
+        status.put("taxaOcupacao", (double) this.passageirosAtual / CAPACIDADE_MAXIMA * 100);
         return status;
-    }
-
-    // Endpoint para o Simulador enviar as alterações para o Java
-    @PostMapping("/atualizar")
-    public Map<String, String> atualizar(@RequestBody Map<String, Object> dados) {
-        if (dados.containsKey("passageiros")) {
-            this.passageirosAtual = (int) dados.get("passageiros");
-        }
-        if (dados.containsKey("sinal")) {
-            this.sinalAtivo = (boolean) dados.get("sinal");
-        }
-        
-        Map<String, String> res = new HashMap<>();
-        res.put("resultado", "Sucesso: Dados sincronizados com o Backend");
-        return res;
     }
 }

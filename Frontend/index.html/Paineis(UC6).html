@@ -156,7 +156,7 @@
 
     <div class="header">
         <div class="header-left">
-            <img src="tubwhite.png" alt="Logótipo TUB">
+            <img src="tubwhite.png" alt="Logótipo TUB" onerror="this.style.display='none'">
             Gestão de Painéis Dinâmicos (DMS)
         </div>
         <div class="nav-actions">
@@ -226,11 +226,12 @@
     <script>
         let perfilAtual = 'ADMIN';
 
+        // Variáveis atualizadas para bater certo com a classe Java DisplayPanel
         let paineis = [
-            { id: 'PMD-01', local: 'Avenida Central (Sentido N)', estado: 'ONLINE', conteudo: 'L43: 02 MIN <br> L02: 05 MIN', urgente: false },
-            { id: 'PMD-02', local: 'Universidade do Minho (Campus)', estado: 'ONLINE', conteudo: 'L02: 01 MIN <br> L07: 12 MIN', urgente: false },
-            { id: 'PMD-03', local: 'Estação CP (Interface)', estado: 'ONLINE', conteudo: 'L43: 08 MIN <br> L14: 15 MIN', urgente: false },
-            { id: 'PMD-04', local: 'Hospital de Braga', estado: 'ONLINE', conteudo: 'L07: 04 MIN <br> L43: 18 MIN', urgente: false }
+            { panelId: 'PMD-01', location: 'Avenida Central (Sentido N)', status: 'ONLINE', message: 'L43: 02 MIN <br> L02: 05 MIN', urgente: false },
+            { panelId: 'PMD-02', location: 'Universidade do Minho (Campus)', status: 'ONLINE', message: 'L02: 01 MIN <br> L07: 12 MIN', urgente: false },
+            { panelId: 'PMD-03', location: 'Estação CP (Interface)', status: 'ONLINE', message: 'L43: 08 MIN <br> L14: 15 MIN', urgente: false },
+            { panelId: 'PMD-04', location: 'Hospital de Braga', status: 'ONLINE', message: 'L07: 04 MIN <br> L43: 18 MIN', urgente: false }
         ];
 
         function atualizarContador() {
@@ -257,28 +258,27 @@
             const corpoTabela = document.getElementById('tabela-paineis');
             const dropdown = document.getElementById('input-destino');
             
-            // 1. GUARDAR A SELEÇÃO ATUAL DA DROPDOWN (CORREÇÃO DO BUG)
             const selecaoAtual = dropdown.value;
             
             try {
-                const resposta = await fetch('http://localhost:8081/api/paineis');
+                // Ligação à porta 8080 do teu Spring Boot
+                const resposta = await fetch('http://localhost:8080/api/paineis');
                 if(resposta.ok) paineis = await resposta.json();
             } catch (erro) {
-                console.info("Info: A correr em modo de simulação (Fallback).");
+                console.info("Info: Servidor Java Offline. A correr mock de simulação.");
             }
 
             corpoTabela.innerHTML = '';
             
-            // 2. RECONSTRUIR A DROPDOWN
             dropdown.innerHTML = '<option value="TODOS">Transmitir para TODO O PARQUE (Broadcast)</option>';
 
             paineis.forEach(p => {
                 let badgeClass = 'badge-online';
                 let estadoTexto = 'Ligado';
                 let ecraClass = p.urgente ? 'painel-ecra urgente' : 'painel-ecra';
-                let displayConteudo = p.conteudo;
+                let displayConteudo = p.message; // Atualizado para p.message
 
-                if (p.estado === 'DEGRADADO') {
+                if (p.status === 'DEGRADADO' || p.status === 'OFFLINE') { // Atualizado para p.status
                     badgeClass = 'badge-degradado';
                     estadoTexto = 'Sem Sinal';
                     ecraClass = 'painel-ecra desligado';
@@ -287,18 +287,17 @@
 
                 corpoTabela.innerHTML += `
                     <tr>
-                        <td style="font-weight: 600; color: var(--primary);"><i class="fa-solid fa-microchip" style="color: #cbd5e1; margin-right: 5px;"></i> ${p.id}</td>
-                        <td style="font-weight: 500;">${p.local}</td>
+                        <td style="font-weight: 600; color: var(--primary);"><i class="fa-solid fa-microchip" style="color: #cbd5e1; margin-right: 5px;"></i> ${p.panelId}</td>
+                        <td style="font-weight: 500;">${p.location}</td>
                         <td><span class="badge ${badgeClass}">${estadoTexto}</span></td>
                         <td><div class="${ecraClass}">${displayConteudo}</div></td>
                     </tr>`;
 
-                if(p.estado !== 'DEGRADADO') {
-                    dropdown.innerHTML += `<option value="${p.id}">${p.id} - ${p.local}</option>`;
+                if(p.status !== 'DEGRADADO' && p.status !== 'OFFLINE') {
+                    dropdown.innerHTML += `<option value="${p.panelId}">${p.panelId} - ${p.location}</option>`;
                 }
             });
 
-            // 3. RESTAURAR A SELEÇÃO QUE O UTILIZADOR TINHA FEITO
             if (selecaoAtual) {
                 dropdown.value = selecaoAtual;
             }
@@ -327,8 +326,14 @@
             }
 
             try {
-                const payload = { destino, mensagem, urgente };
-                const resposta = await fetch('http://localhost:8081/api/paineis/publicar', {
+                // Atualizado para coincidir com a estrutura Java
+                const payload = { 
+                    panelId: destino, 
+                    message: mensagem, 
+                    status: 'ONLINE' 
+                };
+                
+                const resposta = await fetch('http://localhost:8080/api/paineis/publicar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -336,8 +341,8 @@
                 if (!resposta.ok) throw new Error();
             } catch (e) {
                 paineis.forEach(p => {
-                    if ((destino === 'TODOS' || p.id === destino) && p.estado !== 'DEGRADADO') {
-                        p.conteudo = mensagem;
+                    if ((destino === 'TODOS' || p.panelId === destino) && p.status !== 'DEGRADADO') {
+                        p.message = mensagem;
                         p.urgente = urgente;
                     }
                 });
@@ -354,7 +359,7 @@
         }
 
         function simularQuedaPainel() {
-            paineis[2].estado = 'DEGRADADO';
+            paineis[2].status = 'DEGRADADO'; // Atualizado para p.status
             paineis[2].urgente = false;
             carregarDados();
             
@@ -364,11 +369,11 @@
             setTimeout(() => { avisoErro.style.display = 'none'; }, 4000);
         }
 
-        // Simula a chegada dos autocarros sem perder a seleção
+        // Simula a chegada dos autocarros
         setInterval(() => {
             paineis.forEach(p => {
-                if (p.estado === 'ONLINE' && !p.urgente && p.conteudo.includes('MIN')) {
-                    p.conteudo = p.conteudo.replace(/(\d+) MIN/g, (match, p1) => {
+                if (p.status === 'ONLINE' && !p.urgente && p.message.includes('MIN')) {
+                    p.message = p.message.replace(/(\d+) MIN/g, (match, p1) => {
                         let tempo = parseInt(p1);
                         if (Math.random() > 0.6 && tempo > 0) tempo -= 1; 
                         return (tempo < 10 ? '0' : '') + tempo + ' MIN'; 
