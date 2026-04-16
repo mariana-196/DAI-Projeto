@@ -1,0 +1,29 @@
+GET http://localhost:8081/api/utilizadores
+###
+POST http://localhost:8081/api/utilizadores/guardar
+Content-Type: application/json
+
+{
+  "nome": "Teste User",
+  "email": "teste@tub.pt",
+  "password": "1234",
+  "cargo": "OPERADOR"
+}
+
+###
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@tub.pt",
+  "password": "1234"
+}
+###
+###
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@tub.pt",
+  "password": "errada"
+}

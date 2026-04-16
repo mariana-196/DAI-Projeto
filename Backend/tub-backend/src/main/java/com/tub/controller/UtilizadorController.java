@@ -1,44 +1,89 @@
 package com.tub.controller;
 
 import com.tub.model.Utilizador;
+import com.tub.repository.UtilizadorRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/utilizadores")
-@CrossOrigin(origins = "http://127.0.0.1:5500") // Permite que o teu HTML (Frontend) fale com o Java
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class UtilizadorController {
 
-    // Esta lista finge que é a nossa base de dados por agora
-    private static List<Utilizador> listaFicticia = new ArrayList<>();
+    private final UtilizadorRepository utilizadorRepository;
 
-    // Ao iniciar, vamos meter logo os dois que o teu colega tinha no HTML
-    static {
-        listaFicticia.add(new Utilizador("Carlos Silva", "admin@tub.pt", "1234", "ADMIN"));
-        listaFicticia.add(new Utilizador("Ana Pereira", "operador1@tub.pt", "1234", "OPERADOR"));
+    public UtilizadorController(UtilizadorRepository utilizadorRepository) {
+        this.utilizadorRepository = utilizadorRepository;
     }
 
-    // Listar todos para o site
     @GetMapping
     public List<Utilizador> listar() {
-        return listaFicticia;
+        return utilizadorRepository.findAll();
     }
 
-    // Guardar um novo utilizador
     @PostMapping("/guardar")
     public ResponseEntity<?> guardar(@RequestBody Utilizador novoUser) {
-        // UC1.2 Fluxo A1: Verificar se o email já existe na nossa lista
-        for (Utilizador u : listaFicticia) {
-            if (u.getEmail().equals(novoUser.getEmail())) {
-                return ResponseEntity.badRequest().body("Este email já existe na lista local!");
-            }
+        Optional<Utilizador> existente = utilizadorRepository.findByEmail(novoUser.getEmail());
+
+        if (existente.isPresent()) {
+            return ResponseEntity.badRequest().body("Este email já existe!");
         }
 
-        listaFicticia.add(novoUser);
-        System.out.println("Utilizador guardado na memória: " + novoUser.getNome());
+        utilizadorRepository.save(novoUser);
         return ResponseEntity.ok(novoUser);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> editar(@PathVariable Long id, @RequestBody Utilizador dadosAtualizados) {
+        Optional<Utilizador> op = utilizadorRepository.findById(id);
+
+        if (op.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Utilizador utilizador = op.get();
+        utilizador.setNome(dadosAtualizados.getNome());
+        utilizador.setEmail(dadosAtualizados.getEmail());
+        utilizador.setCargo(dadosAtualizados.getCargo());
+
+        if (dadosAtualizados.getPassword() != null && !dadosAtualizados.getPassword().isBlank()) {
+            utilizador.setPassword(dadosAtualizados.getPassword());
+        }
+
+        utilizadorRepository.save(utilizador);
+        return ResponseEntity.ok(utilizador);
+    }
+
+    @PutMapping("/{id}/desativar")
+    public ResponseEntity<?> desativar(@PathVariable Long id) {
+        Optional<Utilizador> op = utilizadorRepository.findById(id);
+
+        if (op.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Utilizador utilizador = op.get();
+        utilizador.setAtivo(false);
+        utilizadorRepository.save(utilizador);
+
+        return ResponseEntity.ok("Utilizador desativado com sucesso.");
+    }
+
+    @PutMapping("/{id}/ativar")
+    public ResponseEntity<?> ativar(@PathVariable Long id) {
+        Optional<Utilizador> op = utilizadorRepository.findById(id);
+
+        if (op.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Utilizador utilizador = op.get();
+        utilizador.setAtivo(true);
+        utilizadorRepository.save(utilizador);
+
+        return ResponseEntity.ok("Utilizador ativado com sucesso.");
     }
 }
