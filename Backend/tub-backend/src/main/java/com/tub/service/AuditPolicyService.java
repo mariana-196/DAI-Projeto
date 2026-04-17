@@ -22,7 +22,7 @@ public class AuditPolicyService {
         if (politicas.isEmpty()) {
             PoliticasAuditoria politicaDefault = new PoliticasAuditoria(
                     "INFO",
-                    90,
+                    365,
                     false,
                     null
             );
@@ -35,6 +35,16 @@ public class AuditPolicyService {
     public PoliticasAuditoria atualizarPolitica(PoliticasAuditoria novaPolitica) {
         PoliticasAuditoria politicaAtual = obterPoliticaAtual();
 
+        if (novaPolitica.getDiasRetencao() == null || novaPolitica.getDiasRetencao() < 365) {
+            throw new RuntimeException("A retenção mínima dos logs é 365 dias.");
+        }
+
+        if (novaPolitica.getEmailNotificacao() != null && !novaPolitica.getEmailNotificacao().isBlank()) {
+            if (!emailValido(novaPolitica.getEmailNotificacao())) {
+                throw new RuntimeException("Email de notificação inválido.");
+            }
+        }
+
         politicaAtual.setNivelMinimo(novaPolitica.getNivelMinimo());
         politicaAtual.setDiasRetencao(novaPolitica.getDiasRetencao());
         politicaAtual.setNotificacoesAtivas(novaPolitica.getNotificacoesAtivas());
@@ -42,5 +52,9 @@ public class AuditPolicyService {
         politicaAtual.setDataAtualizacao(LocalDateTime.now());
 
         return politicasAuditoriaRepository.save(politicaAtual);
+    }
+
+    private boolean emailValido(String email) {
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     }
 }

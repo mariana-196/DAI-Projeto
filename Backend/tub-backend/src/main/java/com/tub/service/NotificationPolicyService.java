@@ -20,12 +20,20 @@ public class NotificationPolicyService {
     }
 
     public RegraNotificacao criarRegra(RegraNotificacao regra) {
+        if (!emailValido(regra.getDestinatario())) {
+            throw new RuntimeException("Destinatário inválido.");
+        }
+
         return regraNotificacaoRepository.save(regra);
     }
 
     public RegraNotificacao atualizarRegra(Long id, RegraNotificacao novaRegra) {
         RegraNotificacao regra = regraNotificacaoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Regra não encontrada"));
+
+        if (!emailValido(novaRegra.getDestinatario())) {
+            throw new RuntimeException("Destinatário inválido.");
+        }
 
         regra.setTipoEvento(novaRegra.getTipoEvento());
         regra.setDestinatario(novaRegra.getDestinatario());
@@ -38,5 +46,9 @@ public class NotificationPolicyService {
 
     public void apagarRegra(Long id) {
         regraNotificacaoRepository.deleteById(id);
+    }
+
+    private boolean emailValido(String email) {
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     }
 }

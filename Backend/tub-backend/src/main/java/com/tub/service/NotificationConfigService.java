@@ -34,11 +34,21 @@ public class NotificationConfigService {
     public ConfiguracaoNotificacoes atualizarConfiguracao(ConfiguracaoNotificacoes novaConfiguracao) {
         ConfiguracaoNotificacoes atual = obterConfiguracaoAtual();
 
+        if (novaConfiguracao.getEmailDestinoDefault() != null && !novaConfiguracao.getEmailDestinoDefault().isBlank()) {
+            if (!emailValido(novaConfiguracao.getEmailDestinoDefault())) {
+                throw new RuntimeException("Email destino default inválido.");
+            }
+        }
+
         atual.setNotificacoesAtivas(novaConfiguracao.getNotificacoesAtivas());
         atual.setCanalDefault(novaConfiguracao.getCanalDefault());
         atual.setSeveridadeMinimaGlobal(novaConfiguracao.getSeveridadeMinimaGlobal());
         atual.setEmailDestinoDefault(novaConfiguracao.getEmailDestinoDefault());
 
         return configuracaoNotificacoesRepository.save(atual);
+    }
+
+    private boolean emailValido(String email) {
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     }
 }
