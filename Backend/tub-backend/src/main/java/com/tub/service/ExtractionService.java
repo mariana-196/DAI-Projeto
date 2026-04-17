@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.tub.model.Validation;
+import com.tub.model.EstadoSincronizacao;
 import com.tub.model.LoteBilhetica;
 
 @Service
@@ -17,8 +18,7 @@ public class ExtractionService {
             LoteBilhetica lote = new LoteBilhetica();
             lote.setCodigoLote("LOTE_" + System.currentTimeMillis());
             lote.setOrigem("BILHETICA");
-            lote.setEstado("RECEBIDO");
-
+            lote.setEstado(EstadoSincronizacao.RECEBIDO);
             lotes.add(lote);
         }
 

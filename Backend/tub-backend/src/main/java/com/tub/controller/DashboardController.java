@@ -2,11 +2,33 @@ package com.tub.controller;
 
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
-
+import com.tub.service.DashboardService;
+import com.tub.model.ResultadoIndicadoresFrota;
+import com.tub.model.ResumoEstadoOperacao;
+import org.springframework.beans.factory.annotation.Autowired;
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*") // Permite a ponte com o teu HTML
 public class DashboardController {
+
+    // Adiciona este endpoint dentro do teu DashboardController.java
+
+@GetMapping("/dashboard/indicadores-frota")
+public ResultadoIndicadoresFrota getIndicadoresFrota() {
+    // Chama a lógica de cálculo que criámos no serviço
+    return dashboardService.obterIndicadoresFrota();
+}
+    // --- 1. FERRAMENTA (SERVICE) ---
+    // Coloca isto aqui mesmo no topo da classe
+    @Autowired
+    private DashboardService dashboardService;
+
+    // --- 2. ENDPOINT DA LINHA 72 ---
+    // Este método usa o Service para devolver os KPIs "reais"
+    @GetMapping("/dashboard/estado-geral")
+    public ResumoEstadoOperacao getEstadoGeral() {
+        return dashboardService.obterIndicadoresReais();
+    }
 
     // --- KPIs PARA O DASHBOARD ---
     @GetMapping("/dashboard/kpis")
@@ -58,6 +80,7 @@ public class DashboardController {
         
         return alertas;
     }
+
 
     // Método auxiliar (Ponte limpa para criar os alertas)
     private void addAlerta(List<Map<String, Object>> list, int id, String titulo, String desc, String prioridade, String estado) {
