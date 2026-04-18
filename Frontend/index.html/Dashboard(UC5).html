@@ -130,6 +130,18 @@
         .alerta-actions select { flex: 1; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 12px; outline: none; }
         .btn-update { background: #f8fafc; color: var(--primary); border: 1px solid var(--border-light); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
         .btn-update:hover { background: #eff6ff; border-color: #bfdbfe; }
+
+        .leaflet-popup-content-wrapper { border-radius: 12px; overflow: hidden; padding: 0; }
+        .leaflet-popup-content { margin: 0; width: 220px !important; }
+        .popup-detalhe { font-family: 'Inter', sans-serif; }
+        .popup-header { background: var(--primary); color: white; padding: 12px 15px; font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .popup-body { padding: 15px; font-size: 13px; color: var(--text-main); background: white; }
+        .popup-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
+        .popup-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .popup-label { color: #64748b; font-weight: 500; }
+        .popup-value { font-weight: 600; color: #0f172a; }
+        .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: #ecfdf5; color: #10b981; }
+        .status-badge.atrasado { background: #fef2f2; color: #dc2626; }
     </style>
 </head>
 <body>
@@ -211,6 +223,25 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
         var markersGroup = L.layerGroup().addTo(map);
 
+        var geofenceZona = L.polygon([
+            [41.5530, -8.4250],
+            [41.5530, -8.4150],
+            [41.5470, -8.4150],
+            [41.5470, -8.4250]
+        ], {
+            color: '#0D47A1',
+            fillColor: '#0D47A1',
+            fillOpacity: 0.1,
+            weight: 2,
+            dashArray: '5, 5'
+        }).addTo(map).bindPopup("<b>Zona de Controlo A1</b><br>Monitorização de Velocidade");
+
+        var trajetoExemplo = L.polyline([
+            [41.5503, -8.4200],
+            [41.5550, -8.4300],
+            [41.5600, -8.4400]
+        ], {color: '#10b981', weight: 4, opacity: 0.6}).addTo(map);
+
         // --- PONTE JAVA: CARREGAR DADOS REAIS ---
         async function atualizarDashboard() {
             try {
@@ -226,9 +257,46 @@
                 markersGroup.clearLayers();
                 frota.forEach(v => {
                     const iconClass = v.sinal ? '' : 'filtro-cinzento';
-                    const customIcon = L.icon({ iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png', className: iconClass, iconAnchor: [12, 41] });
-                    L.marker([v.lat, v.lng], {icon: customIcon}).addTo(markersGroup)
-                     .bindPopup(`<b>Viatura #${v.id}</b><br>Linha: ${v.linha}<br>Estado: ${v.status}`);
+                    const customIcon = L.icon({ 
+                        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png', 
+                        className: iconClass, 
+                        iconAnchor: [12, 41] 
+                    });
+                    
+                    // Verifica se está atrasado para mudar a cor da badge
+                    const statusClass = v.status === 'Atrasado' ? 'status-badge atrasado' : 'status-badge';
+                    
+                    const popupHTML = `
+                        <div class="popup-detalhe">
+                            <div class="popup-header">
+                                <span><i class="fa-solid fa-bus"></i> Viatura #${v.id}</span>
+                                <span class="${statusClass}">${v.status || 'OK'}</span>
+                            </div>
+                            <div class="popup-body">
+                                <div class="popup-row">
+                                    <span class="popup-label">Linha:</span> 
+                                    <span class="popup-value">${v.linha || 'N/A'}</span>
+                                </div>
+                                <div class="popup-row">
+                                    <span class="popup-label">Velocidade:</span> 
+                                    <span class="popup-value">${v.velocidade || '45'} km/h</span>
+                                </div>
+                                <div class="popup-row">
+                                    <span class="popup-label">Lotação:</span> 
+                                    <span class="popup-value">${v.lotacao || '40'}%</span>
+                                </div>
+                                <div class="popup-row">
+                                    <span class="popup-label">Motorista:</span> 
+                                    <span class="popup-value">${v.motorista || 'ID-784'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Adiciona o marcador ao mapa com o novo componente de detalhe
+                    L.marker([v.lat, v.lng], {icon: customIcon})
+                     .addTo(markersGroup)
+                     .bindPopup(popupHTML);
                 });
 
                 const resAlertas = await fetch('http://localhost:8081/api/alertas');
@@ -240,12 +308,34 @@
                 document.getElementById('val-viaturas').innerHTML = `84 <span style="font-size: 16px; color: #94a3b8; font-weight: 500;">/ 90</span>`;
                 document.getElementById('kpi-pontualidade').innerText = "92%";
                 document.getElementById('val-validacoes').innerText = "12.450";
+                // --- DENTRO DO CATCH (Simulação) ---
+                const frotaSimulada = [
+                { id: 112, lat: 41.5503, lng: -8.4200, linha: "43", status: "Em Horário", velocidade: 42, lotacao: 65 },
+                { id: 405, lat: 41.5520, lng: -8.4210, linha: "02", status: "Atrasado", velocidade: 15, lotacao: 90 }
+                ];
 
+                frotaSimulada.forEach(v => {
+                    const statusClass = v.status === 'Atrasado' ? 'status-badge atrasado' : 'status-badge';
+                    const popupHTML = `
+                        <div class="popup-detalhe">
+                            <div class="popup-header">
+                                <span><i class="fa-solid fa-bus"></i> Viatura #${v.id}</span>
+                                <span class="${statusClass}">${v.status}</span>
+                            </div> 
+                            <div class="popup-body">
+                                <div class="popup-row"><span class="popup-label">Linha:</span> <span class="popup-value">${v.linha}</span></div>
+                                <div class="popup-row"><span class="popup-label">Velocidade:</span> <span class="popup-value">${v.velocidade} km/h</span></div>
+                                <div class="popup-row"><span class="popup-label">Lotação:</span> <span class="popup-value">${v.lotacao}%</span></div>
+                            </div>
+                        </div>`;
+                    L.marker([v.lat, v.lng]).addTo(markersGroup).bindPopup(popupHTML);
+                });
                 // Alertas simulados cruzando o UC4 (Lotação) e o UC6 (Painéis)
                 const alertasSimulados = [
                     { id: 1, titulo: "Lotação Crítica (IoT)", estado: "Pendente", descricao: "O Autocarro #112 (Linha 43) atingiu 95% da capacidade máxima.", prioridade: "ALTA" },
                     { id: 2, titulo: "Falha de Painel DMS", estado: "Pendente", descricao: "O painel PMD-03 (Estação CP) não comunica com o CCO há mais de 3 minutos.", prioridade: "MEDIA" },
-                    { id: 3, titulo: "Perda de Sinal GPS", estado: "Em Análise", descricao: "O Autocarro #405 deixou de transmitir a localização há 5 minutos.", prioridade: "ALTA" }
+                    { id: 3, titulo: "Perda de Sinal GPS", estado: "Em Análise", descricao: "O Autocarro #405 deixou de transmitir a localização há 5 minutos.", prioridade: "ALTA" },
+                    { id: 4, titulo: "Desvio de Rota (Geofencing)", estado: "Pendente", descricao: "Viatura #112 saiu do trajeto previsto na Rua da Variante.", prioridade: "ALTA" }
                 ];
                 renderAlertas(alertasSimulados);
             }

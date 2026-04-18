@@ -10,6 +10,7 @@ import com.tub.model.ResultadoIndicadoresBilhetica;
 import com.tub.model.ResultadoIndicadoresFrota;
 import com.tub.model.ResumoEstadoOperacao;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.tub.model.ContextoAlerta;
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*") // Permite a ponte com o teu HTML
@@ -30,7 +31,6 @@ public List<AlertaUnificado> getAlertasUnificados() {
     return dashboardService.obterIndicadoresFrota();
 }
 
-    // --- ENDPOINT DA LINHA 78 (BILHÉTICA) ---
     @GetMapping("/dashboard/indicadores-bilhetica")
     public ResultadoIndicadoresBilhetica getIndicadoresBilhetica() {
         // Chama a lógica de agregação e estimativa de receita que criámos no serviço
@@ -101,6 +101,24 @@ public List<AlertaUnificado> getAlertasUnificados() {
         return alertas;
     }
 
+    @GetMapping("/alertas/{id}/detalhe")
+    public ContextoAlerta getDetalheAlerta(@PathVariable Long id) {
+        // Simula a recolha de histórico exigida na Linha 88
+        List<String> historico = Arrays.asList(
+            "2023-10-27 10:00 - Gerado pelo Sistema",
+            "2023-10-27 10:15 - Prioridade atualizada por CCO"
+        );
+        return new ContextoAlerta(id, "Motor Sobreaquecido", "Viatura #405 a 105°C.", "Wavecom IoT", "ALTA", "Pendente", "Local: Variante", historico);
+    }
+
+    @PutMapping("/alertas/{id}")
+    public Map<String, String> atualizarAlerta(@PathVariable Long id, @RequestBody Map<String, String> dados) {
+        // Simula a persistência exigida na Linha 86
+        System.out.println("Alerta " + id + " persistido com novo estado: " + dados.get("estado"));
+        Map<String, String> res = new HashMap<>();
+        res.put("status", "Sucesso");
+        return res;
+    }
 
     // Método auxiliar (Ponte limpa para criar os alertas)
     private void addAlerta(List<Map<String, Object>> list, int id, String titulo, String desc, String prioridade, String estado) {
