@@ -2,7 +2,11 @@ package com.tub.controller;
 
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+
+import com.tub.service.AlertCenterService;
 import com.tub.service.DashboardService;
+import com.tub.model.AlertaUnificado;
+import com.tub.model.ResultadoIndicadoresBilhetica;
 import com.tub.model.ResultadoIndicadoresFrota;
 import com.tub.model.ResumoEstadoOperacao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,13 +15,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 @CrossOrigin(origins = "*") // Permite a ponte com o teu HTML
 public class DashboardController {
 
-    // Adiciona este endpoint dentro do teu DashboardController.java
+@Autowired
+private AlertCenterService alertCenterService;
 
-@GetMapping("/dashboard/indicadores-frota")
-public ResultadoIndicadoresFrota getIndicadoresFrota() {
+@GetMapping("/alertas/v2")
+public List<AlertaUnificado> getAlertasUnificados() {
+    // Cumpre a Linha 81: Chama o serviço de triagem para obter dados normalizados
+    return alertCenterService.triagemDeAlertas();
+}
+
+    @GetMapping("/dashboard/indicadores-frota")
+    public ResultadoIndicadoresFrota getIndicadoresFrota() {
     // Chama a lógica de cálculo que criámos no serviço
     return dashboardService.obterIndicadoresFrota();
 }
+
+    // --- ENDPOINT DA LINHA 78 (BILHÉTICA) ---
+    @GetMapping("/dashboard/indicadores-bilhetica")
+    public ResultadoIndicadoresBilhetica getIndicadoresBilhetica() {
+        // Chama a lógica de agregação e estimativa de receita que criámos no serviço
+        return dashboardService.obterIndicadoresBilhetica();
+    }
+
+
     // --- 1. FERRAMENTA (SERVICE) ---
     // Coloca isto aqui mesmo no topo da classe
     @Autowired
