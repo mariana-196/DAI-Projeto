@@ -4,9 +4,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.ArrayList;
 
-import com.tub.model.Validation;
 import com.tub.model.EstadoSincronizacao;
 import com.tub.model.LoteBilhetica;
+import com.tub.p3_integracao_externa.model.Validation;
 
 @Service
 public class ExtractionService {

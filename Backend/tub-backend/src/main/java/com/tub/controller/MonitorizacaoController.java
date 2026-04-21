@@ -1,7 +1,7 @@
 package com.tub.controller;
 
-import com.tub.adapter.WavecomAdapter;
-import com.tub.model.PassengerCount;
+import com.tub.p3_integracao_externa.adapter.WavecomAdapter;
+import com.tub.p3_integracao_externa.model.PassengerCount;
 import com.tub.service.ContagemService;
 
 import org.springframework.beans.factory.annotation.Autowired;

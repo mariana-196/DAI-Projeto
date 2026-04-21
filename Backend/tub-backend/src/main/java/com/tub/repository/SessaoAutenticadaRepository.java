@@ -1,8 +1,9 @@
 package com.tub.repository;
 
-import com.tub.model.SessaoAutenticada;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.tub.p1_autenticacao.model.SessaoAutenticada;
 
 import java.util.Optional;
 

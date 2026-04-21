@@ -9,8 +9,8 @@ import com.tub.service.ConnectionService;
 import com.tub.service.ExtractionService;
 import com.tub.service.BilheticaValidationService;
 import com.tub.repository.LoteBilheticaRepository;
-import com.tub.model.Validation;
 import com.tub.model.LoteBilhetica;
+import com.tub.p3_integracao_externa.model.Validation;
 
 @RestController
 @RequestMapping("/api/bilhetica")

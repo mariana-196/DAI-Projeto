@@ -1,14 +1,9 @@
 package com.tub.service;
 
-import com.tub.model.PassengerCount;
-// IMPORTANTE: Confirma que os imports abaixo correspondem aos pacotes corretos no teu projeto
-// import com.tub.model.LotacaoViatura;
-// import com.tub.model.HistoricoLotacao;
-// import com.tub.repository.LotacaoViaturaRepository;
-// import com.tub.repository.HistoricoLotacaoRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.tub.p3_integracao_externa.model.PassengerCount;
 
 import java.util.List;
 
