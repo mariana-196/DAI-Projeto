@@ -2,6 +2,7 @@ package com.tub.controller;
 
 import com.tub.model.Utilizador;
 import com.tub.repository.UtilizadorRepository;
+import com.tub.service.AutorizacaoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,9 +15,11 @@ import java.util.Optional;
 public class UtilizadorController {
 
     private final UtilizadorRepository utilizadorRepository;
+    private final AutorizacaoService autorizacaoService;
 
-    public UtilizadorController(UtilizadorRepository utilizadorRepository) {
+    public UtilizadorController(UtilizadorRepository utilizadorRepository, AutorizacaoService autorizacaoService) {
         this.utilizadorRepository = utilizadorRepository;
+        this.autorizacaoService = autorizacaoService;
     }
 
     @GetMapping
@@ -25,7 +28,16 @@ public class UtilizadorController {
     }
 
     @PostMapping("/guardar")
-    public ResponseEntity<?> guardar(@RequestBody Utilizador novoUser) {
+    public ResponseEntity<?> guardar(
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestBody Utilizador novoUser
+    ) {
+        String token = extrairToken(authorization);
+
+        if (!autorizacaoService.eAdmin(token)) {
+            return ResponseEntity.status(403).body("Apenas administradores podem criar utilizadores.");
+        }
+
         Optional<Utilizador> existente = utilizadorRepository.findByEmail(novoUser.getEmail());
 
         if (existente.isPresent()) {
@@ -37,7 +49,17 @@ public class UtilizadorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> editar(@PathVariable Long id, @RequestBody Utilizador dadosAtualizados) {
+    public ResponseEntity<?> editar(
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @PathVariable Long id,
+            @RequestBody Utilizador dadosAtualizados
+    ) {
+        String token = extrairToken(authorization);
+
+        if (!autorizacaoService.eAdmin(token)) {
+            return ResponseEntity.status(403).body("Apenas administradores podem editar utilizadores.");
+        }
+
         Optional<Utilizador> op = utilizadorRepository.findById(id);
 
         if (op.isEmpty()) {
@@ -58,7 +80,16 @@ public class UtilizadorController {
     }
 
     @PutMapping("/{id}/desativar")
-    public ResponseEntity<?> desativar(@PathVariable Long id) {
+    public ResponseEntity<?> desativar(
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @PathVariable Long id
+    ) {
+        String token = extrairToken(authorization);
+
+        if (!autorizacaoService.eAdmin(token)) {
+            return ResponseEntity.status(403).body("Apenas administradores podem desativar utilizadores.");
+        }
+
         Optional<Utilizador> op = utilizadorRepository.findById(id);
 
         if (op.isEmpty()) {
@@ -73,7 +104,16 @@ public class UtilizadorController {
     }
 
     @PutMapping("/{id}/ativar")
-    public ResponseEntity<?> ativar(@PathVariable Long id) {
+    public ResponseEntity<?> ativar(
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @PathVariable Long id
+    ) {
+        String token = extrairToken(authorization);
+
+        if (!autorizacaoService.eAdmin(token)) {
+            return ResponseEntity.status(403).body("Apenas administradores podem ativar utilizadores.");
+        }
+
         Optional<Utilizador> op = utilizadorRepository.findById(id);
 
         if (op.isEmpty()) {
@@ -82,8 +122,21 @@ public class UtilizadorController {
 
         Utilizador utilizador = op.get();
         utilizador.setAtivo(true);
+        utilizador.setTentativasFalhadas(0);
         utilizadorRepository.save(utilizador);
 
         return ResponseEntity.ok("Utilizador ativado com sucesso.");
+    }
+
+    private String extrairToken(String authorization) {
+        if (authorization == null || authorization.isBlank()) {
+            return null;
+        }
+
+        if (authorization.startsWith("Bearer ")) {
+            return authorization.substring(7);
+        }
+
+        return authorization;
     }
 }
