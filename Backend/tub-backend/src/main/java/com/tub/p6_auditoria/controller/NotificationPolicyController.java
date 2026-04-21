@@ -1,7 +1,8 @@
 package com.tub.p6_auditoria.controller;
 
-import com.tub.model.RegraNotificacao;
-import com.tub.service.NotificationPolicyService;
+import com.tub.p6_auditoria.model.RegraNotificacao;
+import com.tub.p6_auditoria.service.NotificationPolicyService;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

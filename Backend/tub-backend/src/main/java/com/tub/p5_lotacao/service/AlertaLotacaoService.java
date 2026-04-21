@@ -1,10 +1,10 @@
 package com.tub.p5_lotacao.service;
 
-import com.tub.model.AlertaLotacao;
-import com.tub.model.LotacaoViatura;
 import com.tub.model.RegraAlerta;
+import com.tub.p11_gestao_alertas.model.AlertaLotacao;
+import com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository;
 import com.tub.p5_lotacao.repository.RegraAlertaRepository;
-import com.tub.repository.AlertaLotacaoRepository;
+import com.tub.p9_monitorizacao_iot.model.LotacaoViatura;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

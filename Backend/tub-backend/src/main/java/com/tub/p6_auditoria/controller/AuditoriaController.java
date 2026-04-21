@@ -1,6 +1,6 @@
 package com.tub.p6_auditoria.controller;
 
-import com.tub.model.RegistoAuditoria;
+import com.tub.p6_auditoria.model.RegistoAuditoria;
 import com.tub.p6_auditoria.service.AuditService;
 
 import org.springframework.format.annotation.DateTimeFormat;

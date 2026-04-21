@@ -1,7 +1,8 @@
 package com.tub.p6_auditoria.service;
 
-import com.tub.model.RegistoAuditoria;
-import com.tub.repository.RegistoAuditoriaRepository;
+import com.tub.p6_auditoria.model.RegistoAuditoria;
+import com.tub.p6_auditoria.repository.RegistoAuditoriaRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

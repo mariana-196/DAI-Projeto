@@ -1,7 +1,8 @@
 package com.tub.p5_lotacao.service;
 
-import com.tub.model.LotacaoViatura;
-import com.tub.repository.LotacaoViaturaRepository;
+import com.tub.p9_monitorizacao_iot.model.LotacaoViatura;
+import com.tub.p9_monitorizacao_iot.repository.LotacaoViaturaRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

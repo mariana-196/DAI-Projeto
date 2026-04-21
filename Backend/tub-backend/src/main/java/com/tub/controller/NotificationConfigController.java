@@ -1,6 +1,6 @@
 package com.tub.controller;
 
-import com.tub.model.ConfiguracaoNotificacoes;
+import com.tub.p6_auditoria.model.ConfiguracaoNotificacoes;
 import com.tub.service.NotificationConfigService;
 import org.springframework.web.bind.annotation.*;
 

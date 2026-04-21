@@ -1,6 +1,6 @@
 package com.tub.p6_auditoria.controller;
 
-import com.tub.model.PoliticasAuditoria;
+import com.tub.p6_auditoria.model.PoliticasAuditoria;
 import com.tub.p6_auditoria.service.AuditPolicyService;
 
 import org.springframework.web.bind.annotation.*;
