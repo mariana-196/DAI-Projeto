@@ -19,13 +19,13 @@ public class ControloSegurancaAutenticacao {
     private final RegistoUtilizadorRepository utilizadorRepository;
     private final SessaoAutenticadaRepository sessaoAutenticadaRepository;
     private final AuditService auditService;
-    private final AutenticacaoGovAdapter autenticacaoGovAdapter;
+    private final AdaptadorAutenticacaoGov autenticacaoGovAdapter;
 
     public ControloSegurancaAutenticacao(
             RegistoUtilizadorRepository utilizadorRepository,
             SessaoAutenticadaRepository sessaoAutenticadaRepository,
             AuditService auditService,
-            AutenticacaoGovAdapter autenticacaoGovAdapter
+            AdaptadorAutenticacaoGov autenticacaoGovAdapter
     ) {
         this.utilizadorRepository = utilizadorRepository;
         this.sessaoAutenticadaRepository = sessaoAutenticadaRepository;

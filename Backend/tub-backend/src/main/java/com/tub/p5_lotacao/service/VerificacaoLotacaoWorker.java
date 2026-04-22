@@ -16,7 +16,7 @@ public class VerificacaoLotacaoWorker {
     private LotacaoViaturaRepository lotacaoRepository;
 
     @Autowired
-    private AlertaLotacaoService alertaService;
+    private MotorAvaliacaoAlertas alertaService;
 
     /**
      * Linha 60: Trigger/job de verificação periódica.

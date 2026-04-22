@@ -3,15 +3,15 @@ package com.tub.p8_gestao_bilhetica.service;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-import com.tub.p3_integracao_externa.adapter.BilheticaAdapter;
+import com.tub.p3_integracao_externa.adapter.GatewayIntegracaoBilhetica;
 import com.tub.p3_integracao_externa.model.Validation;
 
 @Service
 public class ConnectionService {
 
-    private final BilheticaAdapter bilheticaAdapter;
+    private final GatewayIntegracaoBilhetica bilheticaAdapter;
 
-    public ConnectionService(BilheticaAdapter bilheticaAdapter) {
+    public ConnectionService(GatewayIntegracaoBilhetica bilheticaAdapter) {
         this.bilheticaAdapter = bilheticaAdapter;
     }
 
