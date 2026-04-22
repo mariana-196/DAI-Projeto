@@ -1,7 +1,6 @@
 package com.tub.p6_auditoria.controller;
 
 import com.tub.p6_auditoria.model.RegraNotificacao;
-import com.tub.p6_auditoria.service.NotificationPolicyService;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -10,11 +9,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/auditoria/notificacoes")
 @CrossOrigin(origins = "http://127.0.0.1:5500")
-public class NotificationPolicyController {
+public class ControloNotificacoesEventos {
 
-    private final NotificationPolicyService notificationPolicyService;
+    private final com.tub.p6_auditoria.service.ControloNotificacoesEventos notificationPolicyService;
 
-    public NotificationPolicyController(NotificationPolicyService notificationPolicyService) {
+    public ControloNotificacoesEventos(
+            com.tub.p6_auditoria.service.ControloNotificacoesEventos notificationPolicyService) {
         this.notificationPolicyService = notificationPolicyService;
     }
 

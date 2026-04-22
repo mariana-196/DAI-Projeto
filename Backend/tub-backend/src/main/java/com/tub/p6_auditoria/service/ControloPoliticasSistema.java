@@ -1,27 +1,26 @@
 package com.tub.p6_auditoria.service;
 
-import com.tub.p6_auditoria.model.PoliticasAuditoria;
+import com.tub.p6_auditoria.model.EntidadeConfiguracoesAuditoria;
 import com.tub.p6_auditoria.repository.PoliticasAuditoriaRepository;
-
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class AuditPolicyService {
+public class ControloPoliticasSistema {
 
     private final PoliticasAuditoriaRepository politicasAuditoriaRepository;
 
-    public AuditPolicyService(PoliticasAuditoriaRepository politicasAuditoriaRepository) {
+    public ControloPoliticasSistema(PoliticasAuditoriaRepository politicasAuditoriaRepository) {
         this.politicasAuditoriaRepository = politicasAuditoriaRepository;
     }
 
-    public PoliticasAuditoria obterPoliticaAtual() {
-        List<PoliticasAuditoria> politicas = politicasAuditoriaRepository.findAll();
+    public EntidadeConfiguracoesAuditoria obterPoliticaAtual() {
+        List<EntidadeConfiguracoesAuditoria> politicas = politicasAuditoriaRepository.findAll();
 
         if (politicas.isEmpty()) {
-            PoliticasAuditoria politicaDefault = new PoliticasAuditoria(
+            EntidadeConfiguracoesAuditoria politicaDefault = new EntidadeConfiguracoesAuditoria(
                     "INFO",
                     365,
                     false,
@@ -33,8 +32,8 @@ public class AuditPolicyService {
         return politicas.get(0);
     }
 
-    public PoliticasAuditoria atualizarPolitica(PoliticasAuditoria novaPolitica) {
-        PoliticasAuditoria politicaAtual = obterPoliticaAtual();
+    public EntidadeConfiguracoesAuditoria atualizarPolitica(EntidadeConfiguracoesAuditoria novaPolitica) {
+        EntidadeConfiguracoesAuditoria politicaAtual = obterPoliticaAtual();
 
         if (novaPolitica.getDiasRetencao() == null || novaPolitica.getDiasRetencao() < 365) {
             throw new RuntimeException("A retenção mínima dos logs é 365 dias.");

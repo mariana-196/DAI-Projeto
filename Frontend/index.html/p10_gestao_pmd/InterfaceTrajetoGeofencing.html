@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Monitorização de Trajetos e Geofencing - TUB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        :root {
+            --primary: #0D47A1;
+            --bg-color: #f1f5f9;
+            --text-main: #1e293b;
+            --border-light: #e2e8f0;
+        }
+
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-main); }
+
+        .geofencing-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            padding: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        /* Content Card Style */
+        .card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            background: white;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--primary); }
+
+        #map-geofencing { flex: 1; z-index: 1; }
+
+        /* Log de Eventos */
+        .log-container {
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .event-item {
+            padding: 12px;
+            border-radius: 10px;
+            background: #f8fafc;
+            border-left: 4px solid #cbd5e1;
+            font-size: 13px;
+        }
+
+        .event-item.entrada { border-left-color: #10b981; background: #ecfdf5; }
+        .event-item.saida { border-left-color: #ef4444; background: #fef2f2; }
+
+        .event-time { font-weight: 700; color: #64748b; font-size: 11px; display: block; margin-bottom: 4px; }
+        .event-desc { font-weight: 500; color: var(--text-main); }
+
+        .status-pill {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #eff6ff;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="geofencing-layout">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-route"></i> Monitorização de Trajetos</h3>
+                <span class="status-pill">Viatura Ativa: #112</span>
+            </div>
+            <div id="map-geofencing"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-list-ul"></i> Eventos Geográficos</h3>
+            </div>
+            <div class="log-container" id="event-log">
+                <div class="event-item entrada">
+                    <span class="event-time">10:45:12</span>
+                    <span class="event-desc">Entrada na Zona de Controlo A1 (Variante)</span>
+                </div>
+                <div class="event-item saida">
+                    <span class="event-time">10:52:05</span>
+                    <span class="event-desc">Saída da Zona de Controlo A1</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicialização do Mapa centrada em Braga
+        var map = L.map('map-geofencing').setView([41.5503, -8.4200], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+            attribution: '© OpenStreetMap' 
+        }).addTo(map);
+
+        // Definição da Zona Geofence (Vísivel no mapa)
+        var geofence = L.circle([41.5503, -8.4200], {
+            color: '#0D47A1',
+            fillColor: '#0D47A1',
+            fillOpacity: 0.15,
+            radius: 300,
+            dashArray: '10, 10'
+        }).addTo(map).bindPopup("<b>Zona de Geofencing A1</b><br>Monitorização Automática");
+
+        // Desenho do Trajeto Realizado (Polyline)
+        var pathPoints = [
+            [41.5450, -8.4100],
+            [41.5470, -8.4150],
+            [41.5503, -8.4200],
+            [41.5530, -8.4250]
+        ];
+        var polyline = L.polyline(pathPoints, {color: '#10b981', weight: 5, opacity: 0.7}).addTo(map);
+
+        // Marcador do Autocarro
+        var busIcon = L.divIcon({
+            html: '<i class="fa-solid fa-bus" style="color: #0D47A1; font-size: 20px; text-shadow: 0 0 3px white;"></i>',
+            className: 'custom-div-icon',
+            iconAnchor: [10, 10]
+        });
+        L.marker([41.5530, -8.4250], {icon: busIcon}).addTo(map);
+
+        // Função para adicionar eventos ao log lateral (Simulando o ControladorTrajetosGeofencing)
+        function adicionarEvento(tipo, mensagem) {
+            const container = document.getElementById('event-log');
+            const agora = new Date().toLocaleTimeString();
+            const item = document.createElement('div');
+            item.className = `event-item ${tipo === 'ENTRADA' ? 'entrada' : 'saida'}`;
+            item.innerHTML = `
+                <span class="event-time">${agora}</span>
+                <span class="event-desc">${mensagem}</span>
+            `;
+            container.prepend(item);
+        }
+    </script>
+</body>
+</html>
