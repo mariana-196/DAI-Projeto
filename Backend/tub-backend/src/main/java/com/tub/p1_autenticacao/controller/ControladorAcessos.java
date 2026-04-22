@@ -3,22 +3,22 @@ package com.tub.p1_autenticacao.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.tub.p1_autenticacao.service.AuthService;
+import com.tub.p1_autenticacao.service.ControloSegurancaAutenticacao;
 
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://127.0.0.1:5500")
-public class AuthController {
+public class ControladorAcessos {
 
-    private final AuthService authService;
+    private final ControloSegurancaAutenticacao authService;
 
-    public AuthController(AuthService authService) {
+    public ControladorAcessos(ControloSegurancaAutenticacao authService) {
         this.authService = authService;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        AuthService.ResultadoAutenticacao resultado =
+        ControloSegurancaAutenticacao.ResultadoAutenticacao resultado =
                 authService.autenticar(request.getEmail(), request.getPassword());
 
         if (!resultado.isSucesso()) {
@@ -38,7 +38,7 @@ public class AuthController {
 
     @PostMapping("/login-gov")
     public ResponseEntity<?> loginGov(@RequestBody LoginGovRequest request) {
-        AuthService.ResultadoAutenticacao resultado =
+        ControloSegurancaAutenticacao.ResultadoAutenticacao resultado =
                 authService.autenticarComGov(request.getEmail(), request.getCodigoGov());
 
         if (!resultado.isSucesso()) {

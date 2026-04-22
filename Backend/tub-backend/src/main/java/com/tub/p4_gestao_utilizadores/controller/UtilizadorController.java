@@ -1,7 +1,7 @@
 package com.tub.p4_gestao_utilizadores.controller;
 
-import com.tub.p2_dados_utilizador.model.Utilizador;
-import com.tub.p2_dados_utilizador.repository.UtilizadorRepository;
+import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
+import com.tub.p2_dados_utilizador.repository.RegistoUtilizadorRepository;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,20 +14,20 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://127.0.0.1:5500")
 public class UtilizadorController {
 
-    private final UtilizadorRepository utilizadorRepository;
+    private final RegistoUtilizadorRepository utilizadorRepository;
 
-    public UtilizadorController(UtilizadorRepository utilizadorRepository) {
+    public UtilizadorController(RegistoUtilizadorRepository utilizadorRepository) {
         this.utilizadorRepository = utilizadorRepository;
     }
 
     @GetMapping
-    public List<Utilizador> listar() {
+    public List<RegistoUtilizador> listar() {
         return utilizadorRepository.findAll();
     }
 
     @PostMapping("/guardar")
-    public ResponseEntity<?> guardar(@RequestBody Utilizador novoUser) {
-        Optional<Utilizador> existente = utilizadorRepository.findByEmail(novoUser.getEmail());
+    public ResponseEntity<?> guardar(@RequestBody RegistoUtilizador novoUser) {
+        Optional<RegistoUtilizador> existente = utilizadorRepository.findByEmail(novoUser.getEmail());
 
         if (existente.isPresent()) {
             return ResponseEntity.badRequest().body("Este email já existe!");
@@ -38,14 +38,14 @@ public class UtilizadorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> editar(@PathVariable Long id, @RequestBody Utilizador dadosAtualizados) {
-        Optional<Utilizador> op = utilizadorRepository.findById(id);
+    public ResponseEntity<?> editar(@PathVariable Long id, @RequestBody RegistoUtilizador dadosAtualizados) {
+        Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
 
         if (op.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        Utilizador utilizador = op.get();
+        RegistoUtilizador utilizador = op.get();
         utilizador.setNome(dadosAtualizados.getNome());
         utilizador.setEmail(dadosAtualizados.getEmail());
         utilizador.setCargo(dadosAtualizados.getCargo());
@@ -60,13 +60,13 @@ public class UtilizadorController {
 
     @PutMapping("/{id}/desativar")
     public ResponseEntity<?> desativar(@PathVariable Long id) {
-        Optional<Utilizador> op = utilizadorRepository.findById(id);
+        Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
 
         if (op.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        Utilizador utilizador = op.get();
+        RegistoUtilizador utilizador = op.get();
         utilizador.setAtivo(false);
         utilizadorRepository.save(utilizador);
 
@@ -75,13 +75,13 @@ public class UtilizadorController {
 
     @PutMapping("/{id}/ativar")
     public ResponseEntity<?> ativar(@PathVariable Long id) {
-        Optional<Utilizador> op = utilizadorRepository.findById(id);
+        Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
 
         if (op.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        Utilizador utilizador = op.get();
+        RegistoUtilizador utilizador = op.get();
         utilizador.setAtivo(true);
         utilizadorRepository.save(utilizador);
 
