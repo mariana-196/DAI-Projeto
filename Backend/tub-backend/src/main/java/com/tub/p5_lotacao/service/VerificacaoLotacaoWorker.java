@@ -1,6 +1,6 @@
 package com.tub.p5_lotacao.service;
 
-import com.tub.p9_monitorizacao_iot.model.LotacaoViatura;
+import com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura;
 import com.tub.p9_monitorizacao_iot.repository.LotacaoViaturaRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ public class VerificacaoLotacaoWorker {
     private LotacaoViaturaRepository lotacaoRepository;
 
     @Autowired
-    private AlertaLotacaoService alertaService;
+    private MotorAvaliacaoAlertas alertaService;
 
     /**
      * Linha 60: Trigger/job de verificação periódica.
@@ -27,14 +27,14 @@ public class VerificacaoLotacaoWorker {
         System.out.println(">>> [JOB] A iniciar verificação periódica de lotação em toda a frota...");
 
         // 1. Obtém o estado atual de todas as viaturas na base de dados (Linha 56)
-        List<LotacaoViatura> viaturas = lotacaoRepository.findAll();
+        List<EstadoOcupacaoViatura> viaturas = lotacaoRepository.findAll();
 
         if (viaturas.isEmpty()) {
             System.out.println(">>> [JOB] Nenhuma viatura encontrada para verificação.");
             return;
         }
 
-        for (LotacaoViatura viatura : viaturas) {
+        for (EstadoOcupacaoViatura viatura : viaturas) {
             // 2. Invoca o Motor de Avaliação (Linha 61) para cada viatura.
             // O motor decide se deve gerar um alerta baseado na taxa de ocupação.
             alertaService.verificarEAplicarAlerta(viatura);

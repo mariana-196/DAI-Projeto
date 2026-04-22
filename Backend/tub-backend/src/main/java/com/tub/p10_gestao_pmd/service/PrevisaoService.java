@@ -14,9 +14,9 @@ public class PrevisaoService {
      */
     public double calcularETAMedia(int paragensRestantes) {
         if (paragensRestantes <= 0) {
-            return 0.0000;
+            return 0;
         }
-        
+
         // Lógica de Média: Paragens * Tempo Médio
         return paragensRestantes * TEMPO_MEDIO_PARAGEM;
     }
@@ -25,6 +25,7 @@ public class PrevisaoService {
      * Verifica se o serviço de lógica está operacional
      */
     public boolean isStatusOk() {
-        return true; 
+        return true;
     }
+
 }

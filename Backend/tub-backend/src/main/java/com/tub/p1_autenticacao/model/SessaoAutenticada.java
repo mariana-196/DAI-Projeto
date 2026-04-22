@@ -3,7 +3,7 @@ package com.tub.p1_autenticacao.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.tub.p2_dados_utilizador.model.Utilizador;
+import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
 
 @Entity
 @Table(name = "sessoes_autenticadas")
@@ -18,7 +18,7 @@ public class SessaoAutenticada {
 
     @ManyToOne
     @JoinColumn(name = "utilizador_id", nullable = false)
-    private Utilizador utilizador;
+    private RegistoUtilizador utilizador;
 
     @Column(nullable = false)
     private LocalDateTime dataInicio = LocalDateTime.now();
@@ -36,8 +36,8 @@ public class SessaoAutenticada {
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
 
-    public Utilizador getUtilizador() { return utilizador; }
-    public void setUtilizador(Utilizador utilizador) { this.utilizador = utilizador; }
+    public RegistoUtilizador getUtilizador() { return utilizador; }
+    public void setUtilizador(RegistoUtilizador utilizador) { this.utilizador = utilizador; }
 
     public LocalDateTime getDataInicio() { return dataInicio; }
     public void setDataInicio(LocalDateTime dataInicio) { this.dataInicio = dataInicio; }

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Chegadas - TUB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0D47A1;
+            --accent: #FFD600;
+            --bg-dark: #0f172a;
+            --text-light: #f8fafc;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-dark); 
+            color: var(--text-light);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .painel-header {
+            background: var(--primary);
+            padding: 25px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 5px solid var(--accent);
+        }
+
+        .paragem-nome { font-size: 28px; font-weight: 800; text-transform: uppercase; }
+        .hora-atual { font-size: 28px; font-weight: 500; font-family: monospace; }
+
+        .tabela-previsoes {
+            width: 100%;
+            border-collapse: collapse;
+            flex: 1;
+        }
+
+        .tabela-previsoes th {
+            text-align: left;
+            padding: 20px 50px;
+            background: rgba(255,255,255,0.03);
+            color: #94a3b8;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+
+        .tabela-previsoes td {
+            padding: 30px 50px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 45px;
+            font-weight: 700;
+        }
+
+        .col-linha { color: var(--accent); width: 15%; }
+        .col-destino { width: 60%; }
+        .col-tempo { text-align: right; color: #10b981; }
+
+        .rodape-avisos { background: #1e3a8a; padding: 15px; }
+        .marquee { white-space: nowrap; overflow: hidden; }
+        .marquee p {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 25s linear infinite;
+            font-size: 20px;
+            margin: 0;
+            color: #fca5a5;
+        }
+
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="painel-header">
+        <div class="paragem-nome">
+            <i class="fa-solid fa-bus"></i> Estação CP - Braga
+        </div>
+        <div class="hora-atual" id="relogio">00:00:00</div>
+    </div>
+
+    <table class="tabela-previsoes">
+        <thead>
+            <tr>
+                <th>Linha</th>
+                <th>Destino</th>
+                <th style="text-align: right;">Chegada (min)</th>
+            </tr>
+        </thead>
+        <tbody id="lista-chegadas">
+            </tbody>
+    </table>
+
+    <div class="rodape-avisos">
+        <div class="marquee">
+            <p>BEM-VINDO AOS TUB • INFORMAÇÃO EM TEMPO REAL • RESPEITE AS REGRAS DE SEGURANÇA</p>
+        </div>
+    </div>
+
+    <script>
+        function atualizarRelogio() {
+            document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-PT');
+        }
+        setInterval(atualizarRelogio, 1000);
+
+        async function carregarPrevisoes() {
+            try {
+                const paragemId = 1; 
+                const resposta = await fetch(`/api/previsoes/consulta/${paragemId}`);
+                const previsoes = await resposta.json();
+                
+                const tbody = document.getElementById('lista-chegadas');
+                tbody.innerHTML = ""; 
+
+                previsoes.forEach(p => {
+                    
+                    const tempoLimpo = Math.round(p.tempoEstimadoMinutos);
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="col-linha">${p.viaturaId}</td>
+                            <td class="col-destino">Direção Centro</td>
+                            <td class="col-tempo">${tempoLimpo}</td>
+                        </tr>
+                    `;
+                });
+            } catch (erro) {
+                // Se não houver ligação ao Java, mostra as 3 linhas originais como exemplo
+                simularDados();
+            }
+        }
+
+        function simularDados() {
+            const tbody = document.getElementById('lista-chegadas');
+            tbody.innerHTML = `
+                <tr><td class="col-linha">43</td><td class="col-destino">Univ. Minho</td><td class="col-tempo">3</td></tr>
+                <tr><td class="col-linha">02</td><td class="col-destino">Bom Jesus</td><td class="col-tempo">8</td></tr>
+                <tr><td class="col-linha">95</td><td class="col-destino">Minho Center</td><td class="col-tempo">12</td></tr>
+            `;
+        }
+
+        atualizarRelogio();
+        carregarPrevisoes();
+        setInterval(carregarPrevisoes, 30000);
+    </script>
+</body>
+</html>
