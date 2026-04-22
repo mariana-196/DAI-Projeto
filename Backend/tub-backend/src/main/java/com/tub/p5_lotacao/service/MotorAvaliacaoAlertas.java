@@ -1,8 +1,8 @@
 package com.tub.p5_lotacao.service;
 
-import com.tub.model.RegraAlerta;
 import com.tub.p11_gestao_alertas.model.AlertaLotacao;
 import com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository;
+import com.tub.p5_lotacao.model.RegraAlerta;
 import com.tub.p5_lotacao.repository.RegraAlertaRepository;
 import com.tub.p9_monitorizacao_iot.model.LotacaoViatura;
 
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class AlertaLotacaoService {
+public class MotorAvaliacaoAlertas {
 
     @Autowired
     private AlertaLotacaoRepository alertaRepository;

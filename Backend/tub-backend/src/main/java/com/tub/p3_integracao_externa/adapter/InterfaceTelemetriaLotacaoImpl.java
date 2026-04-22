@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import com.tub.p3_integracao_externa.model.PassengerCount;
 
 @Component
-public class WavecomAdapterImpl implements WavecomAdapter {
+public class InterfaceTelemetriaLotacaoImpl implements InterfaceTelemetriaLotacao {
 
     @Override
     public List<PassengerCount> getPassengerCounts() {

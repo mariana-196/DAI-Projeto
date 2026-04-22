@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.tub.p3_integracao_externa.model.Validation;
 
-public interface BilheticaAdapter {
+public interface GatewayIntegracaoBilhetica {
 
     List<Validation> getValidations();
 

@@ -3,7 +3,7 @@ package com.tub.p3_integracao_externa.adapter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AutenticacaoGovAdapter {
+public class AdaptadorAutenticacaoGov {
 
     public boolean autenticar(String email, String codigoGov) {
         if (email == null || email.isBlank()) {

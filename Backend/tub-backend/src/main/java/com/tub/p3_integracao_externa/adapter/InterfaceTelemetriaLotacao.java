@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.tub.p3_integracao_externa.model.PassengerCount;
 
-public interface WavecomAdapter {
+public interface InterfaceTelemetriaLotacao {
 
     List<PassengerCount> getPassengerCounts();
 
