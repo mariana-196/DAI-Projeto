@@ -6,19 +6,19 @@ import java.util.List;
 import com.tub.p8_gestao_bilhetica.model.LoteDadosBilhetica;
 import com.tub.p8_gestao_bilhetica.model.MetricaIngestao;
 import com.tub.p8_gestao_bilhetica.model.RegistoBilhetica;
-import com.tub.p8_gestao_bilhetica.repository.LoteBilheticaRepository;
+import com.tub.p8_gestao_bilhetica.repository.LoteDadosBilheticaRepository;
 import com.tub.p8_gestao_bilhetica.repository.MetricaIngestaoRepository;
 import com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository;
 
 @Service
 public class ProcesadorArmazenamento {
 
-    private final LoteBilheticaRepository loteRepository;
+    private final LoteDadosBilheticaRepository loteRepository;
     private final RegistoBilheticaRepository registoRepository;
     private final MetricaIngestaoRepository metricaRepository;
 
     public ProcesadorArmazenamento(
-            LoteBilheticaRepository loteRepository,
+            LoteDadosBilheticaRepository loteRepository,
             RegistoBilheticaRepository registoRepository,
             MetricaIngestaoRepository metricaRepository
     ) {

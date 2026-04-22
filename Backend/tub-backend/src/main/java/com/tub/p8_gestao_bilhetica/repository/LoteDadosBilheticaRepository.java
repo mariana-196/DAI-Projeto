@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import com.tub.p8_gestao_bilhetica.model.LoteDadosBilhetica;
 
 @Repository
-public interface LoteBilheticaRepository extends JpaRepository<LoteDadosBilhetica, Long> {
+public interface LoteDadosBilheticaRepository extends JpaRepository<LoteDadosBilhetica, Long> {
 }
