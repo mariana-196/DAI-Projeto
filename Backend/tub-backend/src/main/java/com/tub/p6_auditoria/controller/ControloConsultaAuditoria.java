@@ -1,7 +1,6 @@
 package com.tub.p6_auditoria.controller;
 
 import com.tub.p6_auditoria.model.RegistoAuditoria;
-import com.tub.p6_auditoria.service.AuditService;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +11,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/auditoria")
 @CrossOrigin(origins = "http://127.0.0.1:5500")
-public class AuditoriaController {
+public class ControloConsultaAuditoria {
 
-    private final AuditService auditService;
+    private final com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService;
 
-    public AuditoriaController(AuditService auditService) {
+    public ControloConsultaAuditoria(
+            com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService) {
         this.auditService = auditService;
     }
 

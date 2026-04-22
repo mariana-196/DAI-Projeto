@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
-public class AuditService {
+public class ControloConsultaAuditoria {
 
     private final RegistoAuditoriaRepository registoAuditoriaRepository;
 
-    public AuditService(RegistoAuditoriaRepository registoAuditoriaRepository) {
+    public ControloConsultaAuditoria(RegistoAuditoriaRepository registoAuditoriaRepository) {
         this.registoAuditoriaRepository = registoAuditoriaRepository;
     }
 

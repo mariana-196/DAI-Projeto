@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "politicas_auditoria")
-public class PoliticasAuditoria {
+public class EntidadeConfiguracoesAuditoria {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,9 +25,9 @@ public class PoliticasAuditoria {
     @Column(nullable = false)
     private LocalDateTime dataAtualizacao = LocalDateTime.now();
 
-    public PoliticasAuditoria() {}
+    public EntidadeConfiguracoesAuditoria() {}
 
-    public PoliticasAuditoria(String nivelMinimo, Integer diasRetencao, Boolean notificacoesAtivas, String emailNotificacao) {
+    public EntidadeConfiguracoesAuditoria(String nivelMinimo, Integer diasRetencao, Boolean notificacoesAtivas, String emailNotificacao) {
         this.nivelMinimo = nivelMinimo;
         this.diasRetencao = diasRetencao;
         this.notificacoesAtivas = notificacoesAtivas;
