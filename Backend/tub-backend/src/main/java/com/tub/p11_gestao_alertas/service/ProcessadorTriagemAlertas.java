@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class AlertCenterService {
+public class ProcessadorTriagemAlertas {
 
     /**
      * Linha 81: Simula o processamento de triagem.
