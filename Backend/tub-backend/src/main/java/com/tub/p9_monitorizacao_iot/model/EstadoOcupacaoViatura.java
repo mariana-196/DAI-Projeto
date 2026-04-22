@@ -7,7 +7,7 @@ import com.tub.model.Viatura;
 
 @Entity
 @Table(name = "lotacao_viatura")
-public class LotacaoViatura {
+public class EstadoOcupacaoViatura {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +32,7 @@ public class LotacaoViatura {
     @Column(nullable = false)
     private LocalDateTime ultimaAtualizacao = LocalDateTime.now();
 
-    public LotacaoViatura() {}
+    public EstadoOcupacaoViatura() {}
 
     public Long getId() { return id; }
 

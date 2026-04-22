@@ -1,7 +1,7 @@
-package com.tub.service;
+package com.tub.p6_auditoria.service;
 
 import com.tub.p6_auditoria.model.ConfiguracaoNotificacoes;
-import com.tub.repository.ConfiguracaoNotificacoesRepository;
+import com.tub.p6_auditoria.repository.ConfiguracaoNotificacoesRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
