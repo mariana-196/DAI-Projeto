@@ -61,13 +61,13 @@ public class ControladorEstadoOperacao {
         return dashboardService.obterIndicadoresReais();
     }
 
-    @GetMapping("/dashboard/indicadores-frota")
-    public ResultadoIndicadoresFrota getIndicadoresFrota() {
+    @GetMapping("/indicadores-frota")
+    public ResultadoIndicadoresFrota controladorIndicadoresFrota() {
         return dashboardService.obterIndicadoresFrota();
     }
 
-    @GetMapping("/dashboard/indicadores-bilhetica")
-    public ResultadoIndicadoresBilhetica getIndicadoresBilhetica() {
+    @GetMapping("/indicadores-bilhetica")
+    public ResultadoIndicadoresBilhetica controladorIndicadoresBilhetica() {
         return dashboardService.obterIndicadoresBilhetica();
     }
 
