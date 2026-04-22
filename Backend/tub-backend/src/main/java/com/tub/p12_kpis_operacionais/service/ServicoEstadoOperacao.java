@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class DashboardService {
+public class ServicoEstadoOperacao {
 
     public ResultadoIndicadoresBilhetica obterIndicadoresBilhetica() {
         // 1. Categorizar títulos de transporte (Simulação da agregação pedida na UC 5.2.3.c)

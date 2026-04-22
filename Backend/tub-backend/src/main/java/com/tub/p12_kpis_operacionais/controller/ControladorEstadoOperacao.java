@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 
 import com.tub.p11_gestao_alertas.model.AlertaUnificado;
 import com.tub.p11_gestao_alertas.model.ContextoAlerta;
-import com.tub.p11_gestao_alertas.service.AlertCenterService;
+import com.tub.p11_gestao_alertas.service.ProcessadorTriagemAlertas;
 import com.tub.p12_kpis_operacionais.model.ResultadoIndicadoresBilhetica;
 import com.tub.p12_kpis_operacionais.model.ResultadoIndicadoresFrota;
 import com.tub.p12_kpis_operacionais.model.ResumoEstadoOperacao;
-import com.tub.p12_kpis_operacionais.service.DashboardService;
+import com.tub.p12_kpis_operacionais.service.ServicoEstadoOperacao;
 import com.tub.p8_gestao_bilhetica.model.ParametrosAnalise;
 import com.tub.p8_gestao_bilhetica.model.ResultadoAnalitico;
 import com.tub.p8_gestao_bilhetica.service.MotorCalculoAnalitico;
@@ -19,15 +19,15 @@ import com.tub.model.RelatorioExportacao;
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*") 
-public class DashboardController {
+public class ControladorEstadoOperacao {
 
-    private final AlertCenterService alertCenterService;
-    private final DashboardService dashboardService;
+    private final ProcessadorTriagemAlertas alertCenterService;
+    private final ServicoEstadoOperacao dashboardService;
     private final MotorCalculoAnalitico analiseService;
 
     // CONSTRUTOR UNIFICADO (Resolve o conflito das dependências)
-    public DashboardController(AlertCenterService alertCenterService, 
-                               DashboardService dashboardService, 
+    public ControladorEstadoOperacao( ProcessadorTriagemAlertas alertCenterService, 
+                               ServicoEstadoOperacao dashboardService, 
                                MotorCalculoAnalitico analiseService) {
         this.alertCenterService = alertCenterService;
         this.dashboardService = dashboardService;
@@ -105,13 +105,5 @@ public class DashboardController {
         return frota;
     }
 
-    private void addAlerta(List<Map<String, Object>> list, int id, String titulo, String desc, String prioridade, String estado) {
-        Map<String, Object> item = new HashMap<>();
-        item.put("id", id);
-        item.put("titulo", titulo);
-        item.put("descricao", desc);
-        item.put("prioridade", prioridade);
-        item.put("estado", estado);
-        list.add(item);
-    }
+   
 }
