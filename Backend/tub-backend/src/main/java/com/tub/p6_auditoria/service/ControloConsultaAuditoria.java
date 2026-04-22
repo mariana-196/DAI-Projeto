@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-@Service
+@Service("servicoConsultaAuditoria")
 public class ControloConsultaAuditoria {
 
     private final RegistoAuditoriaRepository registoAuditoriaRepository;
