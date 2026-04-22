@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Component
-public class BilheticaAdapterImpl implements BilheticaAdapter {
+public class GatewayIntegracaoBilheticaImpl implements GatewayIntegracaoBilhetica {
 
     @Override
     public List<Validation> getValidations() {
