@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/paineis")
 @CrossOrigin(origins = "*") // Permite que o teu HTML fale com este Java
-public class PainelController {
+public class GestorOperacionalPMD {
 
     @Autowired
     private PainelService painelService;
