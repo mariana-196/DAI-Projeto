@@ -5,8 +5,8 @@ import com.tub.p3_integracao_externa.model.PassengerCount;
 
 import java.util.List;
 
-@Service
-public class ControladorMonitorizacaoLotacao {
+@Service("controladorMonitorizacaoLotacaoService")
+public class SeviceMonitorizacaoLotacao {
 
     /*
     @Autowired

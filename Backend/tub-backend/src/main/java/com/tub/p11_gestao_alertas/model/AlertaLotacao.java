@@ -3,7 +3,7 @@ package com.tub.p11_gestao_alertas.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.tub.model.Viatura;
+import com.tub.p10_gestao_pmd.model.Viatura;
 
 @Entity
 @Table(name = "alertas_lotacao")
@@ -43,22 +43,51 @@ public class AlertaLotacao {
         this.timestamp = LocalDateTime.now();
     }
 
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Viatura getViatura() { return viatura; }
-    public void setViatura(Viatura viatura) { this.viatura = viatura; }
+    public Viatura getViatura() {
+        return viatura;
+    }
 
-    public String getLinha() { return linha; }
-    public void setLinha(String linha) { this.linha = linha; }
+    public void setViatura(Viatura viatura) {
+        this.viatura = viatura;
+    }
 
-    public String getSeveridade() { return severidade; }
-    public void setSeveridade(String severidade) { this.severidade = severidade; }
+    public String getLinha() {
+        return linha;
+    }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public void setLinha(String linha) {
+        this.linha = linha;
+    }
 
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
+    public String getSeveridade() {
+        return severidade;
+    }
 
-    public LocalDateTime getTimestamp() { return timestamp; }
+    public void setSeveridade(String severidade) {
+        this.severidade = severidade;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
 }

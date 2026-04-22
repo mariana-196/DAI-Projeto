@@ -1,12 +1,10 @@
-package com.tub.p5_lotacao.service;
+package com.tub.p5_lotacao.repository;
 
-import com.tub.model.Linha;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import com.tub.p10_gestao_pmd.model.Linha;
 
 @Repository
 public interface LinhaRepository extends JpaRepository<Linha, Long> {
-    Optional<Linha> findByCodigo(String codigo);
 }

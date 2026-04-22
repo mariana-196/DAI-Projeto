@@ -3,8 +3,6 @@ package com.tub.p5_lotacao.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.tub.model.Viatura;
-
 @Entity
 @Table(name = "historico_lotacao")
 public class HistoricoLotacao {

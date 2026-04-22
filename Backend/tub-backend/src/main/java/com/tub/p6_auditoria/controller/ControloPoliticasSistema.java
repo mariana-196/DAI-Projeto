@@ -4,7 +4,7 @@ import com.tub.p6_auditoria.model.EntidadeConfiguracoesAuditoria;
 
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+@RestController("controladorPoliticasSistema")
 @RequestMapping("/api/auditoria/politicas")
 @CrossOrigin(origins = "http://127.0.0.1:5500")
 public class ControloPoliticasSistema {

@@ -3,7 +3,7 @@ package com.tub.p9_monitorizacao_iot.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.tub.model.Viatura;
+import com.tub.p10_gestao_pmd.model.Viatura;
 
 @Entity
 @Table(name = "lotacao_viatura")
@@ -34,23 +34,55 @@ public class EstadoOcupacaoViatura {
 
     public EstadoOcupacaoViatura() {}
 
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Viatura getViatura() { return viatura; }
-    public void setViatura(Viatura viatura) { this.viatura = viatura; }
+    public Viatura getViatura() {
+        return viatura;
+    }
 
-    public String getLinha() { return linha; }
-    public void setLinha(String linha) { this.linha = linha; }
+    public void setViatura(Viatura viatura) {
+        this.viatura = viatura;
+    }
 
-    public Integer getPassageirosAtuais() { return passageirosAtuais; }
-    public void setPassageirosAtuais(Integer passageirosAtuais) { this.passageirosAtuais = passageirosAtuais; }
+    public String getLinha() {
+        return linha;
+    }
 
-    public Double getTaxaOcupacao() { return taxaOcupacao; }
-    public void setTaxaOcupacao(Double taxaOcupacao) { this.taxaOcupacao = taxaOcupacao; }
+    public void setLinha(String linha) {
+        this.linha = linha;
+    }
 
-    public boolean isSinalAtivo() { return sinalAtivo; }
-    public void setSinalAtivo(boolean sinalAtivo) { this.sinalAtivo = sinalAtivo; }
+    public Integer getPassageirosAtuais() {
+        return passageirosAtuais;
+    }
 
-    public LocalDateTime getUltimaAtualizacao() { return ultimaAtualizacao; }
-    public void setUltimaAtualizacao(LocalDateTime ultimaAtualizacao) { this.ultimaAtualizacao = ultimaAtualizacao; }
+    public void setPassageirosAtuais(Integer passageirosAtuais) {
+        this.passageirosAtuais = passageirosAtuais;
+    }
+
+    public Double getTaxaOcupacao() {
+        return taxaOcupacao;
+    }
+
+    public void setTaxaOcupacao(Double taxaOcupacao) {
+        this.taxaOcupacao = taxaOcupacao;
+    }
+
+    public boolean isSinalAtivo() {
+        return sinalAtivo;
+    }
+
+    public void setSinalAtivo(boolean sinalAtivo) {
+        this.sinalAtivo = sinalAtivo;
+    }
+
+    public LocalDateTime getUltimaAtualizacao() {
+        return ultimaAtualizacao;
+    }
+
+    public void setUltimaAtualizacao(LocalDateTime ultimaAtualizacao) {
+        this.ultimaAtualizacao = ultimaAtualizacao;
+    }
 }

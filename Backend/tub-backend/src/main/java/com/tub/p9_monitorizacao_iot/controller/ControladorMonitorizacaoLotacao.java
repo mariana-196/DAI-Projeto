@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RestController
+@RestController("controladorMonitorizacaoLotacaoController")
 @RequestMapping("/api/monitorizacao")
 @CrossOrigin(origins = "*")
 public class ControladorMonitorizacaoLotacao {
@@ -20,7 +20,7 @@ public class ControladorMonitorizacaoLotacao {
     private InterfaceTelemetriaLotacao wavecomAdapter;
 
     @Autowired
-    private com.tub.p9_monitorizacao_iot.service.ControladorMonitorizacaoLotacao contagemService;
+    private com.tub.p9_monitorizacao_iot.service.SeviceMonitorizacaoLotacao contagemService;
 
     private int passageirosAtual = 10;
     private boolean sinalAtivo = true;

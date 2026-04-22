@@ -3,8 +3,8 @@ package com.tub.p8_gestao_bilhetica.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.tub.model.Linha;
-import com.tub.model.Viatura;
+import com.tub.p10_gestao_pmd.model.Linha;
+import com.tub.p10_gestao_pmd.model.Viatura;
 
 @Entity
 @Table(name = "registos_bilhetica")

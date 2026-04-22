@@ -1,12 +1,10 @@
-package com.tub.p5_lotacao.service;
+package com.tub.p5_lotacao.repository;
 
-import com.tub.model.Viatura;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import com.tub.p10_gestao_pmd.model.Viatura;
 
 @Repository
 public interface ViaturaRepository extends JpaRepository<Viatura, Long> {
-    Optional<Viatura> findByCodigo(Integer codigo);
 }

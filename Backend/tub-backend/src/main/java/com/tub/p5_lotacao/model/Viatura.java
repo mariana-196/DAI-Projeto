@@ -1,4 +1,4 @@
-package com.tub.model;
+package com.tub.p5_lotacao.model;
 
 import jakarta.persistence.*;
 

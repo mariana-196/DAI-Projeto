@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
+@Service("servicoNotificacoesEventos")
 public class ControloNotificacoesEventos {
 
     private final RegraNotificacaoRepository regraNotificacaoRepository;
