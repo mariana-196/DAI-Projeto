@@ -4,7 +4,7 @@ import com.tub.p11_gestao_alertas.model.AlertaLotacao;
 import com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository;
 import com.tub.p5_lotacao.model.RegraAlerta;
 import com.tub.p5_lotacao.repository.RegraAlertaRepository;
-import com.tub.p9_monitorizacao_iot.model.LotacaoViatura;
+import com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class MotorAvaliacaoAlertas {
     /**
      * Linha 61: Motor de Avaliação de Alertas corrigido para o teu Modelo
      */
-    public void verificarEAplicarAlerta(LotacaoViatura lotacao) {
+    public void verificarEAplicarAlerta(EstadoOcupacaoViatura lotacao) {
         // 1. Procura as regras de alerta que estão marcadas como ativas
         List<RegraAlerta> regrasAtivas = regraRepository.findAll().stream()
                 .filter(RegraAlerta::isAtivo)

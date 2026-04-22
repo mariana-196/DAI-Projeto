@@ -1,7 +1,7 @@
-package com.tub.controller;
+package com.tub.p6_auditoria.controller;
 
 import com.tub.p6_auditoria.model.ConfiguracaoNotificacoes;
-import com.tub.service.NotificationConfigService;
+import com.tub.p6_auditoria.service.NotificationConfigService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,7 +16,7 @@ public class NotificationConfigController {
     }
 
     @GetMapping
-    public ConfiguracaoNotificacoes obterConfiguracao() {
+    public ConfiguracaoNotificacoes obterConfiguracaoAtual() {
         return notificationConfigService.obterConfiguracaoAtual();
     }
 
