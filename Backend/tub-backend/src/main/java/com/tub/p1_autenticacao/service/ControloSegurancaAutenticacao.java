@@ -1,9 +1,9 @@
 package com.tub.p1_autenticacao.service;
 
 import com.tub.p1_autenticacao.model.SessaoAutenticada;
-import com.tub.p2_dados_utilizador.model.Utilizador;
-import com.tub.p2_dados_utilizador.repository.UtilizadorRepository;
-import com.tub.p3_integracao_externa.adapter.AdaptadorAutenticacaoGov;
+import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
+import com.tub.p2_dados_utilizador.repository.RegistoUtilizadorRepository;
+import com.tub.p3_integracao_externa.adapter.AutenticacaoGovAdapter;
 import com.tub.p6_auditoria.service.AuditService;
 import com.tub.repository.SessaoAutenticadaRepository;
 
@@ -14,15 +14,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class AuthService {
+public class ControloSegurancaAutenticacao {
 
-    private final UtilizadorRepository utilizadorRepository;
+    private final RegistoUtilizadorRepository utilizadorRepository;
     private final SessaoAutenticadaRepository sessaoAutenticadaRepository;
     private final AuditService auditService;
     private final AdaptadorAutenticacaoGov autenticacaoGovAdapter;
 
-    public AuthService(
-            UtilizadorRepository utilizadorRepository,
+    public ControloSegurancaAutenticacao(
+            RegistoUtilizadorRepository utilizadorRepository,
             SessaoAutenticadaRepository sessaoAutenticadaRepository,
             AuditService auditService,
             AdaptadorAutenticacaoGov autenticacaoGovAdapter
@@ -34,7 +34,7 @@ public class AuthService {
     }
 
     public ResultadoAutenticacao autenticar(String email, String password) {
-        Optional<Utilizador> op = utilizadorRepository.findByEmail(email);
+        Optional<RegistoUtilizador> op = utilizadorRepository.findByEmail(email);
 
         if (op.isEmpty()) {
             auditService.registar(
@@ -48,7 +48,7 @@ public class AuthService {
             return new ResultadoAutenticacao(false, "Credenciais inválidas ou conta desativada.", null, null);
         }
 
-        Utilizador utilizador = op.get();
+        RegistoUtilizador utilizador = op.get();
 
         if (!utilizador.isAtivo()) {
             auditService.registar(
@@ -126,7 +126,7 @@ public class AuthService {
             return new ResultadoAutenticacao(false, "Falha na autenticação via Autenticação.gov.", null, null);
         }
 
-        Optional<Utilizador> op = utilizadorRepository.findByEmail(email);
+        Optional<RegistoUtilizador> op = utilizadorRepository.findByEmail(email);
 
         if (op.isEmpty()) {
             auditService.registar(
@@ -140,7 +140,7 @@ public class AuthService {
             return new ResultadoAutenticacao(false, "Utilizador autenticado externamente mas não existe na plataforma.", null, null);
         }
 
-        Utilizador utilizador = op.get();
+        RegistoUtilizador utilizador = op.get();
 
         if (!utilizador.isAtivo()) {
             auditService.registar(
@@ -169,7 +169,7 @@ public class AuthService {
         return criarSessao(utilizador, "Login com Autenticação.gov realizado com sucesso.");
     }
 
-    private ResultadoAutenticacao criarSessao(Utilizador utilizador, String mensagem) {
+    private ResultadoAutenticacao criarSessao(RegistoUtilizador utilizador, String mensagem) {
         String token = UUID.randomUUID().toString();
 
         SessaoAutenticada sessao = new SessaoAutenticada();
@@ -188,9 +188,9 @@ public class AuthService {
         private final boolean sucesso;
         private final String mensagem;
         private final String token;
-        private final Utilizador utilizador;
+        private final RegistoUtilizador utilizador;
 
-        public ResultadoAutenticacao(boolean sucesso, String mensagem, String token, Utilizador utilizador) {
+        public ResultadoAutenticacao(boolean sucesso, String mensagem, String token, RegistoUtilizador utilizador) {
             this.sucesso = sucesso;
             this.mensagem = mensagem;
             this.token = token;
@@ -200,6 +200,6 @@ public class AuthService {
         public boolean isSucesso() { return sucesso; }
         public String getMensagem() { return mensagem; }
         public String getToken() { return token; }
-        public Utilizador getUtilizador() { return utilizador; }
+        public RegistoUtilizador getUtilizador() { return utilizador; }
     }
 }

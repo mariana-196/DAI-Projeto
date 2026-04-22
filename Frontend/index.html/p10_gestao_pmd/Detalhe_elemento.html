@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalhe do Elemento - TUB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0D47A1;
+            --bg-color: #f1f5f9;
+            --text-main: #1e293b;
+            --border-light: #e2e8f0;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: transparent; /* Para poder ser usado como iframe ou sobreposição */
+            margin: 0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Estilo igual aos teus KPI-Cards e Alerta-Items */
+        .detalhe-container {
+            width: 380px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .detalhe-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .detalhe-header i { font-size: 24px; }
+        .detalhe-header h2 { margin: 0; font-size: 18px; font-weight: 600; }
+
+        .detalhe-body { padding: 20px; }
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .btn-fechar {
+            width: 100%;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid var(--border-light);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-fechar:hover {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="detalhe-container">
+        <div class="detalhe-header">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+                <h2 id="elemento-titulo">Viatura #---</h2>
+                <span style="font-size: 12px; opacity: 0.8;">Contexto Geográfico Ativo</span>
+            </div>
+        </div>
+
+        <div class="detalhe-body">
+            <div class="info-group">
+                <div class="info-row">
+                    <span class="info-label">Estado</span>
+                    <span class="badge-status" id="det-estado">Operacional</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Linha Atual</span>
+                    <span class="info-value" id="det-linha">---</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Lotação (IoT)</span>
+                    <span class="info-value" id="det-lotacao">--%</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Velocidade</span>
+                    <span class="info-value" id="det-velocidade">-- km/h</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Último Sinal</span>
+                    <span class="info-value" id="det-hora" style="font-size: 12px;">--:--:--</span>
+                </div>
+            </div>
+
+            <button class="btn-fechar" onclick="window.parent.fecharDetalhes()">
+                <i class="fa-solid fa-xmark"></i> Fechar Detalhes
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Função para preencher os dados (pode ser chamada pelo Dashboard principal)
+        function carregarDadosElemento(dados) {
+            document.getElementById('elemento-titulo').innerText = `Viatura #${dados.id}`;
+            document.getElementById('det-linha').innerText = dados.linha || 'N/A';
+            document.getElementById('det-lotacao').innerText = `${dados.lotacao || 0}%`;
+            document.getElementById('det-velocidade').innerText = `${dados.velocidade || 0} km/h`;
+            document.getElementById('det-estado').innerText = dados.status || 'OK';
+            document.getElementById('det-hora').innerText = new Date().toLocaleTimeString();
+        }
+
+        // Simulação de receção de dados para teste manual
+        // carregarDadosElemento({id: 112, linha: "43", lotacao: 65, velocidade: 42, status: "Em Horário"});
+    </script>
+</body>
+</html>

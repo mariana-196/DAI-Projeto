@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "utilizadores")
-public class Utilizador {
+public class RegistoUtilizador {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,9 +34,9 @@ public class Utilizador {
 
     private LocalDateTime dataAtualizacao;
 
-    public Utilizador() {}
+    public RegistoUtilizador() {}
 
-    public Utilizador(String nome, String email, String password, String cargo) {
+    public RegistoUtilizador(String nome, String email, String password, String cargo) {
         this.nome = nome;
         this.email = email;
         this.password = password;
