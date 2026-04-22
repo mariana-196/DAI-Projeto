@@ -17,7 +17,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/previsoes")
 @CrossOrigin(origins = "*")
-public class PrevisaoController {
+public class ControladorTrajetosGeofencing {
 
     @Autowired
     private PrevisaoService previsaoService;
