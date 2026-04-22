@@ -14,40 +14,27 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class ControloPrevisao {
 
-    
     @Autowired
     private PrevisaoService previsaoService;
 
-    /**
-     * UC 6.3.1 - Calcular Tempo Estimado
-     * O Controller só recebe o pedido e manda o Service fazer as contas.
-     */
     @PostMapping("/calcular")
     public ResponseEntity<PrevisaoChegada> processarNovaPrevisao(
             @RequestParam Long viaturaId, 
-            @RequestParam Long paragemId, 
+            @RequestParam Long painelId, 
+            @RequestParam Long linhaId,
+            @RequestParam String destino,
             @RequestParam int paragensRestantes) {
         
-        // A magia matemática e de base de dados acontece toda dentro do Service agora
-        PrevisaoChegada previsao = previsaoService.calcularEGuardarPrevisao(viaturaId, paragemId, paragensRestantes);
-
+        PrevisaoChegada previsao = previsaoService.calcularEGuardarPrevisao(viaturaId, painelId, linhaId, destino, paragensRestantes);
         return ResponseEntity.ok(previsao);
     }
 
-    /**
-     * Consulta de previsões para o ecrã dos passageiros
-     */
-    @GetMapping("/consulta/{paragemId}")
-    public ResponseEntity<List<PrevisaoChegada>> obterPrevisoesPorParagem(@PathVariable Long paragemId) {
-        
-        List<PrevisaoChegada> lista = previsaoService.obterPrevisoesDaParagem(paragemId);
-                
+    @GetMapping("/consulta/{painelId}")
+    public ResponseEntity<List<PrevisaoChegada>> obterPrevisoesPorParagem(@PathVariable Long painelId) {
+        List<PrevisaoChegada> lista = previsaoService.obterPrevisoesDaParagem(painelId);      
         return ResponseEntity.ok(lista);
     }
 
-    /**
-     * Endpoint de Verificação (Health Check - ctrlPrevisaoAlive)
-     */
     @GetMapping("/alive")
     public ResponseEntity<String> verificarEstado() {
         return ResponseEntity.ok("UP - Controlador de Previsão Operacional");

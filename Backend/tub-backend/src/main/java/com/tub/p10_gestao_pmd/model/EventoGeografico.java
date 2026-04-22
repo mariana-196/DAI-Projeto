@@ -1,23 +1,41 @@
 package com.tub.p10_gestao_pmd.model;
 
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "eventos_geograficos")
 public class EventoGeografico {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    // Mantemos o Long viaturaId como tu querias!
+    @Column(name = "viatura_id", nullable = false)
     private Long viaturaId;
+
+    @Column(nullable = false)
     private String tipo; // "SAIDA_ZONA", "DESVIO_ROTA", "ENTRADA_ZONA"
-    private String timestamp;
+
+    @Column(nullable = false)
     private String detalhes;
 
-    // Construtor vazio (obrigatório para algumas bibliotecas do Java)
+    
+    @Column(nullable = false)
+    private LocalDateTime timestamp = LocalDateTime.now();
+
+    // Construtor vazio (obrigatório para o JPA/Hibernate)
     public EventoGeografico() {
     }
 
-    // Este é o Construtor que o teu MapaOperacaoService está a tentar usar!
+    // Este é o Construtor que o teu MapaOperacaoService está a usar!
     public EventoGeografico(Long id, Long viaturaId, String tipo, String detalhes) {
         this.id = id;
         this.viaturaId = viaturaId;
         this.tipo = tipo;
         this.detalhes = detalhes;
-        this.timestamp = java.time.LocalDateTime.now().toString(); // Regista a hora exata automaticamente
+        this.timestamp = LocalDateTime.now(); // Regista a hora exata
     }
 
     // --- Getters e Setters ---
@@ -29,10 +47,16 @@ public class EventoGeografico {
 
     public String getTipo() { return tipo; }
     public void setTipo(String tipo) { this.tipo = tipo; }
-
-    public String getTimestamp() { return timestamp; }
-    public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+    
+    
+    public void setTipoEvento(String tipoEvento) { this.tipo = tipoEvento; }
 
     public String getDetalhes() { return detalhes; }
     public void setDetalhes(String detalhes) { this.detalhes = detalhes; }
+    
+    
+    public void setZona(String zona) { this.detalhes = zona; }
+
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
 }

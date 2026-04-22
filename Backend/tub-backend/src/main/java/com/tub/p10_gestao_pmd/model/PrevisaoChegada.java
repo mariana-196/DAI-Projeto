@@ -3,9 +3,6 @@ package com.tub.p10_gestao_pmd.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.tub.model.Linha;
-import com.tub.model.Viatura;
-
 @Entity
 @Table(name = "previsoes_chegada")
 public class PrevisaoChegada {
@@ -29,6 +26,7 @@ public class PrevisaoChegada {
     @Column(nullable = false)
     private String destino;
 
+    // O TEU CAMPO REAL: etaMinutos
     @Column(nullable = false)
     private Integer etaMinutos;
 

@@ -41,6 +41,9 @@ public class PainelPMD {
     public PainelPMD() {}
 
     public Long getId() { return id; }
+    
+    // O método adicionado para resolver o erro no Service
+    public void setId(Long id) { this.id = id; }
 
     public String getCodigo() { return codigo; }
     public void setCodigo(String codigo) { this.codigo = codigo; }
