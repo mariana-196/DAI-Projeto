@@ -13,7 +13,7 @@ import com.tub.p12_kpis_operacionais.model.ResumoEstadoOperacao;
 import com.tub.p12_kpis_operacionais.service.DashboardService;
 import com.tub.p8_gestao_bilhetica.model.ParametrosAnalise;
 import com.tub.p8_gestao_bilhetica.model.ResultadoAnalitico;
-import com.tub.p8_gestao_bilhetica.service.MotorCalculoAnaliticoService;
+import com.tub.p8_gestao_bilhetica.service.MotorCalculoAnalitico;
 import com.tub.model.RelatorioExportacao;
 
 @RestController
@@ -23,12 +23,12 @@ public class DashboardController {
 
     private final AlertCenterService alertCenterService;
     private final DashboardService dashboardService;
-    private final MotorCalculoAnaliticoService analiseService;
+    private final MotorCalculoAnalitico analiseService;
 
     // CONSTRUTOR UNIFICADO (Resolve o conflito das dependências)
     public DashboardController(AlertCenterService alertCenterService, 
                                DashboardService dashboardService, 
-                               MotorCalculoAnaliticoService analiseService) {
+                               MotorCalculoAnalitico analiseService) {
         this.alertCenterService = alertCenterService;
         this.dashboardService = dashboardService;
         this.analiseService = analiseService;

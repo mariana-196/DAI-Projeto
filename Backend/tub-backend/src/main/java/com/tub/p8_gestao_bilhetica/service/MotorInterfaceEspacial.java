@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class MotorInferenciaEspacialService { // Nome corrigido aqui
+public class MotorInterfaceEspacial { // Nome corrigido aqui
 
     private final RegistoBilheticaRepository registoRepository;
 
     // Construtor corrigido para ter exatamente o mesmo nome da classe
-    public MotorInferenciaEspacialService(RegistoBilheticaRepository registoRepository) { 
+    public MotorInterfaceEspacial(RegistoBilheticaRepository registoRepository) { 
         this.registoRepository = registoRepository;
     }
 

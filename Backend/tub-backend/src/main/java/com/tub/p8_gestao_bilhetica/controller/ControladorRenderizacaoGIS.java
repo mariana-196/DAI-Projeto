@@ -3,16 +3,16 @@ package com.tub.p8_gestao_bilhetica.controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.tub.p8_gestao_bilhetica.model.DatasetGeoJSON;
-import com.tub.p8_gestao_bilhetica.service.MotorInferenciaEspacialService;
+import com.tub.p8_gestao_bilhetica.service.MotorInterfaceEspacial;
 
 @RestController
 @RequestMapping("/api/gis/render")
 @CrossOrigin(origins = "*") // Importante para o Frontend conseguir ler os dados
-public class RenderizacaoGISController {
+public class ControladorRenderizacaoGIS {
 
-    private final MotorInferenciaEspacialService motorEspacial;
+    private final MotorInterfaceEspacial motorEspacial;
 
-    public RenderizacaoGISController(MotorInferenciaEspacialService motorEspacial) {
+    public ControladorRenderizacaoGIS(MotorInterfaceEspacial motorEspacial) {
         this.motorEspacial = motorEspacial;
     }
 

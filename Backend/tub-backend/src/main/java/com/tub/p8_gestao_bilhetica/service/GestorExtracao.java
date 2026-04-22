@@ -6,16 +6,16 @@ import java.util.ArrayList;
 
 import com.tub.p3_integracao_externa.model.Validation;
 import com.tub.p8_gestao_bilhetica.model.EstadoSincronizacao;
-import com.tub.p8_gestao_bilhetica.model.LoteBilhetica;
+import com.tub.p8_gestao_bilhetica.model.LoteDadosBilhetica;
 
 @Service
-public class ExtractionService {
+public class GestorExtracao {
 
-    public List<LoteBilhetica> extrair(List<Validation> validations) {
-        List<LoteBilhetica> lotes = new ArrayList<>();
+    public List<LoteDadosBilhetica> extrair(List<Validation> validations) {
+        List<LoteDadosBilhetica> lotes = new ArrayList<>();
 
         for (Validation v : validations) {
-            LoteBilhetica lote = new LoteBilhetica();
+            LoteDadosBilhetica lote = new LoteDadosBilhetica();
             lote.setCodigoLote("LOTE_" + System.currentTimeMillis());
             lote.setOrigem("BILHETICA");
             lote.setEstado(EstadoSincronizacao.RECEBIDO);

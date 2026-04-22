@@ -4,15 +4,15 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tub.p8_gestao_bilhetica.model.ParametrosAnalise;
 import com.tub.p8_gestao_bilhetica.model.ResultadoAnalitico;
-import com.tub.p8_gestao_bilhetica.service.MotorCalculoAnaliticoService;
+import com.tub.p8_gestao_bilhetica.service.MotorCalculoAnalitico;
 
 @RestController
 @RequestMapping("/analise")
-public class ConfiguracaoAnaliseController {
+public class ControladorConfiguracaoAnalise {
 
-    private final MotorCalculoAnaliticoService motorService;
+    private final MotorCalculoAnalitico motorService;
 
-    public ConfiguracaoAnaliseController(MotorCalculoAnaliticoService motorService) {
+    public ControladorConfiguracaoAnalise(MotorCalculoAnalitico motorService) {
         this.motorService = motorService;
     }
 

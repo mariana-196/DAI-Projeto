@@ -13,7 +13,7 @@ public class MetricaIngestao {
 
     @OneToOne
     @JoinColumn(name = "lote_id", nullable = false, unique = true)
-    private LoteBilhetica lote;
+    private LoteDadosBilhetica lote;
 
     @Column(nullable = false)
     private Integer registosRecebidos;
@@ -34,8 +34,8 @@ public class MetricaIngestao {
 
     public Long getId() { return id; }
 
-    public LoteBilhetica getLote() { return lote; }
-    public void setLote(LoteBilhetica lote) { this.lote = lote; }
+    public LoteDadosBilhetica getLote() { return lote; }
+    public void setLote(LoteDadosBilhetica lote) { this.lote = lote; }
 
     public Integer getRegistosRecebidos() { return registosRecebidos; }
     public void setRegistosRecebidos(Integer registosRecebidos) { this.registosRecebidos = registosRecebidos; }

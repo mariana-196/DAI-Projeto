@@ -3,7 +3,7 @@ package com.tub.p8_gestao_bilhetica.service;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-import com.tub.p8_gestao_bilhetica.model.LoteBilhetica;
+import com.tub.p8_gestao_bilhetica.model.LoteDadosBilhetica;
 import com.tub.p8_gestao_bilhetica.model.MetricaIngestao;
 import com.tub.p8_gestao_bilhetica.model.RegistoBilhetica;
 import com.tub.p8_gestao_bilhetica.repository.LoteBilheticaRepository;
@@ -11,13 +11,13 @@ import com.tub.p8_gestao_bilhetica.repository.MetricaIngestaoRepository;
 import com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository;
 
 @Service
-public class BilheticaStorageService {
+public class ProcesadorArmazenamento {
 
     private final LoteBilheticaRepository loteRepository;
     private final RegistoBilheticaRepository registoRepository;
     private final MetricaIngestaoRepository metricaRepository;
 
-    public BilheticaStorageService(
+    public ProcesadorArmazenamento(
             LoteBilheticaRepository loteRepository,
             RegistoBilheticaRepository registoRepository,
             MetricaIngestaoRepository metricaRepository
@@ -27,7 +27,7 @@ public class BilheticaStorageService {
         this.metricaRepository = metricaRepository;
     }
 
-    public LoteBilhetica guardarLote(LoteBilhetica lote) {
+    public LoteDadosBilhetica guardarLote(LoteDadosBilhetica lote) {
         return loteRepository.save(lote);
     }
 
