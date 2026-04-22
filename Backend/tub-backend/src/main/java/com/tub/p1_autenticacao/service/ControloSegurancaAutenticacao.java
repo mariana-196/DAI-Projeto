@@ -3,8 +3,8 @@ package com.tub.p1_autenticacao.service;
 import com.tub.p1_autenticacao.model.SessaoAutenticada;
 import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
 import com.tub.p2_dados_utilizador.repository.RegistoUtilizadorRepository;
-import com.tub.p3_integracao_externa.adapter.AutenticacaoGovAdapter;
-import com.tub.p6_auditoria.service.AuditService;
+import com.tub.p3_integracao_externa.adapter.AdaptadorAutenticacaoGov;
+import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 import com.tub.repository.SessaoAutenticadaRepository;
 
 import org.springframework.stereotype.Service;
@@ -18,13 +18,13 @@ public class ControloSegurancaAutenticacao {
 
     private final RegistoUtilizadorRepository utilizadorRepository;
     private final SessaoAutenticadaRepository sessaoAutenticadaRepository;
-    private final AuditService auditService;
+    private final ControloConsultaAuditoria auditService;
     private final AdaptadorAutenticacaoGov autenticacaoGovAdapter;
 
     public ControloSegurancaAutenticacao(
             RegistoUtilizadorRepository utilizadorRepository,
             SessaoAutenticadaRepository sessaoAutenticadaRepository,
-            AuditService auditService,
+            ControloConsultaAuditoria auditService,
             AdaptadorAutenticacaoGov autenticacaoGovAdapter
     ) {
         this.utilizadorRepository = utilizadorRepository;
