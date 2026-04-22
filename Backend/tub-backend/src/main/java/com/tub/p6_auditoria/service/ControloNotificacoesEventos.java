@@ -1,17 +1,17 @@
 package com.tub.p6_auditoria.service;
 
 import com.tub.p6_auditoria.model.RegraNotificacao;
-import com.tub.repository.RegraNotificacaoRepository;
+import com.tub.p6_auditoria.repository.RegraNotificacaoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class NotificationPolicyService {
+public class ControloNotificacoesEventos {
 
     private final RegraNotificacaoRepository regraNotificacaoRepository;
 
-    public NotificationPolicyService(RegraNotificacaoRepository regraNotificacaoRepository) {
+    public ControloNotificacoesEventos(RegraNotificacaoRepository regraNotificacaoRepository) {
         this.regraNotificacaoRepository = regraNotificacaoRepository;
     }
 

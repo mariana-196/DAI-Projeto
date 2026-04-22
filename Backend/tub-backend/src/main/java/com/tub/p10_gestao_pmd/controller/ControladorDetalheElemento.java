@@ -1,8 +1,7 @@
 package com.tub.p10_gestao_pmd.controller;
 
 import com.tub.model.ContextoElementoMapa;
-import com.tub.p10_gestao_pmd.service.ControladorDetalheElemento;
-
+import com.tub.p10_gestao_pmd.service.MapaOperacaoService; // 1. Importar o SERVIÇO correto
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,14 +11,11 @@ import org.springframework.web.bind.annotation.*;
 public class ControladorDetalheElemento {
 
     @Autowired
-    private ControladorDetalheElemento controladorDetalheElemento;
+    private MapaOperacaoService mapaOperacaoService; // 2. Mudar de Controlador para MapaOperacaoService
 
-    /**
-     * Linha 67: ControladorDetalheElemento
-     * Endpoint para recolher e devolver o contexto geográfico e operacional de um elemento.
-     */
     @GetMapping("/elemento/{id}")
     public ContextoElementoMapa getDetalhesElemento(@PathVariable String id) {
-        return controladorDetalheElemento.obterContextoViatura(id);
+        // 3. Chamar o método na variável do serviço
+        return mapaOperacaoService.obterContextoViatura(id); 
     }
 }

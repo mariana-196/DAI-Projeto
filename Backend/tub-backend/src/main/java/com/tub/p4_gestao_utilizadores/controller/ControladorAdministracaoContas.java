@@ -12,11 +12,11 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/utilizadores")
 @CrossOrigin(origins = "http://127.0.0.1:5500")
-public class UtilizadorController {
+public class ControladorAdministracaoContas {
 
     private final UtilizadorRepository utilizadorRepository;
 
-    public UtilizadorController(UtilizadorRepository utilizadorRepository) {
+    public ControladorAdministracaoContas(UtilizadorRepository utilizadorRepository) {
         this.utilizadorRepository = utilizadorRepository;
     }
 

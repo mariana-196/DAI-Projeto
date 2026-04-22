@@ -1,6 +1,6 @@
 package com.tub.p9_monitorizacao_iot.controller;
 
-import com.tub.p3_integracao_externa.adapter.WavecomAdapter;
+import com.tub.p3_integracao_externa.adapter.InterfaceTelemetriaLotacao;
 import com.tub.p3_integracao_externa.model.PassengerCount;
 import com.tub.p9_monitorizacao_iot.service.ContagemService;
 
@@ -18,7 +18,7 @@ import java.util.Map;
 public class MonitorizacaoController {
 
     @Autowired
-    private WavecomAdapter wavecomAdapter;
+    private InterfaceTelemetriaLotacao wavecomAdapter;
 
     @Autowired
     private ContagemService contagemService; // Injetar a Lógica da Linha 55
