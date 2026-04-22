@@ -7,11 +7,11 @@ import com.tub.p8_gestao_bilhetica.model.MetricaIngestao;
 import com.tub.p8_gestao_bilhetica.repository.MetricaIngestaoRepository;
 
 @Service
-public class BilheticaImportStatusService {
+public class ControladorNotificacao {
 
     private final MetricaIngestaoRepository metricaRepository;
 
-    public BilheticaImportStatusService(MetricaIngestaoRepository metricaRepository) {
+    public ControladorNotificacao(MetricaIngestaoRepository metricaRepository) {
         this.metricaRepository = metricaRepository;
     }
 

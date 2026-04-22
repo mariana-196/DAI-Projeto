@@ -6,26 +6,26 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 import com.tub.p3_integracao_externa.model.Validation;
-import com.tub.p8_gestao_bilhetica.model.LoteBilhetica;
+import com.tub.p8_gestao_bilhetica.model.LoteDadosBilhetica;
 import com.tub.p8_gestao_bilhetica.repository.LoteBilheticaRepository;
-import com.tub.p8_gestao_bilhetica.service.BilheticaValidationService;
+import com.tub.p8_gestao_bilhetica.service.ProcessadorValidacao;
 import com.tub.p8_gestao_bilhetica.service.ConnectionService;
-import com.tub.p8_gestao_bilhetica.service.ExtractionService;
+import com.tub.p8_gestao_bilhetica.service.GestorExtracao;
 
 @RestController
 @RequestMapping("/api/bilhetica")
 @CrossOrigin(origins = "*")
-public class BilheticaController {
+public class ControladorSincronizacaoGlobal {
 
     private final ConnectionService connectionService;
-    private final ExtractionService extractionService;
-    private final BilheticaValidationService validationService;
+    private final GestorExtracao extractionService;
+    private final ProcessadorValidacao validationService;
     private final LoteBilheticaRepository repository;
 
-    public BilheticaController(
+    public ControladorSincronizacaoGlobal(
             ConnectionService connectionService,
-            ExtractionService extractionService,
-            BilheticaValidationService validationService,
+            GestorExtracao extractionService,
+            ProcessadorValidacao validationService,
             LoteBilheticaRepository repository
     ) {
         this.connectionService = connectionService;
@@ -38,8 +38,8 @@ public class BilheticaController {
     public ResponseEntity<?> sincronizar() {
 
         List<Validation> dados = connectionService.obterDadosBilhetica();
-        List<LoteBilhetica> lotes = extractionService.extrair(dados);
-        List<LoteBilhetica> validos = validationService.validar(lotes);
+        List<LoteDadosBilhetica> lotes = extractionService.extrair(dados);
+        List<LoteDadosBilhetica> validos = validationService.validar(lotes);
 
         repository.saveAll(validos);
                 return ResponseEntity.ok(validos);

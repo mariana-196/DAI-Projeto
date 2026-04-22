@@ -10,12 +10,12 @@ import com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository;
 import java.util.List;
 
 @Service
-public class MotorCalculoAnaliticoService {
+public class MotorCalculoAnalitico {
 
     private final RegistoBilheticaRepository registoRepository;
 
     // 1. Injetar o repositório no construtor para podermos ir à Base de Dados
-    public MotorCalculoAnaliticoService(RegistoBilheticaRepository registoRepository) {
+    public MotorCalculoAnalitico(RegistoBilheticaRepository registoRepository) {
         this.registoRepository = registoRepository;
     }
 

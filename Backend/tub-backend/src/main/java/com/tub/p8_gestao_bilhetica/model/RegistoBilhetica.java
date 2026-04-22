@@ -16,7 +16,7 @@ public class RegistoBilhetica {
 
     @ManyToOne
     @JoinColumn(name = "lote_id", nullable = false)
-    private LoteBilhetica lote;
+    private LoteDadosBilhetica lote;
 
     @ManyToOne
     @JoinColumn(name = "viatura_id", nullable = true)
@@ -43,8 +43,8 @@ public class RegistoBilhetica {
 
     public Long getId() { return id; }
 
-    public LoteBilhetica getLote() { return lote; }
-    public void setLote(LoteBilhetica lote) { this.lote = lote; }
+    public LoteDadosBilhetica getLote() { return lote; }
+    public void setLote(LoteDadosBilhetica lote) { this.lote = lote; }
 
     public Viatura getViatura() { return viatura; }
     public void setViatura(Viatura viatura) { this.viatura = viatura; }

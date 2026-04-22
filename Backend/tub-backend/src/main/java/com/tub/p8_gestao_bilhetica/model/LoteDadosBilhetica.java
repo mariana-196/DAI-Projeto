@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "lotes_bilhetica")
-public class LoteBilhetica {
+public class LoteDadosBilhetica {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +24,7 @@ public class LoteBilhetica {
     @Column(nullable = false)
     private EstadoSincronizacao estado;// RECEBIDO, VALIDADO, PROCESSADO, ERRO
 
-    public LoteBilhetica() {}
+    public LoteDadosBilhetica() {}
 
     public Long getId() { return id; }
 
