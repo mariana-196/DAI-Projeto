@@ -1,8 +1,7 @@
-package com.tub.controller;
+package com.tub.p6_auditoria.controller;
 
 import com.tub.p6_auditoria.model.ConfiguracaoNotificacoes;
 import com.tub.p6_auditoria.service.NotificationConfigService;
-
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -10,14 +9,14 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://127.0.0.1:5500")
 public class NotificationConfigController {
 
-    private final ConfiguracaoNotificacoes notificationConfigService;
+    private final NotificationConfigService notificationConfigService;
 
-    public NotificationConfigController(ConfiguracaoNotificacoes notificationConfigService) {
+    public NotificationConfigController(NotificationConfigService notificationConfigService) {
         this.notificationConfigService = notificationConfigService;
     }
 
     @GetMapping
-    public ConfiguracaoNotificacoes obterConfiguracao() {
+    public ConfiguracaoNotificacoes obterConfiguracaoAtual() {
         return notificationConfigService.obterConfiguracaoAtual();
     }
 
