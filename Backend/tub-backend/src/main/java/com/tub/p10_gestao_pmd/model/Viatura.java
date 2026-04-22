@@ -2,7 +2,7 @@ package com.tub.p10_gestao_pmd.model;
 
 import jakarta.persistence.*;
 
-@Entity
+@Entity(name = "ViaturaPMD")
 @Table(name = "viaturas")
 public class Viatura {
 
