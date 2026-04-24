@@ -1,7 +1,7 @@
 package com.tub.p10_gestao_pmd.service;
 
-import com.tub.model.ContextoElementoMapa;
 import com.tub.p10_gestao_pmd.model.EventoGeografico;
+import com.tub.p8_gestao_bilhetica.model.ContextoElementoMapa;
 
 import org.springframework.stereotype.Service;
 

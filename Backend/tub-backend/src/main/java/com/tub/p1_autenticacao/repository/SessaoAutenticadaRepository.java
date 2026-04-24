@@ -1,4 +1,4 @@
-package com.tub.repository;
+package com.tub.p1_autenticacao.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

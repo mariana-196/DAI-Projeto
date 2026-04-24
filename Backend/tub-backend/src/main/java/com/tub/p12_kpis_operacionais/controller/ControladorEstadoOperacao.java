@@ -14,7 +14,7 @@ import com.tub.p12_kpis_operacionais.service.ServicoEstadoOperacao;
 import com.tub.p8_gestao_bilhetica.model.ParametrosAnalise;
 import com.tub.p8_gestao_bilhetica.model.ResultadoAnalitico;
 import com.tub.p8_gestao_bilhetica.service.MotorCalculoAnalitico;
-import com.tub.model.RelatorioExportacao;
+
 
 @RestController
 @RequestMapping("/api")
@@ -40,20 +40,7 @@ public class ControladorEstadoOperacao {
         return analiseService.calcular(params);
     }
 
-    // --- LINHA 45: EXPORTAÇÃO ---
-    @PostMapping("/dashboard/exportar")
-    public RelatorioExportacao exportarRelatorio(@RequestBody ParametrosAnalise params) {
-        ResultadoAnalitico resultado = analiseService.calcular(params);
-        RelatorioExportacao relatorio = new RelatorioExportacao();
-        relatorio.setTitulo("Relatório de Performance - TUB");
-        relatorio.setDataGeracao(LocalDateTime.now());
-        
-        Map<String, Object> metricas = new HashMap<>();
-        metricas.put("totalValidacoes", resultado.getTotalPassageiros());
-        relatorio.setMetricas(metricas);
-        
-        return relatorio;
-    }
+    
 
     // --- INDICADORES (LINHAS 72, 78, 81) ---
     @GetMapping("/dashboard/estado-geral")

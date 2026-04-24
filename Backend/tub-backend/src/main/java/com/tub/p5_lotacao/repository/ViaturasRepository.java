@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import com.tub.p10_gestao_pmd.model.Viatura;
 
 @Repository
-public interface ViaturaRepository extends JpaRepository<Viatura, Long> {
+public interface ViaturasRepository extends JpaRepository<Viatura, Long> {
 }

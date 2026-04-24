@@ -1,5 +1,5 @@
 
-package com.tub.model;
+package com.tub.p8_gestao_bilhetica.model;
 
 public class ContextoElementoMapa {
     public String id;

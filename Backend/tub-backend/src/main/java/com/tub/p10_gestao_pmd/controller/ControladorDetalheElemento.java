@@ -1,7 +1,8 @@
 package com.tub.p10_gestao_pmd.controller;
 
-import com.tub.model.ContextoElementoMapa;
 import com.tub.p10_gestao_pmd.service.MapaOperacaoService; // 1. Importar o SERVIÇO correto
+import com.tub.p8_gestao_bilhetica.model.ContextoElementoMapa;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
