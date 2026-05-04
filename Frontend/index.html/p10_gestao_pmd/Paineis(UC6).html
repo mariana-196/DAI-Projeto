@@ -176,12 +176,12 @@
 
     <div class="header">
         <div class="header-left">
-            <img src="tubwhite.png" alt="Logótipo TUB" onerror="this.style.display='none'">
+            <img src="../images/tubwhite.png" alt="Logótipo TUB" onerror="this.style.display='none'">
             Gestão de Painéis Dinâmicos (DMS)
         </div>
         <div class="nav-actions">
             <div class="perfil-indicador" id="header-perfil"><i class="fa-solid fa-user-shield"></i> Administrador</div>
-            <a href="InterfaceEstadoOperacao.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Dashboard Central</a>
+            <a href="../p12_kpis_operacionais/InterfaceEstadoOperacao.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Dashboard Central</a>
         </div>
     </div>
 
@@ -216,7 +216,7 @@
             <h3>
                 <span class="h3-icon"><i class="fa-solid fa-bullhorn"></i></span> 
                 Emitir Aviso (UC 6.2)
-                <a href="HistoricoMensagens.html" class="btn-history-link">
+                <a href="../p10_gestao_pmd/HistoricoMensagens.html" class="btn-history-link">
                     <i class="fa-solid fa-clock-rotate-left"></i> Histórico
                 </a>
             </h3>
@@ -293,7 +293,7 @@
             }
 
             corpoTabela.innerHTML = '';
-            dropdown.innerHTML = '<option value="TODOS">Transmitir para TODO O PARQUE (Broadcast)</option>';
+            dropdown.innerHTML = '<option value="TODOS">Transmitir para TODO O PARQUE</option>';
 
             paineis.forEach(p => {
                 let badgeClass = 'badge-online';

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auditoria e Registos (TUB)</title>
     
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="../images/favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -110,6 +110,7 @@
             align-items: center;
             gap: 8px;
             transition: 0.3s;
+            text-decoration: none; /* Para garantir que os links ficam bem */
         }
         .btn-pesquisar { background-color: #0D47A1; color: white; }
         .btn-pesquisar:hover { background-color: #002171; }
@@ -157,10 +158,10 @@
 
     <div class="header">
         <div class="header-left">
-            <img src="tubwhite.png" alt="Logótipo TUB">
+            <img src="../images/tubwhite.png" alt="Logótipo TUB">
             Plataforma de Gestão Urbana (TUB) - Auditoria 
         </div>
-        <a href="InterfaceEstadoOperacao.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar ao Dashboard</a>
+        <a href="../p12_kpis_operacionais/InterfaceEstadoOperacao.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar ao Dashboard</a>
     </div>
 
     <div class="container">
@@ -214,6 +215,19 @@
         </div>
 
         <div class="sidebar">
+            
+            
+            <div class="card">
+                <h3><i class="fa-solid fa-gears"></i> Configurações</h3>
+                <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Gira as políticas de retenção, regras de notificação e níveis mínimos de registo.</p>
+                
+                
+                <a href="InterfaceGestaoConfiguracoesAuditoria.html" class="btn-action" style="background: #0D47A1; color: white; width: 100%; justify-content: center; box-sizing: border-box;">
+                    <i class="fa-solid fa-sliders"></i> Abrir Configurações
+                </a>
+            </div>
+            
+
             <div class="card">
                 <h3><i class="fa-solid fa-shield-halved"></i> Alertas de Segurança</h3>
                 <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Monitorização ativa de comportamentos anómalos no sistema.</p>
