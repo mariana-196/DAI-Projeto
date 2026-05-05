@@ -1,0 +1,58 @@
+@baseUrl = http://localhost:8081
+
+# DT03 – Geração de dados espaciais
+
+### Cenário 1 – Gerar dados espaciais sem preparação adicional
+GET {{baseUrl}}/api/gis/render/dados-mapa
+
+# Esperado:
+# HTTP 200
+# devolve DatasetGeoJSON
+# pode devolver lista de features vazia se não existirem registos
+
+
+### Cenário 2 – Sincronizar/importar dados de bilhética
+GET {{baseUrl}}/api/bilhetica/sincronizar
+
+# Esperado:
+# sistema importa/processa dados de bilhética
+# cria lotes/registos se existirem dados disponíveis
+
+
+### Cenário 3 – Gerar dados espaciais após importação
+GET {{baseUrl}}/api/gis/render/dados-mapa
+
+# Esperado:
+# HTTP 200
+# devolve estrutura GeoJSON
+# features podem conter:
+# - type
+# - geometry
+# - coordinates
+# - properties
+# - nome
+# - totalValidacoes
+# - hotspot
+
+
+### Cenário 4 – Validar estrutura GeoJSON
+GET {{baseUrl}}/api/gis/render/dados-mapa
+
+# Esperado:
+# resposta contém FeatureCollection
+# cada elemento tem geometry e properties
+
+
+### Cenário 5 – Validar hotspot
+GET {{baseUrl}}/api/gis/render/dados-mapa
+
+# Esperado:
+# se totalValidacoes > 50, hotspot = true
+# se totalValidacoes <= 50, hotspot = false
+
+
+### Cenário 6 – Validar paragens agregadas
+GET {{baseUrl}}/api/gis/render/dados-mapa
+
+# Esperado:
+# registos da mesma paragem aparecem agregados numa única feature

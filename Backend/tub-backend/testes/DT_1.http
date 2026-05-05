@@ -1,0 +1,110 @@
+@baseUrl = http://localhost:8081
+
+# DT01 – Validação do fluxo de autenticação
+
+### Cenário 1 – Login com utilizador inexistente
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "inexistente_dt01@tub.pt",
+  "password": "1234"
+}
+
+# Esperado:
+# HTTP 401
+# token = null
+# utilizador = null
+# auditoria regista "Utilizador não encontrado"
+
+
+### Cenário 2 – Criar utilizador ativo para teste
+POST {{baseUrl}}/api/utilizadores/guardar
+Content-Type: application/json
+
+{
+  "nome": "Developer Test Auth",
+  "email": "dt01_auth@tub.pt",
+  "password": "1234",
+  "cargo": "OPERADOR"
+}
+
+# Esperado:
+# HTTP 200
+# utilizador criado
+# ativo = true
+
+
+### Cenário 3 – Login válido
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "dt01_auth@tub.pt",
+  "password": "1234"
+}
+
+# Esperado:
+# HTTP 200
+# token diferente de null
+# mensagem de sucesso
+
+
+### Cenário 4 – Login com password incorreta
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "dt01_auth@tub.pt",
+  "password": "errada"
+}
+
+# Esperado:
+# HTTP 401
+# token = null
+# tentativasFalhadas incrementa
+# auditoria regista falha de autenticação
+
+
+### Cenário 5 – Repetir password incorreta até bloquear conta
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "dt01_auth@tub.pt",
+  "password": "errada"
+}
+
+# Executar este pedido até perfazer 5 tentativas falhadas.
+# Esperado:
+# conta fica com ativo = false
+# auditoria regista bloqueio da conta
+
+
+### Cenário 6 – Login depois da conta estar bloqueada/inativa
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "dt01_auth@tub.pt",
+  "password": "1234"
+}
+
+# Esperado:
+# HTTP 401
+# token = null
+# acesso recusado
+
+
+### Cenário 7 – Confirmar estado do utilizador
+GET {{baseUrl}}/api/utilizadores
+
+# Esperado:
+# utilizador dt01_auth@tub.pt aparece com ativo = false
+
+
+### Cenário 8 – Consultar auditoria
+GET {{baseUrl}}/api/auditoria/logs
+
+# Esperado:
+# existem registos de falha de autenticação e/ou bloqueio

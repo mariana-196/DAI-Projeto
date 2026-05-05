@@ -1,0 +1,103 @@
+@baseUrl = http://localhost:8081
+
+# DT02 – Validação de políticas de auditoria
+
+### Cenário 1 – Consultar política atual
+GET {{baseUrl}}/api/auditoria/politicas
+
+# Esperado:
+# HTTP 200
+# devolve política atual
+# caso não exista, é criada uma política default
+
+
+### Cenário 2 – Retenção inválida inferior a 365 dias
+PUT {{baseUrl}}/api/auditoria/politicas
+Content-Type: application/json
+
+{
+  "nivelMinimo": "INFO",
+  "diasRetencao": 100,
+  "notificacoesAtivas": false,
+  "emailNotificacao": null
+}
+
+# Esperado:
+# erro
+# mensagem: "A retenção mínima dos logs é 365 dias."
+# política anterior mantém-se inalterada
+
+
+### Cenário 3 – Retenção nula
+PUT {{baseUrl}}/api/auditoria/politicas
+Content-Type: application/json
+
+{
+  "nivelMinimo": "INFO",
+  "diasRetencao": null,
+  "notificacoesAtivas": false,
+  "emailNotificacao": null
+}
+
+# Esperado:
+# erro
+# política anterior mantém-se inalterada
+
+
+### Cenário 4 – Email de notificação inválido
+PUT {{baseUrl}}/api/auditoria/politicas
+Content-Type: application/json
+
+{
+  "nivelMinimo": "INFO",
+  "diasRetencao": 365,
+  "notificacoesAtivas": true,
+  "emailNotificacao": "email-invalido"
+}
+
+# Esperado:
+# erro
+# mensagem: "Email de notificação inválido."
+# política anterior mantém-se inalterada
+
+
+### Cenário 5 – Política válida sem email
+PUT {{baseUrl}}/api/auditoria/politicas
+Content-Type: application/json
+
+{
+  "nivelMinimo": "INFO",
+  "diasRetencao": 365,
+  "notificacoesAtivas": false,
+  "emailNotificacao": null
+}
+
+# Esperado:
+# HTTP 200
+# política atualizada
+# diasRetencao = 365
+
+
+### Cenário 6 – Política válida com email correto
+PUT {{baseUrl}}/api/auditoria/politicas
+Content-Type: application/json
+
+{
+  "nivelMinimo": "AVISO",
+  "diasRetencao": 400,
+  "notificacoesAtivas": true,
+  "emailNotificacao": "admin@tub.pt"
+}
+
+# Esperado:
+# HTTP 200
+# política atualizada
+# diasRetencao = 400
+# emailNotificacao = admin@tub.pt
+
+
+### Cenário 7 – Confirmar política final
+GET {{baseUrl}}/api/auditoria/politicas
+
+# Esperado:
+# devolve a política atualizada no cenário anterior
