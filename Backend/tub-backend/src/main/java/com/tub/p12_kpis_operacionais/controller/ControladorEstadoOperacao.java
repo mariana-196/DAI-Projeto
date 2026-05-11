@@ -1,5 +1,7 @@
 package com.tub.p12_kpis_operacionais.controller;
 
+import com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura;
+import com.tub.p9_monitorizacao_iot.repository.LotacaoViaturaRepository;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -24,6 +26,7 @@ public class ControladorEstadoOperacao {
     private final ProcessadorTriagemAlertas alertCenterService;
     private final ServicoEstadoOperacao dashboardService;
     private final MotorCalculoAnalitico analiseService;
+    private final LotacaoViaturaRepository lotacaoViaturaRepository;
 
     // CONSTRUTOR UNIFICADO (Resolve o conflito das dependências)
     public ControladorEstadoOperacao( ProcessadorTriagemAlertas alertCenterService, 
@@ -32,6 +35,7 @@ public class ControladorEstadoOperacao {
         this.alertCenterService = alertCenterService;
         this.dashboardService = dashboardService;
         this.analiseService = analiseService;
+        this.lotacaoViaturaRepository = null;
     }
 
     // --- LINHA 43: ANÁLISE DE RESULTADOS ---
@@ -83,14 +87,42 @@ public class ControladorEstadoOperacao {
     }
 
     // --- AUXILIARES ---
-    @GetMapping("/frota/posicoes")
-    public List<Map<String, Object>> getPosicoes() {
-        List<Map<String, Object>> frota = new ArrayList<>();
-        Map<String, Object> v1 = new HashMap<>();
-        v1.put("id", 112); v1.put("lat", 41.5510); v1.put("lng", -8.4220);
-        frota.add(v1);
-        return frota;
+   @GetMapping("/frota/posicoes")
+public List<Map<String, Object>> getPosicoes() {
+    List<EstadoOcupacaoViatura> estados = lotacaoViaturaRepository.findAll();
+    List<Map<String, Object>> frota = new ArrayList<>();
+
+    double[][] coordenadasDemo = {
+            {41.5503, -8.4200},
+            {41.5520, -8.4210},
+            {41.5550, -8.3970},
+            {41.5670, -8.3990},
+            {41.5490, -8.4340},
+            {41.5545, -8.3775}
+    };
+
+    int i = 0;
+
+    for (EstadoOcupacaoViatura estado : estados) {
+        Map<String, Object> viatura = new HashMap<>();
+
+        double[] coordenadas = coordenadasDemo[i % coordenadasDemo.length];
+
+        viatura.put("id", estado.getViatura().getCodigo());
+        viatura.put("lat", coordenadas[0]);
+        viatura.put("lng", coordenadas[1]);
+        viatura.put("linha", estado.getLinha());
+        viatura.put("status", estado.isSinalAtivo() ? "Em Horário" : "Sem Sinal");
+        viatura.put("velocidade", estado.isSinalAtivo() ? 42 : 0);
+        viatura.put("lotacao", Math.round(estado.getTaxaOcupacao()));
+        viatura.put("sinal", estado.isSinalAtivo());
+
+        frota.add(viatura);
+        i++;
     }
+
+    return frota;
+}
 
    
 }
