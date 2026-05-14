@@ -10,86 +10,84 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        
         :root {
             --primary: #0D47A1;
             --primary-hover: #002171;
             --bg-color: #f1f5f9;
+            --success: #2E7D32;
+            --danger: #dc2626;
+            --warning: #ff8000;
         }
 
-        body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
         
+        /* Header Estilizado */
         .header { 
             background: linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%); 
-            color: white; 
-            padding: 16px 32px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            color: white; padding: 16px 32px; display: flex; 
+            align-items: center; justify-content: space-between; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100;
         }
         
         .header-left { display: flex; align-items: center; font-size: 20px; font-weight: 600; letter-spacing: 0.5px; }
         .header img { height: 38px; margin-right: 15px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
         
         .btn-voltar { 
-            background: white; 
-            color: var(--primary); 
-            border: none; 
-            padding: 8px 16px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            text-decoration: none; 
-            font-size: 14px; 
-            font-weight: 600; 
-            transition: all 0.2s; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            background: white; color: var(--primary); border: none; padding: 8px 16px; 
+            border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; 
+            font-weight: 600; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
         }
         .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
-        
 
+        /* Layout Principal */
         .container { display: flex; padding: 25px; gap: 25px; max-width: 1400px; margin: 0 auto; }
         
         .card { background: white; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); padding: 25px; }
-        h3 { margin-top: 0; color: #0D47A1; font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        h3 { margin-top: 0; color: var(--primary); font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
 
         .lista-section { flex: 2; }
         .form-section { flex: 1; background-color: #f8fafc; border: 1px solid #e2e8f0; height: fit-content; }
 
+        /* Tabela */
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid #eee; }
         th { background-color: #f8f9fa; color: #555; font-weight: 600; }
         tr:hover { background-color: #f4f7f6; }
         
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        /* Badges de Estado e Perfil */
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
         .badge-admin { background: #fee2e2; color: #dc2626; }
         .badge-op { background: #e0f2fe; color: #0284c7; }
         .badge-ativo { background: #dcfce7; color: #166534; }
+        .badge-inativo { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
         
+        /* Formulário */
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 13px; color: #555; font-weight: 600; margin-bottom: 5px; }
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
         .form-group input:read-only { background-color: #e2e8f0; color: #64748b; cursor: not-allowed; }
         
+        /* Botões de Ação */
         .btn-action { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; color: white; margin-bottom: 10px; }
         .btn-save { background-color: #2E7D32; }
         .btn-save:hover { background-color: #1B5E20; }
         .btn-cancel { background-color: #94a3b8; }
         .btn-cancel:hover { background-color: #64748b; }
         
-        /* Botão Eliminar agora no formulário */
-        .btn-delete-form { background-color: #dc2626; display: none; }
-        .btn-delete-form:hover { background-color: #991b1b; }
+        /* Botão Dinâmico (Desativar/Reativar) */
+        .btn-toggle-status { display: none; font-size: 13px; }
 
+        /* NOVO: Botão Eliminar */
+        .btn-delete-perm { display: none; background-color: #000; }
+        .btn-delete-perm:hover { background-color: #333; }
+
+        /* Alertas */
         .alert-box { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; display: none; }
         .alert-error { background-color: #fee2e2; color: #dc2626; border-left: 4px solid #dc2626; }
         .alert-success { background-color: #dcfce7; color: #166534; border-left: 4px solid #166534; }
         
-        .btn-tbl { border: none; background: none; cursor: pointer; font-size: 14px; color: #0D47A1; transition: 0.2s; padding: 5px; }
-        .btn-tbl:hover { color: #002171; transform: scale(1.1); }
+        .btn-tbl { border: none; background: none; cursor: pointer; font-size: 14px; color: var(--primary); transition: 0.2s; padding: 5px; }
+        .btn-tbl:hover { color: var(--primary-hover); transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -97,15 +95,15 @@
     <div class="header">
         <div class="header-left">
             <img src="../images/tubwhite.png" alt="Logótipo TUB">
-            Plataforma de Gestão Urbana (TUB) - Gestão de Utilizadores e Perfis 
+            Plataforma TUB - Gestão de Utilizadores e Segurança
         </div>
-        <a href="../p12_kpis_operacionais/InterfaceEstadoOperacao.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar ao Dashboard</a>
+        <a href="../p12_kpis_operacionais/InterfaceEstadoOperacao.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Sair do Painel</a>
     </div>
 
     <div class="container">
         
         <div class="card lista-section">
-            <h3><i class="fa-solid fa-users"></i> Contas Registadas</h3>
+            <h3><i class="fa-solid fa-users"></i> Contas de Utilizador Registadas</h3>
             <table>
                 <thead>
                     <tr>
@@ -117,13 +115,13 @@
                     </tr>
                 </thead>
                 <tbody id="tabela-corpo">
-                    <tr><td colspan="5">A carregar dados...</td></tr>
+                    <tr><td colspan="5">A carregar dados do servidor...</td></tr>
                 </tbody>
             </table>
         </div>
 
         <div class="card form-section">
-            <h3 id="form-title"><i class="fa-solid fa-user-plus"></i> Criar Nova Conta</h3>
+            <h3 id="form-title"><i class="fa-solid fa-user-plus"></i> Registar Nova Conta</h3>
             
             <div class="alert-box alert-error" id="aviso-erro"></div>
             <div class="alert-box alert-success" id="aviso-sucesso"></div>
@@ -134,16 +132,18 @@
             </div>
             <div class="form-group">
                 <label>Email Profissional</label>
-                <input type="email" id="input-email" placeholder="email@tub.pt">
+                <input type="email" id="input-email" placeholder="email@tub.pt" required 
+                       pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" 
+                       title="Por favor, introduza um email válido (ex: utilizador@tub.pt)">
             </div>
             <div class="form-group">
                 <label>Palavra-passe</label>
                 <input type="password" id="input-password" placeholder="Definir password">
-                <small id="pass-hint" style="font-size: 11px; color: #888; display: none;">Deixe em branco para não alterar.</small>
+                <small id="pass-hint" style="font-size: 11px; color: #888; display: none;">Deixe em branco para manter a atual.</small>
             </div>
             
             <div class="form-group">
-                <label>Perfil (Papel)</label>
+                <label>Perfil (Papel no Sistema)</label>
                 <select id="input-perfil">
                     <option value="" disabled selected>Selecionar...</option>
                     <option value="OP">Operador TUB</option>
@@ -159,8 +159,10 @@
                 <i class="fa-solid fa-eraser"></i> Limpar / Cancelar
             </button>
 
-            <button class="btn-action btn-delete-form" id="btn-eliminar" onclick="eliminarUtilizador()">
-                <i class="fa-solid fa-trash-can"></i> Eliminar Esta Conta
+            <button class="btn-action btn-toggle-status" id="btn-status-toggle"></button>
+
+            <button class="btn-action btn-delete-perm" id="btn-eliminar-permanente" onclick="eliminarPermanente()">
+                <i class="fa-solid fa-trash-can"></i> ELIMINAR PERMANENTEMENTE
             </button>
         </div>
 
@@ -168,7 +170,9 @@
 
     <script>
         let editMode = false;
+        let currentUserId = null;
 
+        // 1. CARREGAR UTILIZADORES (Lê do Java)
         async function carregarTabela() {
             const corpoTabela = document.getElementById('tabela-corpo');
             try {
@@ -178,54 +182,75 @@
                 corpoTabela.innerHTML = ''; 
 
                 utilizadores.forEach(user => {
-                    const classeBadge = user.cargo === 'ADMIN' ? 'badge-admin' : 'badge-op';
-                    const textoCargo = user.cargo === 'ADMIN' ? 'Administrador' : 'Operador TUB';
+                    const badgePerfil = user.cargo === 'ADMIN' ? 'badge-admin' : 'badge-op';
+                    const nomePerfil = user.cargo === 'ADMIN' ? 'Admin' : 'Operador';
+                    
+                    const statusClass = user.ativo ? 'badge-ativo' : 'badge-inativo';
+                    const statusText = user.ativo ? 'Ativo' : 'Desativado';
 
                     corpoTabela.innerHTML += `
                         <tr>
                             <td>${user.nome}</td>
                             <td>${user.email}</td>
-                            <td><span class="badge ${classeBadge}">${textoCargo}</span></td>
-                            <td><span class="badge badge-ativo">Ativo</span></td>
+                            <td><span class="badge ${badgePerfil}">${nomePerfil}</span></td>
+                            <td><span class="badge ${statusClass}">${statusText}</span></td>
                             <td>
-                                <button class="btn-tbl" title="Editar" onclick="ativarEdicao('${user.nome}', '${user.email}', '${user.cargo}')">
+                                <button class="btn-tbl" title="Editar" 
+                                    onclick="ativarEdicao(${user.id}, '${user.nome}', '${user.email}', '${user.cargo}', ${user.ativo})">
                                     <i class="fa-solid fa-user-pen"></i> 
                                 </button>
                             </td>
                         </tr>`;
                 });
             } catch (erro) {
-                corpoTabela.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">Erro de ligação ao Java.</td></tr>`;
+                corpoTabela.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">Erro de ligação ao Java (Porta 8081).</td></tr>`;
             }
         }
 
-        function ativarEdicao(nome, email, cargo) {
+        // 2. ATIVAR MODO EDIÇÃO
+        function ativarEdicao(id, nome, email, cargo, ativo) {
             editMode = true;
+            currentUserId = id;
             
-            // UI de Edição
-            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-user-gear"></i> Editar Dados Pessoais';
+            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-user-gear"></i> Editar Dados do Utilizador';
             document.getElementById('btn-save-text').innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizar Dados';
             document.getElementById('pass-hint').style.display = 'block';
-            document.getElementById('btn-eliminar').style.display = 'flex'; 
             
-            // Preencher campos
             document.getElementById('input-nome').value = nome;
             document.getElementById('input-email').value = email;
-            document.getElementById('input-email').readOnly = true;
+            document.getElementById('input-email').readOnly = false;
             document.getElementById('input-perfil').value = cargo;
             document.getElementById('input-password').value = '';
+
+            const btnToggle = document.getElementById('btn-status-toggle');
+            btnToggle.style.display = 'flex';
+            
+            if (ativo) {
+                btnToggle.innerHTML = '<i class="fa-solid fa-user-slash"></i> Desativar Conta';
+                btnToggle.style.backgroundColor = 'var(--danger)';
+                btnToggle.onclick = () => mudarEstado('desativar');
+            } else {
+                btnToggle.innerHTML = '<i class="fa-solid fa-user-check"></i> Reativar Conta';
+                btnToggle.style.backgroundColor = 'var(--success)';
+                btnToggle.onclick = () => mudarEstado('ativar');
+            }
+
+            // MOSTRAR BOTÃO DE ELIMINAR
+            document.getElementById('btn-eliminar-permanente').style.display = 'flex';
             
             document.getElementById('aviso-erro').style.display = 'none';
             document.getElementById('aviso-sucesso').style.display = 'none';
-            document.getElementById('input-nome').focus();
         }
 
+        // 3. LIMPAR / RESET
         function limparFormulario() {
             editMode = false;
-            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-user-plus"></i> Criar Nova Conta';
+            currentUserId = null;
+            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-user-plus"></i> Registar Nova Conta';
             document.getElementById('btn-save-text').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Guardar Utilizador';
             document.getElementById('pass-hint').style.display = 'none';
-            document.getElementById('btn-eliminar').style.display = 'none'; 
+            document.getElementById('btn-status-toggle').style.display = 'none'; 
+            document.getElementById('btn-eliminar-permanente').style.display = 'none'; // ESCONDER ELIMINAR
             
             document.getElementById('input-nome').value = '';
             document.getElementById('input-email').value = '';
@@ -237,62 +262,104 @@
             document.getElementById('aviso-sucesso').style.display = 'none';
         }
 
-        async function eliminarUtilizador() {
-            const email = document.getElementById('input-email').value;
-            if (confirm(`Atenção: Deseja eliminar permanentemente a conta ${email}?`)) {
-                try {
-                    const resposta = await fetch(`http://localhost:8081/api/utilizadores/eliminar/${email}`, { method: 'DELETE' });
-                    if (resposta.ok) {
-                        alert("Utilizador removido com sucesso.");
-                        carregarTabela();
-                        limparFormulario();
-                    }
-                } catch (e) {
-                    alert("Erro ao comunicar com o servidor para eliminar.");
-                }
-            }
-        }
-
+        // 4. GUARDAR OU ATUALIZAR (POST / PUT)
         async function guardarConta() {
             const nome = document.getElementById('input-nome').value;
-            const email = document.getElementById('input-email').value;
+            const emailInput = document.getElementById('input-email');
+            const email = emailInput.value;
             const password = document.getElementById('input-password').value;
-            const perfil = document.getElementById('input-perfil').value;
-            const avisoErro = document.getElementById('aviso-erro');
-            const avisoSucesso = document.getElementById('aviso-sucesso');
+            const cargo = document.getElementById('input-perfil').value;
 
-            if (!nome || !email || !perfil) {
-                avisoErro.innerText = "Campos Nome, Email e Perfil são obrigatórios.";
-                avisoErro.style.display = 'block';
+            // ALTERAÇÃO: Validação de email integrada
+            if (!emailInput.checkValidity()) {
+                alert(emailInput.title || "Por favor, insira um email válido.");
+                emailInput.focus();
                 return;
             }
 
-            const userObj = { nome, email, password, cargo: perfil };
-            const url = editMode ? 'http://localhost:8081/api/utilizadores/atualizar' : 'http://localhost:8081/api/utilizadores/guardar';
+            if (!nome || !email || !cargo) {
+                alert("Por favor, preencha o Nome, Email e Perfil.");
+                return;
+            }
+
+            const userObj = { nome, email, password, cargo };
+            
+            const url = editMode 
+                ? `http://localhost:8081/api/utilizadores/${currentUserId}` 
+                : 'http://localhost:8081/api/utilizadores/guardar';
+            
+            const metodo = editMode ? 'PUT' : 'POST';
 
             try {
                 const resposta = await fetch(url, {
-                    method: 'POST',
+                    method: metodo,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(userObj)
                 });
 
                 if (resposta.ok) {
-                    avisoSucesso.innerText = editMode ? "Utilizador atualizado!" : "Utilizador criado!";
-                    avisoSucesso.style.display = 'block';
-                    avisoErro.style.display = 'none';
+                    mostrarAviso(editMode ? "Utilizador atualizado com sucesso!" : "Utilizador criado com sucesso!");
                     carregarTabela();
                     setTimeout(limparFormulario, 1500);
                 } else {
-                    throw new Error();
+                    const erroMsg = await resposta.text();
+                    alert("Erro do Servidor: " + erroMsg);
                 }
             } catch (e) {
-                avisoErro.innerText = "Erro ao guardar dados. Verifique a ligação.";
-                avisoErro.style.display = 'block';
+                alert("Erro ao comunicar com o Backend Java.");
             }
+        }
+
+        // 5. MUDAR ESTADO (ATIVAR/DESATIVAR)
+        async function mudarEstado(acao) {
+            const confirmacao = acao === 'desativar' 
+                ? "Tem a certeza que deseja suspender o acesso deste utilizador?" 
+                : "Deseja reativar o acesso deste utilizador?";
+
+            if (confirm(confirmacao)) {
+                try {
+                    const resposta = await fetch(`http://localhost:8081/api/utilizadores/${currentUserId}/${acao}`, { 
+                        method: 'PUT' 
+                    });
+                    if (resposta.ok) {
+                        mostrarAviso(`Utilizador ${acao}do com sucesso.`);
+                        carregarTabela();
+                        setTimeout(limparFormulario, 1000);
+                    }
+                } catch (e) {
+                    alert("Erro ao mudar estado do utilizador.");
+                }
+            }
+        }
+
+        // 6. ELIMINAR PERMANENTE (DELETE)
+        async function eliminarPermanente() {
+            if (confirm("ATENÇÃO: Esta ação é IRREVERSÍVEL. O utilizador será apagado da base de dados. Deseja continuar?")) {
+                try {
+                    const resposta = await fetch(`http://localhost:8081/api/utilizadores/${currentUserId}`, { 
+                        method: 'DELETE' 
+                    });
+                    if (resposta.ok) {
+                        alert("Utilizador removido permanentemente.");
+                        carregarTabela();
+                        limparFormulario();
+                    } else {
+                        alert("Erro ao eliminar utilizador.");
+                    }
+                } catch (e) {
+                    alert("Erro de comunicação com o servidor.");
+                }
+            }
+        }
+
+        function mostrarAviso(msg) {
+            const aviso = document.getElementById('aviso-sucesso');
+            aviso.innerText = msg;
+            aviso.style.display = 'block';
         }
 
         window.onload = carregarTabela;
     </script>
+
 </body>
 </html>
