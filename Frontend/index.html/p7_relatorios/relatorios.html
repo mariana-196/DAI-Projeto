@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatórios do Sistema</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #1f3c88;
+        }
+
+        .container {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 1100px;
+            margin: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .campo {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        input, select {
+            padding: 7px;
+            margin-right: 15px;
+        }
+
+        button {
+            padding: 9px 14px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #1f3c88;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #162d66;
+        }
+
+        .erro {
+            color: red;
+            margin-top: 15px;
+        }
+
+        .resultado {
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 9px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #1f3c88;
+            color: white;
+        }
+
+        .filtros {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #eef2ff;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Relatórios do Sistema</h1>
+
+        <p>
+            Gere relatórios de auditoria e relatórios operacionais, aplique filtros,
+            pré-visualize os resultados e exporte em CSV.
+        </p>
+
+        <div class="campo">
+            <label for="tipoRelatorio">Tipo de relatório:</label>
+            <select id="tipoRelatorio" onchange="mudarTipoRelatorio()">
+                <option value="AUDITORIA">Relatório de Auditoria</option>
+                <option value="OPERACIONAL">Relatório Operacional</option>
+            </select>
+        </div>
+
+        <div class="campo">
+            <label for="dataInicio">Data início:</label>
+            <input type="date" id="dataInicio">
+
+            <label for="dataFim">Data fim:</label>
+            <input type="date" id="dataFim">
+        </div>
+
+        <div id="filtrosAuditoria" class="filtros">
+            <h3>Filtros de Segurança</h3>
+
+            <label for="utilizador">Utilizador:</label>
+            <input type="text" id="utilizador" placeholder="Ex: admin">
+
+            <label for="severidade">Severidade:</label>
+            <select id="severidade">
+                <option value="">Todas</option>
+                <option value="INFO">INFO</option>
+                <option value="AVISO">AVISO</option>
+                <option value="ERRO">ERRO</option>
+                <option value="CRITICO">CRÍTICO</option>
+            </select>
+
+            <label for="evento">Evento:</label>
+            <input type="text" id="evento" placeholder="Ex: LOGIN">
+        </div>
+
+        <div id="filtrosOperacional" class="filtros" style="display: none;">
+            <h3>Filtros de Negócio</h3>
+
+            <label for="linha">Linha:</label>
+            <input type="text" id="linha" placeholder="Ex: 43">
+
+            <label for="veiculo">Veículo:</label>
+            <input type="text" id="veiculo" placeholder="Ex: BUS-102">
+
+            <label for="paragem">Paragem:</label>
+            <input type="text" id="paragem" placeholder="Ex: Universidade">
+        </div>
+
+        <div class="campo" style="margin-top: 20px;">
+            <button onclick="gerarRelatorio()">Gerar Relatório</button>
+            <button onclick="exportarCSV()">Exportar CSV</button>
+            <button onclick="limparFiltros()">Limpar</button>
+        </div>
+
+        <div id="erro" class="erro"></div>
+
+        <div id="resultado" class="resultado"></div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:8081/api/relatorios";
+
+        function mudarTipoRelatorio() {
+            const tipo = document.getElementById("tipoRelatorio").value;
+
+            document.getElementById("resultado").innerHTML = "";
+            document.getElementById("erro").innerText = "";
+
+            if (tipo === "AUDITORIA") {
+                document.getElementById("filtrosAuditoria").style.display = "block";
+                document.getElementById("filtrosOperacional").style.display = "none";
+            } else {
+                document.getElementById("filtrosAuditoria").style.display = "none";
+                document.getElementById("filtrosOperacional").style.display = "block";
+            }
+        }
+
+        function criarFiltro() {
+            return {
+                tipoRelatorio: document.getElementById("tipoRelatorio").value,
+                dataInicio: document.getElementById("dataInicio").value || null,
+                dataFim: document.getElementById("dataFim").value || null,
+
+                utilizador: document.getElementById("utilizador").value || null,
+                severidade: document.getElementById("severidade").value || null,
+                evento: document.getElementById("evento").value || null,
+
+                linha: document.getElementById("linha").value || null,
+                veiculo: document.getElementById("veiculo").value || null,
+                paragem: document.getElementById("paragem").value || null
+            };
+        }
+
+        async function gerarRelatorio() {
+            document.getElementById("erro").innerText = "";
+            document.getElementById("resultado").innerHTML = "A gerar relatório...";
+
+            const filtro = criarFiltro();
+
+            const endpoint = filtro.tipoRelatorio === "AUDITORIA"
+                ? `${API_URL}/auditoria`
+                : `${API_URL}/operacional`;
+
+            try {
+                const resposta = await fetch(endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(filtro)
+                });
+
+                if (!resposta.ok) {
+                    const mensagemErro = await resposta.text();
+                    throw new Error(mensagemErro || "Erro ao gerar relatório.");
+                }
+
+                const relatorio = await resposta.json();
+                mostrarRelatorio(relatorio);
+
+            } catch (error) {
+                document.getElementById("resultado").innerHTML = "";
+                document.getElementById("erro").innerText = error.message;
+            }
+        }
+
+        function mostrarRelatorio(relatorio) {
+            const resultado = document.getElementById("resultado");
+
+            let html = `
+                <h2>${relatorio.titulo}</h2>
+                <p><strong>Tipo:</strong> ${relatorio.tipo}</p>
+                <p><strong>Gerado em:</strong> ${relatorio.geradoEm}</p>
+                <p><strong>Gerado por:</strong> ${relatorio.geradoPor}</p>
+                <h3>Pré-visualização</h3>
+            `;
+
+            if (!relatorio.dados || relatorio.dados.length === 0) {
+                html += "<p>Sem dados disponíveis.</p>";
+                resultado.innerHTML = html;
+                return;
+            }
+
+            const colunas = Object.keys(relatorio.dados[0]);
+
+            html += "<table>";
+            html += "<thead><tr>";
+
+            colunas.forEach(coluna => {
+                html += `<th>${coluna}</th>`;
+            });
+
+            html += "</tr></thead>";
+            html += "<tbody>";
+
+            relatorio.dados.forEach(linha => {
+                html += "<tr>";
+
+                colunas.forEach(coluna => {
+                    html += `<td>${linha[coluna] ?? ""}</td>`;
+                });
+
+                html += "</tr>";
+            });
+
+            html += "</tbody></table>";
+
+            resultado.innerHTML = html;
+        }
+
+        async function exportarCSV() {
+            document.getElementById("erro").innerText = "";
+
+            const filtro = criarFiltro();
+
+            try {
+                const resposta = await fetch(`${API_URL}/exportar/csv`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(filtro)
+                });
+
+                if (!resposta.ok) {
+                    const mensagemErro = await resposta.text();
+                    throw new Error(mensagemErro || "Erro ao exportar CSV.");
+                }
+
+                const blob = await resposta.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                const link = document.createElement("a");
+                link.href = url;
+
+                if (filtro.tipoRelatorio === "AUDITORIA") {
+                    link.download = "relatorio_auditoria.csv";
+                } else {
+                    link.download = "relatorio_operacional.csv";
+                }
+
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                window.URL.revokeObjectURL(url);
+
+            } catch (error) {
+                document.getElementById("erro").innerText = error.message;
+            }
+        }
+
+        function limparFiltros() {
+            document.getElementById("dataInicio").value = "";
+            document.getElementById("dataFim").value = "";
+
+            document.getElementById("utilizador").value = "";
+            document.getElementById("severidade").value = "";
+            document.getElementById("evento").value = "";
+
+            document.getElementById("linha").value = "";
+            document.getElementById("veiculo").value = "";
+            document.getElementById("paragem").value = "";
+
+            document.getElementById("resultado").innerHTML = "";
+            document.getElementById("erro").innerText = "";
+        }
+    </script>
+</body>
+</html>
