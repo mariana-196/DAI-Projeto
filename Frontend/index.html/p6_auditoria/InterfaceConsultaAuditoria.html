@@ -184,9 +184,9 @@
                     <label>Módulo</label>
                     <select id="filtro-modulo">
                         <option value="todos">Todos os Módulos</option>
-                        <option value="auth">Autenticação (UC1)</option>
-                        <option value="bilhetica">Bilhética (UC3)</option>
-                        <option value="iot">Sensores IoT (UC4)</option>
+                        <option value="Autenticação">Autenticação (UC1)</option>
+                        <option value="Bilhética">Bilhética (UC3)</option>
+                        <option value="Sensores IoT">Sensores IoT (UC4)</option>
                     </select>
                 </div>
                 <button class="btn-action btn-pesquisar" onclick="pesquisarLogs()"><i class="fa-solid fa-magnifying-glass"></i> Pesquisar</button>
@@ -263,47 +263,56 @@
 
         // Função para pesquisar e carregar logs da API
 
-    async function pesquisarLogs() {
-        const tbody = document.getElementById('tabela-logs-corpo');
-        const msgErro = document.getElementById('msg-erro');
-        const contador = document.getElementById('contador-logs');
+async function pesquisarLogs() {
+    const tbody = document.getElementById('tabela-logs-corpo');
+    const msgErro = document.getElementById('msg-erro');
+    const contador = document.getElementById('contador-logs');
 
-        // Esconde a caixa de erro e mostra a mensagem de carregamento
-        msgErro.style.display = 'none';
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">A carregar dados do servidor...</td></tr>';
+    // 1. Ir buscar os valores dos filtros que estão no ecrã
+    const dataInicioValue = document.getElementById('data-inicio').value;
+    const dataFimValue = document.getElementById('data-fim').value;
+    const moduloValue = document.getElementById('filtro-modulo').value;
 
-        try {
-            // O URL exato que já vimos que está a funcionar no teu Java!
-            const url = 'http://localhost:8081/api/auditoria/logs'; 
+    msgErro.style.display = 'none';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">A filtrar dados...</td></tr>';
 
-            const response = await fetch(url);
-        
-            // Se a resposta não for 200 OK, atira um erro para ir para o catch
-            if (!response.ok) throw new Error("Erro na comunicação com o servidor.");
-        
-            // Converte a resposta do Java para JSON
-            const logs = await response.json();
-        
-            // Chama a função que desenha as linhas da tabela (que já tens no teu código)
-            renderizarTabela(logs, tbody, contador);
+    try {
+        // 2. Criar a URL base
+        let url = new URL('http://localhost:8081/api/auditoria/logs');
 
-        } catch (error) {
-            console.error("Erro ao ligar ao Java:", error);
-        
-            // Mostra o erro bonitinho no ecrã se o Java estiver desligado
-            msgErro.innerHTML = '<strong><i class="fa-solid fa-wifi"></i> Erro Técnico (Fluxo Alternativo):</strong> Não foi possível comunicar com a base de dados de auditoria.';
-            msgErro.style.display = 'block';
-        
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Falha ao carregar registos. Verifique a ligação.</td></tr>';
-            contador.innerText = "Mostrando 0 registos.";
+        // 3. Adicionar o filtro de Módulo (só se não for "todos")
+        if (moduloValue !== "todos") {
+            url.searchParams.append('modulo', moduloValue);
         }
-    }
 
+        // 4. Adicionar as Datas no formato LocalDateTime que o teu Java exige (com o T00:00:00)
+        if (dataInicioValue) {
+            url.searchParams.append('dataInicio', dataInicioValue + "T00:00:00");
+        }
+        if (dataFimValue) {
+            url.searchParams.append('dataFim', dataFimValue + "T23:59:59");
+        }
+
+        // 5. Fazer o pedido com a URL completa (ex: .../logs?modulo=auth&dataInicio=...)
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error("Erro na comunicação com o servidor.");
+        
+        const logs = await response.json();
+        renderizarTabela(logs, tbody, contador);
+
+    } catch (error) {
+        console.error("Erro ao filtrar:", error);
+        msgErro.innerHTML = '<strong><i class="fa-solid fa-wifi"></i> Erro:</strong> Não foi possível filtrar os dados.';
+        msgErro.style.display = 'block';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Falha ao carregar registos.</td></tr>';
+    }
+}
         function renderizarTabela(logs, tbody, contador) {
             tbody.innerHTML = "";
-            
+    
             if (logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum registo encontrado para os filtros selecionados.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum registo encontrado.</td></tr>';
                 contador.innerText = "Mostrando 0 registos.";
                 return;
             }
@@ -311,17 +320,19 @@
             logs.forEach(log => {
                 let badgeClass = "badge-info";
                 if (log.nivel === "AVISO") badgeClass = "badge-warning";
-                if (log.nivel === "SENSÍVEL" || log.nivel === "CRÍTICO") badgeClass = "badge-critical";
+                if (log.nivel === "CRÍTICO" || log.nivel === "SENSÍVEL") badgeClass = "badge-critical";
+
+                const dataLocal = new Date(log.timestamp).toLocaleString('pt-PT');
 
                 tbody.innerHTML += `
-                    <tr onclick="mostrarDetalhes('${log.detalhes}')">
-                        <td>${log.data}</td>
+                    <tr onclick="mostrarDetalhes('${log.detalhe}')"> 
+                        <td>${dataLocal}</td>
                         <td>${log.utilizador}</td>
                         <td>${log.acao}</td>
                         <td>${log.modulo}</td>
-                        <td>${log.ip}</td>
+                        <td>${log.ipOrigem}</td> 
                         <td><span class="badge ${badgeClass}">${log.nivel}</span></td>
-                    </tr>
+                     </tr>
                 `;
             });
             contador.innerText = `Mostrando ${logs.length} registo(s).`;
@@ -331,6 +342,7 @@
         function exportarRelatorio() {
             const dataInicio = document.getElementById('data-inicio').value;
             const dataFim = document.getElementById('data-fim').value;
+            const modulo = document.getElementById('filtro-modulo').value;
             const msgErro = document.getElementById('msg-erro');
 
             msgErro.style.display = 'none';
@@ -347,6 +359,13 @@
             }
 
             alert("A compilar registos... Ficheiro CSV gerado com sucesso! (UC2.2)");
+            
+            let url = new URL('http://localhost:8081/api/auditoria/exportar');
+            if (dataInicio) url.searchParams.append('dataInicio', dataInicio + "T00:00:00");
+            if (dataFim) url.searchParams.append('dataFim', dataFim + "T23:59:59");
+            if (modulo !== "todos") url.searchParams.append('modulo', modulo);
+
+            window.open(url, '_blank');
         }
 
         // Tenta carregar os logs logo ao iniciar a página
