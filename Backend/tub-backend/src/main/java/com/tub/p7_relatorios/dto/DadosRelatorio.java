@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-public class RelatorioDTO {
+public class DadosRelatorio {
 
     private String titulo;
     private String tipo;
@@ -12,10 +12,10 @@ public class RelatorioDTO {
     private String geradoPor;
     private List<Map<String, Object>> dados;
 
-    public RelatorioDTO() {
+    public DadosRelatorio() {
     }
 
-    public RelatorioDTO(String titulo, String tipo, LocalDateTime geradoEm, String geradoPor, List<Map<String, Object>> dados) {
+    public DadosRelatorio(String titulo, String tipo, LocalDateTime geradoEm, String geradoPor, List<Map<String, Object>> dados) {
         this.titulo = titulo;
         this.tipo = tipo;
         this.geradoEm = geradoEm;
@@ -27,36 +27,36 @@ public class RelatorioDTO {
         return titulo;
     }
 
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
     public String getTipo() {
         return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
     }
 
     public LocalDateTime getGeradoEm() {
         return geradoEm;
     }
 
-    public void setGeradoEm(LocalDateTime geradoEm) {
-        this.geradoEm = geradoEm;
-    }
-
     public String getGeradoPor() {
         return geradoPor;
     }
 
-    public void setGeradoPor(String geradoPor) {
-        this.geradoPor = geradoPor;
-    }
-
     public List<Map<String, Object>> getDados() {
         return dados;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public void setGeradoEm(LocalDateTime geradoEm) {
+        this.geradoEm = geradoEm;
+    }
+
+    public void setGeradoPor(String geradoPor) {
+        this.geradoPor = geradoPor;
     }
 
     public void setDados(List<Map<String, Object>> dados) {
