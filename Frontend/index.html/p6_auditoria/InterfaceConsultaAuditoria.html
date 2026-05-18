@@ -152,6 +152,40 @@
             font-size: 14px;
             display: none; 
         }
+
+        /* NOVO: Estilos para a Janela Modal do Novo Alerta */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            animation: animarModal 0.3s ease;
+        }
+        @keyframes animarModal {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .modal-header h4 { margin: 0; color: #0D47A1; font-size: 18px; }
+        .modal-close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #888; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -216,21 +250,18 @@
 
         <div class="sidebar">
             
-            
             <div class="card">
                 <h3><i class="fa-solid fa-gears"></i> Configurações</h3>
                 <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Gira as políticas de retenção, regras de notificação e níveis mínimos de registo.</p>
-                
                 
                 <a href="InterfaceGestaoConfiguracoesAuditoria.html" class="btn-action" style="background: #0D47A1; color: white; width: 100%; justify-content: center; box-sizing: border-box;">
                     <i class="fa-solid fa-sliders"></i> Abrir Configurações
                 </a>
             </div>
             
-
             <div class="card">
                 <h3><i class="fa-solid fa-shield-halved"></i> Alertas de Segurança</h3>
-                <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Monitorização ativa de comportamentos anómalos no sistema.</p>
+                <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Monitorização activa de comportamentos anómalos no sistema.</p>
                 
                 <div style="border: 1px solid #ddd; border-radius: 6px; padding: 12px; margin-bottom: 10px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
@@ -248,66 +279,175 @@
                     <span style="font-size: 12px; color: #555;">Logins entre as 01:00 e as 05:00.</span>
                 </div>
 
-                <button class="btn-action" style="background: white; border: 1px dashed #0D47A1; color: #0D47A1; width: 100%; justify-content: center; margin-top: 15px;" onclick="alert('Funcionalidade de criar alerta (UC2.3) selecionada.')">
+                <div id="contentor-alertas-dinamicos" style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;"></div>
+
+                <button class="btn-action" style="background: white; border: 1px dashed #0D47A1; color: #0D47A1; width: 100%; justify-content: center; margin-top: 15px;" onclick="abrirModalAlerta()">
                     <i class="fa-solid fa-plus"></i> Novo Alerta
                 </button>
             </div>
         </div>
     </div>
 
+    <div id="modal-novo-alerta" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4><i class="fa-solid fa-bell"></i> Configurar Novo Alerta</h4>
+                <button class="modal-close-btn" onclick="fecharModalAlerta()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-novo-alerta" onsubmit="salvarNovoAlerta(event)">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Tipo de Evento (Ex: Falha, Sábado, Exportação)</label>
+                        <input type="text" id="alerta-evento" required placeholder="Ex: Falha de Autenticação">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Destinatário do Alerta (E-mail)</label>
+                        <input type="email" id="alerta-email" required placeholder="seguranca@tub.pt">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Canal de Notificação</label>
+                        <select id="alerta-canal">
+                            <option value="EMAIL">E-mail</option>
+                            <option value="SISTEMA">Consola de Sistema</option>
+                            <option value="SMS">SMS de Emergência</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Severidade Mínima</label>
+                        <select id="alerta-severidade">
+                            <option value="AVISO">AVISO</option>
+                            <option value="CRÍTICO">CRÍTICO</option>
+                            <option value="INFO">INFORMATIVO</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-action" style="background: #e2e8f0; color: #333;" onclick="fecharModalAlerta()">Cancelar</button>
+                        <button type="submit" class="btn-action" style="background: #0D47A1; color: white;">Criar Regra</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Funções Novas para controlar o Modal e carregar as regras criadas do Java
+        function abrirModalAlerta() {
+            document.getElementById('modal-novo-alerta').style.display = 'flex';
+        }
+
+        function fecharModalAlerta() {
+            document.getElementById('modal-novo-alerta').style.display = 'none';
+            document.getElementById('form-novo-alerta').reset();
+        }
+
+        // Faz o pedido GET ao Java para carregar todas as regras e colocá-las na tabela lateral
+        async function carregarRegrasDoServidor() {
+            const contentor = document.getElementById('contentor-alertas-dinamicos');
+            try {
+                const response = await fetch('http://localhost:8081/api/regras-auditoria');
+                if (!response.ok) return;
+                
+                const regras = await response.json();
+                contentor.innerHTML = ""; // Limpa os dinâmicos anteriores antes de redesenhar
+
+                regras.forEach(regra => {
+                    const badgeClass = regra.ativa ? "badge-warning" : "background: #eee; color: #888;";
+                    const statusText = regra.ativa ? "ATIVO" : "INATIVO";
+                    
+                    contentor.innerHTML += `
+                        <div style="border: 1px solid #ddd; border-radius: 6px; padding: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <strong>${regra.tipoEvento}</strong>
+                                <span class="badge ${regra.ativa ? 'badge-warning' : ''}" style="${!regra.ativa ? 'background: #eee; color: #888;' : 'background: #fff3e0; color: #e65100;'}">${statusText}</span>
+                                </div>
+                            <span style="font-size: 12px; color: #555;">Canal: ${regra.canal} | Destino: ${regra.destinatario}</span>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Não foi possível carregar as regras da API:", error);
+            }
+        }
+
+        // Faz o pedido POST para submeter a nova regra para o Java
+        async function salvarNovoAlerta(event) {
+            event.preventDefault();
+
+            const novaRegra = {
+                tipoEvento: document.getElementById('alerta-evento').value,
+                destinatario: document.getElementById('alerta-email').value,
+                canal: document.getElementById('alerta-canal').value,
+                severidadeMinima: document.getElementById('alerta-severidade').value,
+                ativa: true
+            };
+
+            try {
+                const response = await fetch('http://localhost:8081/api/regras-auditoria', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(novaRegra)
+                });
+
+                if (response.ok) {
+                    alert("Regra de Alerta criada e guardada com sucesso na Base de Dados!");
+                    fecharModalAlerta();
+                    carregarRegrasDoServidor(); // Atualiza a barra lateral na hora!
+                } else {
+                    alert("Erro ao guardar a regra no servidor.");
+                }
+            } catch (error) {
+                console.error("Erro no envio:", error);
+                alert("Erro de ligação ao servidor Java.");
+            }
+        }
+
+
         // Função do UC2.1 (Fluxo Normal)
         function mostrarDetalhes(detalhe) {
             alert("Detalhes do Registo (UC2.1):\n\n" + detalhe);
         }
 
         // Função para pesquisar e carregar logs da API
+        async function pesquisarLogs() {
+            const tbody = document.getElementById('tabela-logs-corpo');
+            const msgErro = document.getElementById('msg-erro');
+            const contador = document.getElementById('contador-logs');
 
-async function pesquisarLogs() {
-    const tbody = document.getElementById('tabela-logs-corpo');
-    const msgErro = document.getElementById('msg-erro');
-    const contador = document.getElementById('contador-logs');
+            const dataInicioValue = document.getElementById('data-inicio').value;
+            const dataFimValue = document.getElementById('data-fim').value;
+            const moduloValue = document.getElementById('filtro-modulo').value;
 
-    // 1. Ir buscar os valores dos filtros que estão no ecrã
-    const dataInicioValue = document.getElementById('data-inicio').value;
-    const dataFimValue = document.getElementById('data-fim').value;
-    const moduloValue = document.getElementById('filtro-modulo').value;
+            msgErro.style.display = 'none';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">A filtrar dados...</td></tr>';
 
-    msgErro.style.display = 'none';
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">A filtrar dados...</td></tr>';
+            try {
+                let url = new URL('http://localhost:8081/api/auditoria/logs');
 
-    try {
-        // 2. Criar a URL base
-        let url = new URL('http://localhost:8081/api/auditoria/logs');
+                if (moduloValue !== "todos") {
+                    url.searchParams.append('modulo', moduloValue);
+                }
 
-        // 3. Adicionar o filtro de Módulo (só se não for "todos")
-        if (moduloValue !== "todos") {
-            url.searchParams.append('modulo', moduloValue);
+                if (dataInicioValue) {
+                    url.searchParams.append('dataInicio', dataInicioValue + "T00:00:00");
+                }
+                if (dataFimValue) {
+                    url.searchParams.append('dataFim', dataFimValue + "T23:59:59");
+                }
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Erro na comunicação com o servidor.");
+                
+                const logs = await response.json();
+                renderizarTabela(logs, tbody, contador);
+
+            } catch (error) {
+                console.error("Erro ao filtrar:", error);
+                msgErro.innerHTML = '<strong><i class="fa-solid fa-wifi"></i> Erro:</strong> Não foi possível filtrar os dados.';
+                msgErro.style.display = 'block';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Falha ao carregar registos.</td></tr>';
+            }
         }
 
-        // 4. Adicionar as Datas no formato LocalDateTime que o teu Java exige (com o T00:00:00)
-        if (dataInicioValue) {
-            url.searchParams.append('dataInicio', dataInicioValue + "T00:00:00");
-        }
-        if (dataFimValue) {
-            url.searchParams.append('dataFim', dataFimValue + "T23:59:59");
-        }
-
-        // 5. Fazer o pedido com a URL completa (ex: .../logs?modulo=auth&dataInicio=...)
-        const response = await fetch(url);
-        
-        if (!response.ok) throw new Error("Erro na comunicação com o servidor.");
-        
-        const logs = await response.json();
-        renderizarTabela(logs, tbody, contador);
-
-    } catch (error) {
-        console.error("Erro ao filtrar:", error);
-        msgErro.innerHTML = '<strong><i class="fa-solid fa-wifi"></i> Erro:</strong> Não foi possível filtrar os dados.';
-        msgErro.style.display = 'block';
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Falha ao carregar registos.</td></tr>';
-    }
-}
         function renderizarTabela(logs, tbody, contador) {
             tbody.innerHTML = "";
     
@@ -368,8 +508,11 @@ async function pesquisarLogs() {
             window.open(url, '_blank');
         }
 
-        // Tenta carregar os logs logo ao iniciar a página
-        window.onload = pesquisarLogs;
+        // Executa a carga inicial de logs E das regras dinâmicas assim que o ecrã abre
+        window.onload = function() {
+            pesquisarLogs();
+            carregarRegrasDoServidor();
+        };
     </script>
 </body>
 </html>

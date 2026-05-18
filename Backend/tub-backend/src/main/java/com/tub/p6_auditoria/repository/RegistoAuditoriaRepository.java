@@ -32,4 +32,9 @@ public interface RegistoAuditoriaRepository extends JpaRepository<RegistoAuditor
             @Param("dataInicio") LocalDateTime dataInicio,
             @Param("dataFim") LocalDateTime dataFim
     );
+
+    @org.springframework.data.jpa.repository.Modifying
+    @jakarta.transaction.Transactional
+    @Query("DELETE FROM RegistoAuditoria r WHERE r.timestamp < :dataLimite")
+    void apagarLogsAntigos(@Param("dataLimite") LocalDateTime dataLimite);
 }
