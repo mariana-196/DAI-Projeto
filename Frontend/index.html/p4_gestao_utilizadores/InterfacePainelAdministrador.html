@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Utilizadores (TUB)</title>
+    
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0D47A1;
+            --primary-hover: #002171;
+            --bg-color: #f1f5f9;
+            --success: #166534;
+            --danger: #dc2626;
+        }
+
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
+        
+        .header { 
+            background: linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%); 
+            color: white; padding: 16px 32px; display: flex; 
+            align-items: center; justify-content: space-between; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100;
+        }
+        
+        .header-left { display: flex; align-items: center; font-size: 20px; font-weight: 600; }
+        .header img { height: 38px; margin-right: 15px; }
+        
+        .btn-voltar { 
+            background: white; color: var(--primary); border: none; padding: 8px 16px; 
+            border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; 
+            font-weight: 600; transition: 0.2s; 
+        }
+
+        .container { display: flex; padding: 25px; gap: 25px; max-width: 1400px; margin: 0 auto; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); padding: 25px; }
+        h3 { margin-top: 0; color: var(--primary); font-size: 18px; border-bottom: 2px solid #f0f2f5; padding-bottom: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+        .lista-section { flex: 2; }
+        .form-section { flex: 1; background-color: #f8fafc; border: 1px solid #e2e8f0; height: fit-content; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #555; }
+        
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .badge-admin { background: #fee2e2; color: #dc2626; }
+        .badge-op { background: #e0f2fe; color: #0284c7; }
+        .badge-ativo { background: #dcfce7; color: var(--success); }
+        .badge-inativo { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; color: #555; font-weight: 600; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        
+        .btn-action { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; color: white; margin-bottom: 10px; }
+        .btn-save { background-color: #2E7D32; }
+        .btn-cancel { background-color: #94a3b8; }
+        .btn-delete-form { background-color: var(--danger); display: none; }
+
+        .alert-box { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; display: none; }
+        .alert-error { background-color: #fee2e2; color: #dc2626; border-left: 4px solid #dc2626; }
+        .alert-success { background-color: #dcfce7; color: #166534; border-left: 4px solid #166534; }
+        
+        .btn-tbl { border: none; background: none; cursor: pointer; font-size: 14px; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <img src="../images/tubwhite.png" alt="Logótipo TUB">
+            Plataforma TUB - Gestão de Utilizadores (Painel Administrador)
+        </div>
+        <a href="../p12_kpis_operacionais/InterfaceEstadoOperacao.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Sair do Painel</a>
+    </div>
+
+    <div class="container">
+        <div class="card lista-section">
+            <h3><i class="fa-solid fa-users"></i> Contas de Utilizador</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Perfil</th>
+                        <th>Estado</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-corpo">
+                    <tr><td colspan="5">A carregar utilizadores...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card form-section">
+            <h3 id="form-title"><i class="fa-solid fa-user-plus"></i> Registar Novo</h3>
+            
+            <div class="alert-box alert-error" id="aviso-erro"></div>
+            <div class="alert-box alert-success" id="aviso-sucesso"></div>
+
+            <div class="form-group">
+                <label>Nome Completo</label>
+                <input type="text" id="input-nome">
+            </div>
+            <div class="form-group">
+                <label>Email Profissional</label>
+                <input type="email" id="input-email">
+            </div>
+            <div class="form-group">
+                <label>Palavra-passe</label>
+                <input type="password" id="input-password">
+                <small id="pass-hint" style="font-size: 11px; color: #888; display: none;">Deixe vazio se não quiser alterar a atual.</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Perfil</label>
+                <select id="input-perfil">
+                    <option value="" disabled selected>Escolher papel...</option>
+                    <option value="OP">Operador TUB</option>
+                    <option value="ADMIN">Administrador</option>
+                </select>
+            </div>
+
+            <button class="btn-action btn-save" onclick="guardarConta()" id="btn-save-text">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar Utilizador
+            </button>
+            
+            <button class="btn-action btn-cancel" onclick="limparFormulario()">
+                <i class="fa-solid fa-eraser"></i> Limpar / Cancelar
+            </button>
+
+            <button class="btn-action btn-delete-form" id="btn-eliminar" onclick="desativarUtilizador()">
+                <i class="fa-solid fa-user-slash"></i> Desativar Esta Conta
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let editMode = false;
+        let currentUserId = null;
+
+        // CARREGAR TABELA (LIGAÇÃO AO BACKEND @GetMapping)
+        async function carregarTabela() {
+            const corpoTabela = document.getElementById('tabela-corpo');
+            try {
+                const resposta = await fetch('http://localhost:8081/api/utilizadores');
+                const utilizadores = await resposta.json();
+                corpoTabela.innerHTML = ''; 
+
+                utilizadores.forEach(user => {
+                    const cargoClass = user.cargo === 'ADMIN' ? 'badge-admin' : 'badge-op';
+                    const cargoNome = user.cargo === 'ADMIN' ? 'Admin' : 'Operador';
+                    
+                    // ESTADO DINÂMICO (UC 1.2.3 / 1.2.4)
+                    const statusClass = user.ativo ? 'badge-ativo' : 'badge-inativo';
+                    const statusTexto = user.ativo ? 'Ativo' : 'Desativado';
+
+                    corpoTabela.innerHTML += `
+                        <tr>
+                            <td>${user.nome}</td>
+                            <td>${user.email}</td>
+                            <td><span class="badge ${cargoClass}">${cargoNome}</span></td>
+                            <td><span class="badge ${statusClass}">${statusTexto}</span></td>
+                            <td>
+                                <button class="btn-tbl" title="Editar" onclick="ativarEdicao(${user.id}, '${user.nome}', '${user.email}', '${user.cargo}')">
+                                    <i class="fa-solid fa-user-pen"></i> Editar
+                                </button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (erro) {
+                corpoTabela.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">Erro ao ligar ao servidor Java.</td></tr>`;
+            }
+        }
+
+        // ATIVAR MODO EDIÇÃO
+        function ativarEdicao(id, nome, email, cargo) {
+            editMode = true;
+            currentUserId = id;
+            
+            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-user-gear"></i> Editar Utilizador';
+            document.getElementById('btn-save-text').innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizar Dados';
+            document.getElementById('pass-hint').style.display = 'block';
+            document.getElementById('btn-eliminar').style.display = 'flex'; 
+            
+            document.getElementById('input-nome').value = nome;
+            document.getElementById('input-email').value = email;
+            document.getElementById('input-email').readOnly = true; // Email não se muda por segurança
+            document.getElementById('input-perfil').value = cargo;
+            document.getElementById('input-password').value = '';
+        }
+
+        // LIMPAR FORMULÁRIO
+        function limparFormulario() {
+            editMode = false;
+            currentUserId = null;
+            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-user-plus"></i> Registar Novo';
+            document.getElementById('btn-save-text').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Guardar Utilizador';
+            document.getElementById('pass-hint').style.display = 'none';
+            document.getElementById('btn-eliminar').style.display = 'none'; 
+            
+            document.getElementById('input-nome').value = '';
+            document.getElementById('input-email').value = '';
+            document.getElementById('input-email').readOnly = false;
+            document.getElementById('input-password').value = '';
+            document.getElementById('input-perfil').selectedIndex = 0;
+            document.getElementById('aviso-erro').style.display = 'none';
+            document.getElementById('aviso-sucesso').style.display = 'none';
+        }
+
+        // GUARDAR OU ATUALIZAR (LIGAÇÃO AO BACKEND @PostMapping e @PutMapping)
+        async function guardarConta() {
+            const nome = document.getElementById('input-nome').value;
+            const email = document.getElementById('input-email').value;
+            const password = document.getElementById('input-password').value;
+            const perfil = document.getElementById('input-perfil').value;
+
+            if (!nome || !email || !perfil) {
+                alert("Preencha todos os campos obrigatórios.");
+                return;
+            }
+
+            const userObj = { nome, email, password, cargo: perfil };
+            
+            // Define URL e Método conforme a ação
+            const url = editMode 
+                ? `http://localhost:8081/api/utilizadores/${currentUserId}` 
+                : 'http://localhost:8081/api/utilizadores/guardar';
+            
+            const metodo = editMode ? 'PUT' : 'POST';
+
+            try {
+                const resposta = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userObj)
+                });
+
+                if (resposta.ok) {
+                    document.getElementById('aviso-sucesso').innerText = "Operação realizada com sucesso!";
+                    document.getElementById('aviso-sucesso').style.display = 'block';
+                    carregarTabela();
+                    setTimeout(limparFormulario, 1500);
+                } else {
+                    const erroTxt = await resposta.text();
+                    alert("Erro: " + erroTxt);
+                }
+            } catch (e) {
+                alert("Erro de comunicação com o servidor.");
+            }
+        }
+
+        // DESATIVAR CONTA (LIGAÇÃO AO BACKEND @PutMapping /desativar)
+        async function desativarUtilizador() {
+            if (confirm(`Deseja realmente desativar esta conta? O utilizador deixará de conseguir entrar no sistema.`)) {
+                try {
+                    const resposta = await fetch(`http://localhost:8081/api/utilizadores/${currentUserId}/desativar`, { 
+                        method: 'PUT' 
+                    });
+                    if (resposta.ok) {
+                        alert("Utilizador desativado.");
+                        carregarTabela();
+                        limparFormulario();
+                    }
+                } catch (e) { alert("Erro ao desativar."); }
+            }
+        }
+
+        window.onload = carregarTabela;
+    </script>
+</body>
+</html>
