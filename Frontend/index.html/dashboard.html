@@ -235,8 +235,13 @@
         document.getElementById("topbar-user-name").textContent = userName || "Carlos Silva";
         document.getElementById("topbar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
 
-        if (userRole === "ADMINISTRADOR") {
-            document.getElementById("nav-utilizadores").style.display = "flex";
+        const navUtilizadores = document.getElementById("nav-utilizadores");
+        if (navUtilizadores) {
+            navUtilizadores.style.display = "flex";
+            if (userRole !== "ADMINISTRADOR") {
+                const span = navUtilizadores.querySelector("span");
+                if (span) span.textContent = "O Meu Perfil";
+            }
         }
 
         document.getElementById("btn-logout").addEventListener("click", () => {

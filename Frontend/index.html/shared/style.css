@@ -145,7 +145,7 @@ body { font-family: 'Outfit', sans-serif; font-size: 14px; color: var(--t1); bac
 .user-info span { font-size: 11px; color: rgba(255,255,255,.45); }
 .user-role-badge {
   margin-left: auto; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600;
-  background: rgba(242,113,0,.2); color: #FFAD66;
+  background: rgba(208,11,19,.15); color: #FF8F94;
 }
 
 /* MAIN CONTENT AREA */

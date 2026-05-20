@@ -223,15 +223,37 @@
         if (!userToken) {
             window.location.href = "login.html";
         }
-        if (userRole !== "ADMINISTRADOR") {
-            // Non-admins shouldn't access this page
-            window.location.href = "dashboard.html";
+
+        const isAdmin = (userRole === "ADMINISTRADOR");
+
+        // Dynamic page content and navigation elements for Operator
+        const navUtilizadores = document.getElementById("nav-utilizadores");
+        if (navUtilizadores && !isAdmin) {
+            const span = navUtilizadores.querySelector("span");
+            if (span) span.textContent = "O Meu Perfil";
+        }
+
+        if (!isAdmin) {
+            // Adjust Breadcrumbs
+            const breadcrumbStrong = document.querySelector(".breadcrumb strong");
+            if (breadcrumbStrong) breadcrumbStrong.textContent = "O Meu Perfil";
+            
+            // Adjust Page Headers
+            const pageHeaderH1 = document.querySelector(".page-header h1");
+            if (pageHeaderH1) pageHeaderH1.textContent = "O Meu Perfil";
+            
+            const pageHeaderP = document.querySelector(".page-header p");
+            if (pageHeaderP) pageHeaderP.textContent = "Consulte e edite as informações da sua conta de utilizador";
+            
+            // Hide "Novo Utilizador" Button
+            const createBtn = document.querySelector("button[onclick='openCreateModal()']");
+            if (createBtn) createBtn.style.display = "none";
         }
 
         // Setup User Info
         document.getElementById("sidebar-user-name").textContent = userName || "Carlos Silva";
         document.getElementById("sidebar-user-email").textContent = userEmail || "admin@tub.pt";
-        document.getElementById("sidebar-user-role").textContent = userRole || "Admin";
+        document.getElementById("sidebar-user-role").textContent = translateCargo(userRole) || "Admin";
         document.getElementById("sidebar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
 
         document.getElementById("topbar-user-name").textContent = userName || "Carlos Silva";
@@ -244,29 +266,60 @@
 
         let allUsers = [];
 
+        function translateCargo(cargo) {
+            if (cargo === "ADMINISTRADOR") return "Administrador";
+            if (cargo === "GESTOR_TRANSPORTES") return "Gestor de Transportes";
+            if (cargo === "OPERADOR_CCO") return "Operador CCO";
+            return cargo || "Utilizador";
+        }
+
         async function loadUsers() {
             try {
                 allUsers = await apiGet("/api/utilizadores");
                 const tbody = document.getElementById("users-table-body");
                 tbody.innerHTML = "";
 
-                allUsers.forEach(u => {
+                // Determine display list: Admin sees all, Operators only see their own profile
+                let usersToDisplay = allUsers;
+                if (!isAdmin) {
+                    const loggedInId = sessionStorage.getItem("user_id");
+                    const loggedInEmail = sessionStorage.getItem("user_email");
+                    usersToDisplay = allUsers.filter(u => 
+                        (loggedInId && String(u.id) === String(loggedInId)) ||
+                        (loggedInEmail && u.email && u.email.toLowerCase() === loggedInEmail.toLowerCase())
+                    );
+                }
+
+                usersToDisplay.forEach(u => {
                     const tr = document.createElement("tr");
                     const statusClass = u.ativo ? 'badge-green' : 'badge-red';
                     const statusLabel = u.ativo ? 'Ativo' : 'Inativo';
                     const toggleLabel = u.ativo ? 'Desativar' : 'Ativar';
 
-                    tr.innerHTML = `
-                        <td><strong>${u.nome}</strong></td>
-                        <td>${u.email}</td>
-                        <td>${u.cargo}</td>
-                        <td><span class="badge ${statusClass}">${statusLabel}</span></td>
-                        <td style="text-align:right;">
+                    let actionsHtml = "";
+                    if (isAdmin) {
+                        actionsHtml = `
                             <div style="display:flex; justify-content:flex-end; gap:8px;">
                                 <button class="btn btn-outline btn-sm" onclick="openEditModal(${u.id})">Editar</button>
                                 <button class="btn btn-outline btn-sm" onclick="toggleUserStatus(${u.id}, ${u.ativo})">${toggleLabel}</button>
                                 <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="deleteUser(${u.id})">Eliminar</button>
                             </div>
+                        `;
+                    } else {
+                        actionsHtml = `
+                            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                                <button class="btn btn-outline btn-sm" onclick="openEditModal(${u.id})">Editar Perfil</button>
+                            </div>
+                        `;
+                    }
+
+                    tr.innerHTML = `
+                        <td><strong>${u.nome}</strong></td>
+                        <td>${u.email}</td>
+                        <td>${translateCargo(u.cargo)}</td>
+                        <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+                        <td style="text-align:right;">
+                            ${actionsHtml}
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -278,6 +331,7 @@
 
         // Modal triggers
         function openCreateModal() {
+            if (!isAdmin) return; // Prevent access
             document.getElementById("modal-title").textContent = "Registar Novo Utilizador";
             document.getElementById("user-id").value = "";
             document.getElementById("user-nome").value = "";
@@ -285,20 +339,50 @@
             document.getElementById("user-cargo").value = "OPERADOR_CCO";
             document.getElementById("user-password").value = "";
             document.getElementById("pwd-label").textContent = "Palavra-passe";
+            
+            // Enable inputs for Admin
+            document.getElementById("user-email").disabled = false;
+            document.getElementById("user-cargo").disabled = false;
+            
             document.getElementById("user-modal").classList.add("open");
         }
 
         function openEditModal(userId) {
+            // Check if Operator is trying to edit someone else
+            if (!isAdmin) {
+                const loggedInId = sessionStorage.getItem("user_id");
+                const loggedInEmail = sessionStorage.getItem("user_email");
+                const target = allUsers.find(user => user.id === userId);
+                const isOwn = target && (
+                    (loggedInId && String(target.id) === String(loggedInId)) ||
+                    (loggedInEmail && target.email.toLowerCase() === loggedInEmail.toLowerCase())
+                );
+                if (!isOwn) {
+                    alert("Erro: Não tem permissão para editar outros perfis.");
+                    return;
+                }
+            }
+
             const u = allUsers.find(user => user.id === userId);
             if (!u) return;
 
-            document.getElementById("modal-title").textContent = "Editar Utilizador";
+            document.getElementById("modal-title").textContent = isAdmin ? "Editar Utilizador" : "Editar O Meu Perfil";
             document.getElementById("user-id").value = u.id;
             document.getElementById("user-nome").value = u.nome;
             document.getElementById("user-email").value = u.email;
             document.getElementById("user-cargo").value = u.cargo;
             document.getElementById("user-password").value = "";
             document.getElementById("pwd-label").textContent = "Nova Palavra-passe (Deixe em branco para manter a atual)";
+            
+            // Limit inputs if not admin
+            if (isAdmin) {
+                document.getElementById("user-email").disabled = false;
+                document.getElementById("user-cargo").disabled = false;
+            } else {
+                document.getElementById("user-email").disabled = true;
+                document.getElementById("user-cargo").disabled = true;
+            }
+
             document.getElementById("user-modal").classList.add("open");
         }
 
@@ -319,7 +403,27 @@
                 return;
             }
 
-            const payload = { nome, email, cargo, ativo: true };
+            // Security check on save for non-admin
+            if (id && !isAdmin) {
+                const loggedInId = sessionStorage.getItem("user_id");
+                const loggedInEmail = sessionStorage.getItem("user_email");
+                const target = allUsers.find(user => String(user.id) === String(id));
+                const isOwn = target && (
+                    (loggedInId && String(target.id) === String(loggedInId)) ||
+                    (loggedInEmail && target.email.toLowerCase() === loggedInEmail.toLowerCase())
+                );
+                if (!isOwn) {
+                    alert("Acesso negado.");
+                    return;
+                }
+            }
+
+            const payload = { 
+                nome, 
+                email: isAdmin ? email : document.getElementById("user-email").value, 
+                cargo: isAdmin ? cargo : document.getElementById("user-cargo").value, 
+                ativo: true 
+            };
             if (password) {
                 payload.password = password;
             }
@@ -329,10 +433,19 @@
                     // PUT Edit
                     const res = await apiPut(`/api/utilizadores/${id}`, payload);
                     if (res) {
+                        // If updating own profile, update sessionStorage display info
+                        const loggedInId = sessionStorage.getItem("user_id");
+                        const loggedInEmail = sessionStorage.getItem("user_email");
+                        if (String(id) === String(loggedInId) || email.toLowerCase() === String(loggedInEmail).toLowerCase()) {
+                            sessionStorage.setItem("user_name", nome);
+                            document.getElementById("sidebar-user-name").textContent = nome;
+                            document.getElementById("topbar-user-name").textContent = nome;
+                        }
                         closeModal();
                         loadUsers();
                     }
                 } else {
+                    if (!isAdmin) return; // Non-admin cannot create users
                     // POST Guardar (requires password)
                     if (!password) {
                         alert("Defina uma palavra-passe para o novo utilizador.");
@@ -364,6 +477,7 @@
 
         // Toggle user status
         async function toggleUserStatus(userId, currentStatus) {
+            if (!isAdmin) return; // Prevent access
             try {
                 const action = currentStatus ? "desativar" : "ativar";
                 const res = await apiPut(`/api/utilizadores/${userId}/${action}`);
@@ -377,6 +491,7 @@
 
         // Delete user
         async function deleteUser(userId) {
+            if (!isAdmin) return; // Prevent access
             if (!confirm("Tem a certeza que deseja eliminar permanentemente este utilizador?")) return;
 
             try {

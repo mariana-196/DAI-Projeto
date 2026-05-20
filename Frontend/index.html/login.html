@@ -138,6 +138,7 @@
                 const response = await apiPost("/api/auth/login", { email, password });
                 if (response.token && response.utilizador) {
                     sessionStorage.setItem("user_token", response.token);
+                    sessionStorage.setItem("user_id", response.utilizador.id);
                     sessionStorage.setItem("user_name", response.utilizador.nome);
                     sessionStorage.setItem("user_email", response.utilizador.email);
                     sessionStorage.setItem("user_role", response.utilizador.cargo);
@@ -165,6 +166,7 @@
                 const response = await apiPost("/api/auth/login-gov", { email, codigoGov });
                 if (response.token && response.utilizador) {
                     sessionStorage.setItem("user_token", response.token);
+                    sessionStorage.setItem("user_id", response.utilizador.id);
                     sessionStorage.setItem("user_name", response.utilizador.nome);
                     sessionStorage.setItem("user_email", response.utilizador.email);
                     sessionStorage.setItem("user_role", response.utilizador.cargo);
