@@ -27,6 +27,12 @@ public class ControladorAdministracaoContas {
 
     @PostMapping("/guardar")
     public ResponseEntity<?> guardar(@RequestBody RegistoUtilizador novoUser) {
+        // --- NOVO: Validação de Formato de Email ---
+        if (emailInvalido(novoUser.getEmail())) {
+            return ResponseEntity.badRequest().body("Erro: O formato do email é inválido!");
+        }
+        // -------------------------------------------
+
         Optional<RegistoUtilizador> existente = utilizadorRepository.findByEmail(novoUser.getEmail());
 
         if (existente.isPresent()) {
@@ -86,5 +92,29 @@ public class ControladorAdministracaoContas {
         utilizadorRepository.save(utilizador);
 
         return ResponseEntity.ok("Utilizador ativado com sucesso.");
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+        Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
+
+        if (op.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            utilizadorRepository.deleteById(id);
+            return ResponseEntity.ok("Utilizador eliminado permanentemente.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Erro: Não é possível eliminar este utilizador pois ele possui registos históricos associados.");
+        }
+    }
+
+    // --- NOVO: Função Auxiliar de Validação ---
+    private boolean emailInvalido(String email) {
+        if (email == null) return true;
+        // Verifica se tem texto + @ + texto + . + extensão (mínimo 2 letras)
+        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        return !email.matches(regex);
     }
 }

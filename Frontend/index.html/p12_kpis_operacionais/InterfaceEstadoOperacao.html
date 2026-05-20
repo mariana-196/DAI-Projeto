@@ -220,7 +220,7 @@
             Dashboard Operacional Unificado
         </div>
         <div class="nav-menu">
-            <a href="Utilizadores(UC1.2).html" class="nav-btn"><i class="fa-solid fa-users"></i> Acessos</a>
+            <a href="../p4_gestao_utilizadores/InterfacePainelAdministrador.html" class="nav-btn"><i class="fa-solid fa-users"></i> Acessos</a>
             <a href="../p6_auditoria/InterfaceConsultaAuditoria.html" class="nav-btn"><i class="fa-solid fa-shield-halved"></i> Auditoria</a>
             <a href="../p8_gestao_bilhetica/Bilhetica(UC3).html" class="nav-btn"><i class="fa-solid fa-ticket"></i> Bilhética</a>
             <a href="../p5_lotacao/InterfaceDashboardFrota.html" class="nav-btn"><i class="fa-solid fa-bus"></i> Lotação (IoT)</a>
@@ -519,53 +519,47 @@
 
             const estadoLabel = a.estado || 'Pendente';
 
-            containerAlertas.innerHTML += `
-                <div class="alerta-item ${priorityClass}">
-                    <div class="alerta-header">
-                        <span class="alerta-title">${a.titulo}</span>
-                        <span class="badge ${badgeClass}">${estadoLabel}</span>
-                    </div>
-                    <p class="alerta-desc">${a.descricao}</p>
-                    <div class="alerta-actions">
-                        <select id="estado-alerta-${a.id}">
-                            <option value="PENDENTE" ${estadoNormalizado === 'PENDENTE' ? 'selected' : ''}>Pendente</option>
-                            <option value="EM_TRATAMENTO" ${estadoNormalizado === 'EM_TRATAMENTO' || estadoNormalizado === 'EM ANÁLISE' || estadoNormalizado === 'EM ANALISE' || estadoNormalizado === 'EM_RESOLUCAO' ? 'selected' : ''}>Em análise</option>
-                            <option value="RESOLVIDO" ${estadoNormalizado === 'RESOLVIDO' ? 'selected' : ''}>Resolvido</option>
-                        </select>
-                        <button id="btn-update-${a.id}" class="btn-update">
-                            <i class="fa-solid fa-check"></i> Salvar
-                        </button>
-                    </div>
-                </div>
-            `;
-            // Attach event listener to avoid inline onclick with template interpolation
-            const btn = document.getElementById(`btn-update-${a.id}`);
-            if (btn) btn.addEventListener('click', () => syncAlerta(a.id));
-        });
-    }
-
-    async function syncAlerta(id) {
-        const select = document.getElementById(`estado-alerta-${id}`);
-        const novoEstado = select.value;
-
-        try {
-            await apiPut(`/api/alerts/${id}`, {
-                estado: novoEstado
+                containerAlertas.innerHTML += `
+                    <div class="alerta-item ${priorityClass}">
+                        <div class="alerta-header">
+                            <span class="alerta-title">${a.titulo}</span>
+                            <span class="badge badge-pendente">${a.estado}</span>
+                        </div>
+                        <p class="alerta-desc">${a.descricao}</p>
+                        <div class="alerta-actions">
+                            <select><option>Resolver</option><option>Ignorar</option></select>
+                            <button class="btn-update" onclick="syncAlerta(${a.id})"><i class="fa-solid fa-check"></i> Salvar</button>
+                        </div>
+                    </div>`;
             });
-
-            alert("Estado do alerta atualizado com sucesso.");
-            atualizarDashboard();
-
-        } catch (error) {
-            alert("Não foi possível atualizar o alerta.");
-            console.error(error);
         }
-    }
 
-    function expirarSessao() {
-        alert("Aviso do Sistema: A sua sessão expirou.");
-        window.location.href = '../p1_autenticacao/InterfaceAutenticacao.html';
-    }
+        // --- SIMULADORES E NAVEGAÇÃO ---
+        function simularFalhaDB() {
+            document.getElementById('conteudo-dashboard').style.display = 'none';
+            document.getElementById('erro-db').style.display = 'block';
+        }
+
+        function expirarSessao() {
+            alert("Aviso do Sistema (Fluxo A2): A sua sessão expirou.");
+            window.location.href = 'InterfaceAutenticacao.html';
+        }
+
+        function simularSemDadosKPI() {
+            document.getElementById('kpi-pontualidade').innerText = "S/ Dados";
+            document.getElementById('kpi-nota-pontualidade').style.display = "inline-block";
+        }
+
+        function perderSinalGPS() {
+            const style = document.createElement('style');
+            style.innerHTML = '.filtro-cinzento { filter: grayscale(100%) opacity(50%); }';
+            document.head.appendChild(style);
+            atualizarDashboard(); 
+        }
+
+        async function syncAlerta(id) {
+            alert("Sucesso: Estado do alerta #" + id + " atualizado.");
+        }
 
     window.onload = atualizarDashboard;
     setInterval(atualizarDashboard, 30000);

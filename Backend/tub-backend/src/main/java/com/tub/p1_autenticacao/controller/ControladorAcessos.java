@@ -11,7 +11,6 @@ import com.tub.p1_autenticacao.service.ControloSegurancaAutenticacao;
 public class ControladorAcessos {
 
     private final ControloSegurancaAutenticacao authService;
-
     public ControladorAcessos(ControloSegurancaAutenticacao authService) {
         this.authService = authService;
     }
