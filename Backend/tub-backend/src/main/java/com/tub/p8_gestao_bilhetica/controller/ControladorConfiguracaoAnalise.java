@@ -8,6 +8,7 @@ import com.tub.p8_gestao_bilhetica.service.MotorCalculoAnalitico;
 
 @RestController
 @RequestMapping("/analise")
+@CrossOrigin(origins = "*")
 public class ControladorConfiguracaoAnalise {
 
     private final MotorCalculoAnalitico motorService;

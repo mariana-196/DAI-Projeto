@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController("controladorNotificacoesEventos")
 @RequestMapping("/api/auditoria/notificacoes")
-@CrossOrigin(origins = "http://127.0.0.1:5500")
+@CrossOrigin(origins = "*")
 public class ControloNotificacoesEventos {
 
     private final com.tub.p6_auditoria.service.ControloNotificacoesEventos notificationPolicyService;

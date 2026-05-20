@@ -25,6 +25,11 @@ import com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import com.tub.p9_monitorizacao_iot.repository.LotacaoViaturaRepository;
+import com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura;
+import com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository;
+import com.tub.p11_gestao_alertas.model.AlertaLotacao;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,6 +44,8 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
     private final RegistoAuditoriaRepository registoAuditoriaRepository;
     private final LoteDadosBilheticaRepository loteDadosBilheticaRepository;
     private final RegistoBilheticaRepository registoBilheticaRepository;
+    private final LotacaoViaturaRepository lotacaoViaturaRepository;
+    private final AlertaLotacaoRepository alertaLotacaoRepository;
 
     public DadosDemonstracaoSeeder(
             RegistoUtilizadorRepository utilizadorRepository,
@@ -48,7 +55,9 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             PoliticasAuditoriaRepository politicasAuditoriaRepository,
             RegistoAuditoriaRepository registoAuditoriaRepository,
             LoteDadosBilheticaRepository loteDadosBilheticaRepository,
-            RegistoBilheticaRepository registoBilheticaRepository
+            RegistoBilheticaRepository registoBilheticaRepository,
+            LotacaoViaturaRepository lotacaoViaturaRepository,
+            AlertaLotacaoRepository alertaLotacaoRepository
     ) {
         this.utilizadorRepository = utilizadorRepository;
         this.linhaRepository = linhaRepository;
@@ -58,6 +67,8 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         this.registoAuditoriaRepository = registoAuditoriaRepository;
         this.loteDadosBilheticaRepository = loteDadosBilheticaRepository;
         this.registoBilheticaRepository = registoBilheticaRepository;
+        this.lotacaoViaturaRepository = lotacaoViaturaRepository;
+        this.alertaLotacaoRepository = alertaLotacaoRepository;
     }
 
     @Override
@@ -69,6 +80,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         criarViaturas();
         criarPaineisPMD();
         criarDadosBilhetica();
+        criarLotacaoEAlertas();
 
         System.out.println("Dados de demonstração M5 carregados com sucesso.");
     }
@@ -332,5 +344,73 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         registo.setZona(zona);
 
         registoBilheticaRepository.save(registo);
+    }
+
+    private void criarLotacaoEAlertas() {
+        if (lotacaoViaturaRepository.count() > 0) {
+            return;
+        }
+
+        List<Viatura> viaturas = viaturasRepository.findAll();
+        if (viaturas.isEmpty()) {
+            return;
+        }
+
+        String[] linhasDemo = {"43", "2", "7", "15", "24", "2"};
+        int[] passageirosAtuaisDemo = {28, 58, 12, 53, 4, 0};
+        boolean[] sinalAtivoDemo = {true, true, true, true, true, false};
+
+        for (int i = 0; i < viaturas.size(); i++) {
+            Viatura v = viaturas.get(i);
+            EstadoOcupacaoViatura lotacao = new EstadoOcupacaoViatura();
+            lotacao.setViatura(v);
+            lotacao.setLinha("Linha " + linhasDemo[i % linhasDemo.length]);
+            lotacao.setPassageirosAtuais(passageirosAtuaisDemo[i % passageirosAtuaisDemo.length]);
+            
+            double cap = v.getCapacidadeMaxima() != null ? v.getCapacidadeMaxima() : 80;
+            lotacao.setTaxaOcupacao((double) lotacao.getPassageirosAtuais() / cap * 100);
+            lotacao.setSinalAtivo(sinalAtivoDemo[i % sinalAtivoDemo.length]);
+            lotacao.setUltimaAtualizacao(LocalDateTime.now());
+            lotacaoViaturaRepository.save(lotacao);
+
+            if (lotacao.getTaxaOcupacao() >= 70.0) {
+                AlertaLotacao alerta = new AlertaLotacao(
+                    v,
+                    lotacao.getLinha(),
+                    "CRITICO",
+                    "PENDENTE",
+                    "Lotação Crítica - Ocupação atingiu " + String.format("%.1f", lotacao.getTaxaOcupacao()) + "% na " + lotacao.getLinha()
+                );
+                alertaLotacaoRepository.save(alerta);
+            }
+        }
+
+        // Garantir alertas para os casos de uso específicos (Lotação, Painel DMS, Perda de Sinal GPS)
+        // 1. Falha de painel DMS (associado à viatura 0 por conveniência de domínio)
+        alertaLotacaoRepository.save(new AlertaLotacao(
+            viaturas.get(0),
+            "N/A",
+            "CRITICO",
+            "PENDENTE",
+            "Falha de painel DMS - Painel #3 (Hospital de Braga) está offline e sem sinal de rede"
+        ));
+
+        // 2. Perda de sinal GPS (viatura 106, que está com sinal inativo no demo)
+        alertaLotacaoRepository.save(new AlertaLotacao(
+            viaturas.get(viaturas.size() - 1),
+            "Linha 2",
+            "CRITICO",
+            "PENDENTE",
+            "Perda de sinal GPS - Viatura #106 (" + viaturas.get(viaturas.size() - 1).getMatricula() + ") sem reporte de telemetria há mais de 15 minutos"
+        ));
+
+        // 3. Outro alerta histórico/em análise
+        alertaLotacaoRepository.save(new AlertaLotacao(
+            viaturas.get(1),
+            "Linha 24",
+            "MEDIA",
+            "EM_TRATAMENTO",
+            "Atraso reportado de 8 minutos devido a tráfego intenso na Avenida Central."
+        ));
     }
 }

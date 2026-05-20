@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController("controladorConsultaAuditoria")
 @RequestMapping("/api/auditoria")
-@CrossOrigin(origins = "http://127.0.0.1:5500")
+@CrossOrigin(origins = "*")
 public class ControloConsultaAuditoria {
 
     private final com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService;

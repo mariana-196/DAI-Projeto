@@ -116,7 +116,7 @@
         async function carregarPrevisoes() {
             try {
                 const paragemId = 1; 
-                const resposta = await fetch(`/api/previsoes/consulta/${paragemId}`);
+                const resposta = await fetch(`http://localhost:8081/api/previsoes/consulta/${paragemId}`);
                 const previsoes = await resposta.json();
                 
                 const tbody = document.getElementById('lista-chegadas');

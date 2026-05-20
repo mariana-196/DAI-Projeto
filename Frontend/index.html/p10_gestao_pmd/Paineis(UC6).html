@@ -286,7 +286,7 @@
             const selecaoAtual = dropdown.value;
             
             try {
-                const resposta = await fetch('http://localhost:8080/api/paineis');
+                const resposta = await fetch('http://localhost:8081/api/paineis');
                 if(resposta.ok) paineis = await resposta.json();
             } catch (erro) {
                 console.info("Info: A correr em modo de simulação.");
@@ -348,7 +348,7 @@
 
             try {
                 const payload = { panelId: destino, message: mensagem, status: 'ONLINE', urgente: urgente };
-                const resposta = await fetch('http://localhost:8080/api/paineis/publicar', {
+                const resposta = await fetch('http://localhost:8081/api/paineis/publicar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

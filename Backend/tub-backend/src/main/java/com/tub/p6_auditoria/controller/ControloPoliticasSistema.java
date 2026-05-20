@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController("controladorPoliticasSistema")
 @RequestMapping("/api/auditoria/politicas")
-@CrossOrigin(origins = "http://127.0.0.1:5500")
+@CrossOrigin(origins = "*")
 public class ControloPoliticasSistema {
 
     private final com.tub.p6_auditoria.service.ControloPoliticasSistema auditPolicyService;

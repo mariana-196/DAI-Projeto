@@ -144,18 +144,44 @@
         });
         L.marker([41.5530, -8.4250], {icon: busIcon}).addTo(map);
 
-        // Função para adicionar eventos ao log lateral (Simulando o ControladorTrajetosGeofencing)
-        function adicionarEvento(tipo, mensagem) {
-            const container = document.getElementById('event-log');
-            const agora = new Date().toLocaleTimeString();
-            const item = document.createElement('div');
-            item.className = `event-item ${tipo === 'ENTRADA' ? 'entrada' : 'saida'}`;
-            item.innerHTML = `
-                <span class="event-time">${agora}</span>
-                <span class="event-desc">${mensagem}</span>
-            `;
-            container.prepend(item);
+        // Carregar eventos dinamicamente do backend
+        async function carregarEventos() {
+            try {
+                const resposta = await fetch('http://localhost:8081/api/geofencing/historico');
+                if (!resposta.ok) throw new Error();
+                const eventos = await resposta.json();
+                
+                const container = document.getElementById('event-log');
+                container.innerHTML = '';
+                
+                if (eventos.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 20px; color: #64748b;">Nenhum evento geográfico registado.</div>';
+                    return;
+                }
+                
+                // Ordenar eventos mais recentes primeiro
+                eventos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                eventos.forEach(ev => {
+                    const tipo = ev.tipo ? ev.tipo.toUpperCase() : '';
+                    const time = new Date(ev.timestamp).toLocaleTimeString();
+                    const item = document.createElement('div');
+                    
+                    const isEntrada = tipo.includes('ENTRADA') || tipo.includes('IN');
+                    item.className = `event-item ${isEntrada ? 'entrada' : 'saida'}`;
+                    item.innerHTML = `
+                        <span class="event-time">${time} - Viatura #${ev.viaturaId}</span>
+                        <span class="event-desc">${ev.detalhes} (${ev.tipo})</span>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch (erro) {
+                console.error("Erro ao carregar eventos de geofencing", erro);
+            }
         }
+
+        carregarEventos();
+        setInterval(carregarEventos, 10000);
     </script>
 </body>
 </html>

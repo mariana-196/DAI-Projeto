@@ -16,6 +16,10 @@ import com.tub.p12_kpis_operacionais.service.ServicoEstadoOperacao;
 import com.tub.p8_gestao_bilhetica.model.ParametrosAnalise;
 import com.tub.p8_gestao_bilhetica.model.ResultadoAnalitico;
 import com.tub.p8_gestao_bilhetica.service.MotorCalculoAnalitico;
+import com.tub.p10_gestao_pmd.model.DisplayPanel;
+import com.tub.p10_gestao_pmd.repository.DisplayPanelRepository;
+import com.tub.p11_gestao_alertas.model.AlertaLotacao;
+import com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository;
 
 
 @RestController
@@ -27,15 +31,22 @@ public class ControladorEstadoOperacao {
     private final ServicoEstadoOperacao dashboardService;
     private final MotorCalculoAnalitico analiseService;
     private final LotacaoViaturaRepository lotacaoViaturaRepository;
+    private final DisplayPanelRepository displayPanelRepository;
+    private final AlertaLotacaoRepository alertaLotacaoRepository;
 
     // CONSTRUTOR UNIFICADO (Resolve o conflito das dependências)
     public ControladorEstadoOperacao( ProcessadorTriagemAlertas alertCenterService, 
                                ServicoEstadoOperacao dashboardService, 
-                               MotorCalculoAnalitico analiseService) {
+                               MotorCalculoAnalitico analiseService,
+                               LotacaoViaturaRepository lotacaoViaturaRepository,
+                               DisplayPanelRepository displayPanelRepository,
+                               AlertaLotacaoRepository alertaLotacaoRepository) {
         this.alertCenterService = alertCenterService;
         this.dashboardService = dashboardService;
         this.analiseService = analiseService;
-        this.lotacaoViaturaRepository = null;
+        this.lotacaoViaturaRepository = lotacaoViaturaRepository;
+        this.displayPanelRepository = displayPanelRepository;
+        this.alertaLotacaoRepository = alertaLotacaoRepository;
     }
 
     // --- LINHA 43: ANÁLISE DE RESULTADOS ---
@@ -78,9 +89,15 @@ public class ControladorEstadoOperacao {
     }
 
     // --- LINHA 86: GESTÃO/PERSISTÊNCIA DO ALERTA ---
-    @PutMapping("/alertas/{id}")
+    @PutMapping({"/alertas/{id}", "/alerts/{id}"})
     public Map<String, String> atualizarAlerta(@PathVariable Long id, @RequestBody Map<String, String> dados) {
         System.out.println("Alerta " + id + " atualizado para: " + dados.get("estado"));
+        Optional<AlertaLotacao> alertaOpt = alertaLotacaoRepository.findById(id);
+        if (alertaOpt.isPresent()) {
+            AlertaLotacao alerta = alertaOpt.get();
+            alerta.setEstado(dados.get("estado"));
+            alertaLotacaoRepository.save(alerta);
+        }
         Map<String, String> res = new HashMap<>();
         res.put("status", "Sucesso");
         return res;
@@ -124,5 +141,37 @@ public List<Map<String, Object>> getPosicoes() {
     return frota;
 }
 
-   
+    @GetMapping("/paragens")
+    public List<Map<String, Object>> getParagens() {
+        List<DisplayPanel> paineis = displayPanelRepository.findAll();
+        List<Map<String, Object>> paragens = new ArrayList<>();
+        
+        for (DisplayPanel painel : paineis) {
+            Map<String, Object> p = new HashMap<>();
+            p.put("id", painel.getPanelId());
+            p.put("nome", painel.getLocation());
+            p.put("mensagem", painel.getMessage());
+            p.put("estado", painel.getStatus());
+            
+            // Determinar coordenadas correspondentes em Braga
+            double lat = 41.5503;
+            double lng = -8.4200;
+            String loc = painel.getLocation().toLowerCase();
+            if (loc.contains("gualtar") || loc.contains("universidade")) {
+                lat = 41.5610; lng = -8.3970;
+            } else if (loc.contains("central") || loc.contains("avenida")) {
+                lat = 41.5515; lng = -8.4210;
+            } else if (loc.contains("hospital")) {
+                lat = 41.5670; lng = -8.3990;
+            } else if (loc.contains("estação") || loc.contains("cp")) {
+                lat = 41.5490; lng = -8.4340;
+            } else if (loc.contains("bom jesus")) {
+                lat = 41.5545; lng = -8.3775;
+            }
+            p.put("lat", lat);
+            p.put("lng", lng);
+            paragens.add(p);
+        }
+        return paragens;
+    }
 }

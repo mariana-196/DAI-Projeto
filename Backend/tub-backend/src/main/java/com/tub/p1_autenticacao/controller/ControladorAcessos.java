@@ -7,7 +7,7 @@ import com.tub.p1_autenticacao.service.ControloSegurancaAutenticacao;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://127.0.0.1:5500")
+@CrossOrigin(origins = "*")
 public class ControladorAcessos {
 
     private final ControloSegurancaAutenticacao authService;

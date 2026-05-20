@@ -146,23 +146,40 @@
     </div>
 
     <script>
-        function salvarAgendamento() {
+        async function salvarAgendamento() {
+            const mensagemId = document.getElementById('select-mensagem').value;
             const data = document.getElementById('data-exibicao').value;
             const hora = document.getElementById('hora-exibicao').value;
             
-            if(!data || !hora) {
-                alert("Preencha a data e a hora primeiro!");
+            if(!mensagemId || !data || !hora) {
+                alert("Preencha todos os campos obrigatórios (mensagem, data e hora)!");
                 return;
             }
 
-            // Simulação de envio para o RepositorioTarefasExibidas
             const preview = document.getElementById('preview-container');
             const msg = document.getElementById('msg-confirmacao');
+
+            try {
+                const response = await fetch('http://localhost:8081/api/paineis/agendar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensagemId: mensagemId, data: data, hora: hora })
+                });
+
+                if(response.ok) {
+                    preview.style.display = 'block';
+                    msg.style.color = '#059669';
+                    msg.innerHTML = `<i class="fa-solid fa-circle-check"></i> Tarefa agendada para ${data} às ${hora}. O Processador de Validação Temporal irá ativá-la no momento certo.`;
+                } else {
+                    const err = await response.json();
+                    throw new Error(err.erro || "Erro no agendamento");
+                }
+            } catch (error) {
+                preview.style.display = 'block';
+                msg.style.color = '#ef4444';
+                msg.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Falha ao agendar: ${error.message}`;
+            }
             
-            preview.style.display = 'block';
-            msg.innerHTML = `<i class="fa-solid fa-circle-check"></i> Tarefa agendada para ${data} às ${hora}. O Processador de Validação Temporal irá ativá-la no momento certo.`;
-            
-            // Limpar formulário após 3 segundos
             setTimeout(() => {
                 preview.style.display = 'none';
             }, 5000);

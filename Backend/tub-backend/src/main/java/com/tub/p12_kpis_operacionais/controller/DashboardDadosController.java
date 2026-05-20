@@ -61,7 +61,7 @@ public class DashboardDadosController {
         return kpis;
     }
 
-    @GetMapping("/alertas")
+    @GetMapping({"/alertas", "/alerts"})
     public List<Map<String, Object>> obterAlertasDashboard() {
         List<AlertaLotacao> alertas = alertaLotacaoRepository.findAll();
         List<Map<String, Object>> resposta = new ArrayList<>();
@@ -70,7 +70,16 @@ public class DashboardDadosController {
             Map<String, Object> item = new HashMap<>();
 
             item.put("id", alerta.getId());
-            item.put("titulo", "Lotação Crítica (IoT)");
+            String desc = alerta.getDescricao() != null ? alerta.getDescricao().toLowerCase() : "";
+            String titulo = "Alerta Operacional";
+            if (desc.contains("lotação") || desc.contains("lotacao")) {
+                titulo = "Lotação Crítica (IoT)";
+            } else if (desc.contains("painel") || desc.contains("dms")) {
+                titulo = "Falha de Painel DMS";
+            } else if (desc.contains("gps") || desc.contains("sinal")) {
+                titulo = "Perda de Sinal GPS";
+            }
+            item.put("titulo", titulo);
             item.put("estado", formatarEstado(alerta.getEstado()));
             item.put("descricao", alerta.getDescricao());
             item.put("prioridade", calcularPrioridade(alerta.getSeveridade()));

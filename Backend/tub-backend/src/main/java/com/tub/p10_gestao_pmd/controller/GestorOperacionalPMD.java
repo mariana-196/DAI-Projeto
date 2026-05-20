@@ -1,13 +1,17 @@
 package com.tub.p10_gestao_pmd.controller;
 
 import com.tub.p10_gestao_pmd.model.DisplayPanel;
+import com.tub.p10_gestao_pmd.model.RepositorioTarefasExibicao;
+import com.tub.p10_gestao_pmd.repository.RepositorioTarefasExibicaoRepository;
 import com.tub.p10_gestao_pmd.service.PainelService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/paineis")
@@ -16,6 +20,9 @@ public class GestorOperacionalPMD {
 
     @Autowired
     private PainelService painelService;
+
+    @Autowired
+    private RepositorioTarefasExibicaoRepository tarefasExibicaoRepository;
 
     /**
      * Linha 94: Responde ao pedido GET para listar o estado atual dos painéis.
@@ -65,6 +72,28 @@ public class GestorOperacionalPMD {
             return ResponseEntity.badRequest().body("{\"erro\": \"" + e.getMessage() + "\"}");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("{\"erro\": \"Erro ao processar o pedido no servidor.\"}");
+        }
+    }
+
+    @PostMapping("/agendar")
+    public ResponseEntity<?> agendarTarefa(@RequestBody Map<String, Object> payload) {
+        try {
+            Long mensagemId = Long.valueOf(payload.get("mensagemId").toString());
+            String dataStr = payload.get("data").toString();
+            String horaStr = payload.get("hora").toString();
+
+            LocalDateTime dataHora = LocalDateTime.parse(dataStr + "T" + horaStr + ":00");
+
+            RepositorioTarefasExibicao tarefa = new RepositorioTarefasExibicao();
+            tarefa.setMensagemId(mensagemId);
+            tarefa.setDataHoraExibicao(dataHora);
+            tarefa.setConcluida(false);
+
+            tarefasExibicaoRepository.save(tarefa);
+
+            return ResponseEntity.ok("{\"status\": \"Sucesso\", \"mensagem\": \"Tarefa agendada com sucesso!\"}");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("{\"erro\": \"" + e.getMessage() + "\"}");
         }
     }
 }
