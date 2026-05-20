@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUB – Gestão de Utilizadores</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared/style.css">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.open {
+            display: flex;
+        }
+        .modal-card {
+            background: var(--card);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 480px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1.5px solid var(--border);
+            padding-bottom: 12px;
+        }
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--t1);
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--t3);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <div class="tub-logo">TUB</div>
+                <div class="logo-text">
+                    <strong>Gestão Urbana</strong>
+                    <span>Plataforma TUB</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-nav">
+                <div class="nav-section"><span>Principal</span></div>
+                <a href="dashboard.html" class="nav-item" id="nav-dashboard">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="frota.html" class="nav-item" id="nav-frota">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    <span>Frota & GIS</span>
+                </a>
+
+                <div class="nav-section"><span>Operações</span></div>
+                <a href="bilhetica.html" class="nav-item" id="nav-bilhetica">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                    <span>Bilhética</span>
+                </a>
+                <a href="lotacao.html" class="nav-item" id="nav-lotacao">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+                    <span>Lotação (IoT)</span>
+                </a>
+                <a href="paineis.html" class="nav-item" id="nav-dms">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M8 21h8M12 17v4"/></svg>
+                    <span>Painéis DMS</span>
+                </a>
+
+                <div class="nav-section"><span>Administração</span></div>
+                <a href="auditoria.html" class="nav-item" id="nav-auditoria">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    <span>Auditoria</span>
+                </a>
+                <a href="utilizadores.html" class="nav-item active" id="nav-utilizadores">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <span>Utilizadores</span>
+                </a>
+                <a href="relatorios.html" class="nav-item" id="nav-relatorios">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span>Relatórios</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar" id="sidebar-user-avatar">??</div>
+                <div class="user-info">
+                    <strong id="sidebar-user-name">Carregando...</strong>
+                    <span id="sidebar-user-email">...</span>
+                </div>
+                <span class="user-role-badge" id="sidebar-user-role">...</span>
+            </div>
+        </nav>
+        
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <div class="breadcrumb">
+                    <span>Administração</span>
+                    <svg class="sep" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <strong>Utilizadores</strong>
+                </div>
+                <div class="topbar-actions">
+                    <div class="user-chip">
+                        <div class="user-avatar" id="topbar-user-avatar" style="width:28px;height:28px;font-size:11px;">??</div>
+                        <span id="topbar-user-name">...</span>
+                    </div>
+                    <button class="btn btn-outline btn-sm" id="btn-logout" style="color:var(--danger); border-color:var(--danger);">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        Sair
+                    </button>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT -->
+            <main class="page-content">
+                <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1>Gestão de Utilizadores</h1>
+                        <p>Administração de contas de operador, gestor e administrador com controlo de permissões</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-blue" onclick="openCreateModal()">
+                            + Novo Utilizador
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="card">
+                    <div class="card-body" style="padding:0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Cargo</th>
+                                    <th>Estado</th>
+                                    <th style="text-align:right;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <tr><td colspan="5" style="text-align:center;">Carregando utilizadores...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE / EDIT -->
+    <div class="modal" id="user-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-title">Registar Novo Utilizador</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="user-id">
+                
+                <div class="form-field" style="margin-bottom:12px;">
+                    <label>Nome Completo</label>
+                    <input type="text" id="user-nome" placeholder="ex: Maria Santos">
+                </div>
+                
+                <div class="form-field" style="margin-bottom:12px;">
+                    <label>Endereço de Email</label>
+                    <input type="email" id="user-email" placeholder="ex: maria.santos@tub.pt">
+                </div>
+
+                <div class="form-field" style="margin-bottom:12px;">
+                    <label>Cargo (Permissões)</label>
+                    <select id="user-cargo">
+                        <option value="ADMINISTRADOR">Administrador</option>
+                        <option value="GESTOR_TRANSPORTES">Gestor de Transportes</option>
+                        <option value="OPERADOR_CCO">Operador CCO</option>
+                    </select>
+                </div>
+
+                <div class="form-field" style="margin-bottom:16px;">
+                    <label id="pwd-label">Palavra-passe</label>
+                    <input type="password" id="user-password" placeholder="Mínimo 6 caracteres">
+                </div>
+
+                <button class="btn btn-blue" id="btn-save-user" style="width:100%; justify-content:center;">
+                    Guardar Utilizador
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared/api.js"></script>
+    <script>
+        // Session Verification
+        const userToken = sessionStorage.getItem("user_token");
+        const userName = sessionStorage.getItem("user_name");
+        const userEmail = sessionStorage.getItem("user_email");
+        const userRole = sessionStorage.getItem("user_role");
+
+        if (!userToken) {
+            window.location.href = "login.html";
+        }
+        if (userRole !== "ADMINISTRADOR") {
+            // Non-admins shouldn't access this page
+            window.location.href = "dashboard.html";
+        }
+
+        // Setup User Info
+        document.getElementById("sidebar-user-name").textContent = userName || "Carlos Silva";
+        document.getElementById("sidebar-user-email").textContent = userEmail || "admin@tub.pt";
+        document.getElementById("sidebar-user-role").textContent = userRole || "Admin";
+        document.getElementById("sidebar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
+
+        document.getElementById("topbar-user-name").textContent = userName || "Carlos Silva";
+        document.getElementById("topbar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
+
+        document.getElementById("btn-logout").addEventListener("click", () => {
+            sessionStorage.clear();
+            window.location.href = "login.html";
+        });
+
+        let allUsers = [];
+
+        async function loadUsers() {
+            try {
+                allUsers = await apiGet("/api/utilizadores");
+                const tbody = document.getElementById("users-table-body");
+                tbody.innerHTML = "";
+
+                allUsers.forEach(u => {
+                    const tr = document.createElement("tr");
+                    const statusClass = u.ativo ? 'badge-green' : 'badge-red';
+                    const statusLabel = u.ativo ? 'Ativo' : 'Inativo';
+                    const toggleLabel = u.ativo ? 'Desativar' : 'Ativar';
+
+                    tr.innerHTML = `
+                        <td><strong>${u.nome}</strong></td>
+                        <td>${u.email}</td>
+                        <td>${u.cargo}</td>
+                        <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+                        <td style="text-align:right;">
+                            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                                <button class="btn btn-outline btn-sm" onclick="openEditModal(${u.id})">Editar</button>
+                                <button class="btn btn-outline btn-sm" onclick="toggleUserStatus(${u.id}, ${u.ativo})">${toggleLabel}</button>
+                                <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="deleteUser(${u.id})">Eliminar</button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar utilizadores:", err);
+            }
+        }
+
+        // Modal triggers
+        function openCreateModal() {
+            document.getElementById("modal-title").textContent = "Registar Novo Utilizador";
+            document.getElementById("user-id").value = "";
+            document.getElementById("user-nome").value = "";
+            document.getElementById("user-email").value = "";
+            document.getElementById("user-cargo").value = "OPERADOR_CCO";
+            document.getElementById("user-password").value = "";
+            document.getElementById("pwd-label").textContent = "Palavra-passe";
+            document.getElementById("user-modal").classList.add("open");
+        }
+
+        function openEditModal(userId) {
+            const u = allUsers.find(user => user.id === userId);
+            if (!u) return;
+
+            document.getElementById("modal-title").textContent = "Editar Utilizador";
+            document.getElementById("user-id").value = u.id;
+            document.getElementById("user-nome").value = u.nome;
+            document.getElementById("user-email").value = u.email;
+            document.getElementById("user-cargo").value = u.cargo;
+            document.getElementById("user-password").value = "";
+            document.getElementById("pwd-label").textContent = "Nova Palavra-passe (Deixe em branco para manter a atual)";
+            document.getElementById("user-modal").classList.add("open");
+        }
+
+        function closeModal() {
+            document.getElementById("user-modal").classList.remove("open");
+        }
+
+        // POST / PUT Save handler
+        document.getElementById("btn-save-user").addEventListener("click", async () => {
+            const id = document.getElementById("user-id").value;
+            const nome = document.getElementById("user-nome").value;
+            const email = document.getElementById("user-email").value;
+            const cargo = document.getElementById("user-cargo").value;
+            const password = document.getElementById("user-password").value;
+
+            if (!nome || !email) {
+                alert("Preencha o Nome e o Email.");
+                return;
+            }
+
+            const payload = { nome, email, cargo, ativo: true };
+            if (password) {
+                payload.password = password;
+            }
+
+            try {
+                if (id) {
+                    // PUT Edit
+                    const res = await apiPut(`/api/utilizadores/${id}`, payload);
+                    if (res) {
+                        closeModal();
+                        loadUsers();
+                    }
+                } else {
+                    // POST Guardar (requires password)
+                    if (!password) {
+                        alert("Defina uma palavra-passe para o novo utilizador.");
+                        return;
+                    }
+                    payload.password = password;
+                    
+                    const response = await fetch("http://localhost:8081/api/utilizadores/guardar", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + userToken
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        closeModal();
+                        loadUsers();
+                    } else {
+                        const txt = await response.text();
+                        alert("Erro: " + txt);
+                    }
+                }
+            } catch (err) {
+                alert("Erro ao gravar utilizador: " + err);
+            }
+        });
+
+        // Toggle user status
+        async function toggleUserStatus(userId, currentStatus) {
+            try {
+                const action = currentStatus ? "desativar" : "ativar";
+                const res = await apiPut(`/api/utilizadores/${userId}/${action}`);
+                if (res) {
+                    loadUsers();
+                }
+            } catch (err) {
+                alert("Erro ao alterar estado do utilizador: " + err);
+            }
+        }
+
+        // Delete user
+        async function deleteUser(userId) {
+            if (!confirm("Tem a certeza que deseja eliminar permanentemente este utilizador?")) return;
+
+            try {
+                const response = await fetch(`http://localhost:8081/api/utilizadores/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + userToken
+                    }
+                });
+
+                if (response.ok) {
+                    loadUsers();
+                } else {
+                    const txt = await response.text();
+                    alert("Erro: " + txt);
+                }
+            } catch (err) {
+                alert("Erro ao eliminar utilizador: " + err);
+            }
+        }
+
+        // Initialize
+        loadUsers();
+    </script>
+</body>
+</html>

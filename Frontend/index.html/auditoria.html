@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUB – Painel de Auditoria</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <div class="tub-logo">TUB</div>
+                <div class="logo-text">
+                    <strong>Gestão Urbana</strong>
+                    <span>Plataforma TUB</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-nav">
+                <div class="nav-section"><span>Principal</span></div>
+                <a href="dashboard.html" class="nav-item" id="nav-dashboard">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="frota.html" class="nav-item" id="nav-frota">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    <span>Frota & GIS</span>
+                </a>
+
+                <div class="nav-section"><span>Operações</span></div>
+                <a href="bilhetica.html" class="nav-item" id="nav-bilhetica">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                    <span>Bilhética</span>
+                </a>
+                <a href="lotacao.html" class="nav-item" id="nav-lotacao">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+                    <span>Lotação (IoT)</span>
+                </a>
+                <a href="paineis.html" class="nav-item" id="nav-dms">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M8 21h8M12 17v4"/></svg>
+                    <span>Painéis DMS</span>
+                </a>
+
+                <div class="nav-section"><span>Administração</span></div>
+                <a href="auditoria.html" class="nav-item active" id="nav-auditoria">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    <span>Auditoria</span>
+                </a>
+                <a href="utilizadores.html" class="nav-item" id="nav-utilizadores" style="display:none;">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <span>Utilizadores</span>
+                </a>
+                <a href="relatorios.html" class="nav-item" id="nav-relatorios">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span>Relatórios</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar" id="sidebar-user-avatar">??</div>
+                <div class="user-info">
+                    <strong id="sidebar-user-name">Carregando...</strong>
+                    <span id="sidebar-user-email">...</span>
+                </div>
+                <span class="user-role-badge" id="sidebar-user-role">...</span>
+            </div>
+        </nav>
+        
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <div class="breadcrumb">
+                    <span>Administração</span>
+                    <svg class="sep" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <strong>Auditoria</strong>
+                </div>
+                <div class="topbar-actions">
+                    <div class="user-chip">
+                        <div class="user-avatar" id="topbar-user-avatar" style="width:28px;height:28px;font-size:11px;">??</div>
+                        <span id="topbar-user-name">...</span>
+                    </div>
+                    <button class="btn btn-outline btn-sm" id="btn-logout" style="color:var(--danger); border-color:var(--danger);">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        Sair
+                    </button>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT -->
+            <main class="page-content">
+                <div class="page-header">
+                    <h1>Auditoria & Logs de Segurança</h1>
+                    <p>Rastreio completo de ações dos operadores, acessos ao sistema e alterações de dados em Braga</p>
+                </div>
+
+                <div class="col-7-5">
+                    <!-- Logs list -->
+                    <div class="card">
+                        <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+                            <h3>Registo de Eventos (Logs)</h3>
+                            
+                            <div class="card-actions" style="display:flex; gap:10px; flex-wrap:wrap;">
+                                <select id="filter-nivel" onchange="loadLogsData()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); font-family:'Outfit';">
+                                    <option value="">Todos os Níveis</option>
+                                    <option value="INFO">INFO</option>
+                                    <option value="WARNING">WARNING</option>
+                                    <option value="ERROR">ERROR</option>
+                                    <option value="CRITICAL">CRITICAL</option>
+                                </select>
+
+                                <select id="filter-modulo" onchange="loadLogsData()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); font-family:'Outfit';">
+                                    <option value="">Todos os Módulos</option>
+                                    <option value="Autenticacao">Autenticação</option>
+                                    <option value="Frota">Frota & GIS</option>
+                                    <option value="Bilhetica">Bilhética</option>
+                                    <option value="DMS">Painéis DMS</option>
+                                    <option value="IoT">Lotação (IoT)</option>
+                                    <option value="Auditoria">Auditoria</option>
+                                </select>
+
+                                <button class="btn btn-outline btn-sm" onclick="exportLogsCsv()">
+                                    📥 Exportar CSV
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body" style="padding:0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Utilizador</th>
+                                        <th>Módulo</th>
+                                        <th>Ação</th>
+                                        <th>Nível</th>
+                                        <th>IP Origem</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logs-table-body">
+                                    <tr><td colspan="6" style="text-align:center;">Carregando logs do sistema...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Policies & rules config -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Políticas de Auditoria & Retenção</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label>Nível Mínimo para Registo</label>
+                                    <select id="pol-nivel-select">
+                                        <option value="INFO">INFO (Regista Tudo)</option>
+                                        <option value="WARNING">WARNING (Apenas Avisos/Erros)</option>
+                                        <option value="ERROR">ERROR (Apenas Falhas Graves)</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label>Retenção de Logs (Dias)</label>
+                                    <input type="number" id="pol-retencao-num" value="90" min="30" max="730">
+                                </div>
+                            </div>
+                            
+                            <div style="margin: 16px 0;">
+                                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                    <input type="checkbox" id="pol-notif-check" style="width:16px; height:16px;">
+                                    <strong>Ativar Notificações por Email para Críticos</strong>
+                                </label>
+                            </div>
+
+                            <div class="form-field" style="margin-bottom:16px;">
+                                <label>Email para Notificação</label>
+                                <input type="email" id="pol-email-input" value="seguranca@tub.pt">
+                            </div>
+
+                            <button class="btn btn-blue" id="btn-save-policies" style="width:100%; justify-content:center;">
+                                Gravar Políticas de Auditoria
+                            </button>
+                            <div id="policies-feedback" class="annotation-box" style="margin-top:14px; display:none; background:#E6F4EA; border-color:#1A6B35; color:#1A6B35;">
+                                ✓ Políticas de segurança guardadas e ativadas no servidor!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="shared/api.js"></script>
+    <script>
+        // Session Verification
+        const userToken = sessionStorage.getItem("user_token");
+        const userName = sessionStorage.getItem("user_name");
+        const userEmail = sessionStorage.getItem("user_email");
+        const userRole = sessionStorage.getItem("user_role");
+
+        if (!userToken) {
+            window.location.href = "login.html";
+        }
+
+        // Setup User Info
+        document.getElementById("sidebar-user-name").textContent = userName || "Carlos Silva";
+        document.getElementById("sidebar-user-email").textContent = userEmail || "admin@tub.pt";
+        document.getElementById("sidebar-user-role").textContent = userRole || "Admin";
+        document.getElementById("sidebar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
+
+        document.getElementById("topbar-user-name").textContent = userName || "Carlos Silva";
+        document.getElementById("topbar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
+
+        if (userRole === "ADMINISTRADOR") {
+            document.getElementById("nav-utilizadores").style.display = "flex";
+        }
+
+        document.getElementById("btn-logout").addEventListener("click", () => {
+            sessionStorage.clear();
+            window.location.href = "login.html";
+        });
+
+        // Load logs
+        async function loadLogsData() {
+            try {
+                const nivel = document.getElementById("filter-nivel").value;
+                const modulo = document.getElementById("filter-modulo").value;
+
+                let url = "/api/auditoria/logs";
+                const params = [];
+                if (nivel) params.push(`nivel=${nivel}`);
+                if (modulo) params.push(`modulo=${modulo}`);
+
+                if (params.length > 0) {
+                    url += "?" + params.join("&");
+                }
+
+                const logs = await apiGet(url);
+                const tbody = document.getElementById("logs-table-body");
+                tbody.innerHTML = "";
+
+                if (logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum registo de auditoria encontrado.</td></tr>';
+                    return;
+                }
+
+                // Sort descending by date (assume id or timestamp)
+                logs.sort((a,b) => b.id - a.id);
+
+                logs.forEach(log => {
+                    const tr = document.createElement("tr");
+                    const dateStr = log.timestamp ? log.timestamp.replace('T', ' ').substring(0, 19) : 'N/A';
+                    
+                    let badgeClass = 'badge-green';
+                    if (log.nivel === 'WARNING') badgeClass = 'badge-orange';
+                    if (log.nivel === 'ERROR' || log.nivel === 'CRITICAL') badgeClass = 'badge-red';
+
+                    tr.innerHTML = `
+                        <td style="white-space:nowrap;">${dateStr}</td>
+                        <td><strong>${log.utilizador}</strong></td>
+                        <td>${log.modulo}</td>
+                        <td>${log.acao}</td>
+                        <td><span class="badge ${badgeClass}">${log.nivel}</span></td>
+                        <td><code style="font-size:11px;">${log.ipOrigem}</code></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.error("Erro ao carregar logs:", err);
+            }
+        }
+
+        // Export Logs to CSV
+        function exportLogsCsv() {
+            const nivel = document.getElementById("filter-nivel").value;
+            const modulo = document.getElementById("filter-modulo").value;
+
+            let url = "http://localhost:8081/api/auditoria/exportar";
+            const params = [];
+            if (nivel) params.push(`nivel=${nivel}`);
+            if (modulo) params.push(`modulo=${modulo}`);
+
+            if (params.length > 0) {
+                url += "?" + params.join("&");
+            }
+
+            // Simple direct download link
+            window.open(url, "_blank");
+        }
+
+        // Load Policies
+        let policyId = null;
+        async function loadPolicies() {
+            try {
+                const policy = await apiGet("/api/auditoria/politicas");
+                if (policy) {
+                    policyId = policy.id;
+                    document.getElementById("pol-nivel-select").value = policy.nivelMinimo || "INFO";
+                    document.getElementById("pol-retencao-num").value = policy.diasRetencao || 90;
+                    document.getElementById("pol-notif-check").checked = !!policy.notificacoesAtivas;
+                    document.getElementById("pol-email-input").value = policy.emailNotificacao || "";
+                }
+            } catch (err) {
+                console.error("Erro ao carregar políticas:", err);
+            }
+        }
+
+        // Save Policies PUT
+        document.getElementById("btn-save-policies").addEventListener("click", async () => {
+            const nivelMinimo = document.getElementById("pol-nivel-select").value;
+            const diasRetencao = parseInt(document.getElementById("pol-retencao-num").value);
+            const notificacoesAtivas = document.getElementById("pol-notif-check").checked;
+            const emailNotificacao = document.getElementById("pol-email-input").value;
+
+            try {
+                const res = await apiPut("/api/auditoria/politicas", {
+                    id: policyId,
+                    nivelMinimo,
+                    diasRetencao,
+                    notificacoesAtivas,
+                    emailNotificacao
+                });
+
+                if (res) {
+                    const fb = document.getElementById("policies-feedback");
+                    fb.style.display = "block";
+                    loadPolicies();
+                    setTimeout(() => fb.style.display = "none", 5000);
+                }
+            } catch (err) {
+                alert("Erro ao gravar políticas de auditoria: " + err);
+            }
+        });
+
+        // Initialize
+        loadLogsData();
+        loadPolicies();
+    </script>
+</body>
+</html>

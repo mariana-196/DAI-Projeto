@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUB – Painel Eletrónico de Passageiros</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-led: #121212;
+            --led-orange: #FF7B00;
+            --led-dim: #9E5200;
+            --led-red: #FF3B30;
+            --led-border: #2A2A2A;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #050505;
+            color: var(--led-orange);
+            font-family: 'Outfit', monospace;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .led-panel {
+            width: 100%;
+            max-width: 850px;
+            background-color: var(--bg-led);
+            border: 8px solid #1C1C1E;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 10px rgba(255,123,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        /* LED Grid texture simulation */
+        .led-panel::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+        .led-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px double var(--led-orange);
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+        }
+        .stop-name {
+            font-size: 32px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(255,123,0,0.6);
+        }
+        .panel-clock {
+            font-size: 26px;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(255,123,0,0.6);
+        }
+        .arrival-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 140px;
+            font-size: 30px;
+            font-weight: 700;
+            padding: 10px 0;
+            align-items: center;
+            text-transform: uppercase;
+        }
+        .arrival-row:not(:last-child) {
+            border-bottom: 1px dashed var(--led-dim);
+        }
+        .line-code {
+            background-color: var(--led-orange);
+            color: #000;
+            text-align: center;
+            font-weight: 900;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 26px;
+            text-shadow: none;
+            width: fit-content;
+        }
+        .destination {
+            padding-left: 10px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .eta-time {
+            text-align: right;
+            color: var(--led-orange);
+            text-shadow: 0 0 8px rgba(255,123,0,0.6);
+        }
+        .eta-time.imminent {
+            animation: led-flash 1s infinite alternate;
+            color: #fff;
+            text-shadow: 0 0 10px var(--led-orange);
+        }
+        .offline-message {
+            color: var(--led-red);
+            font-size: 36px;
+            text-align: center;
+            font-weight: 900;
+            padding: 40px 0;
+            text-shadow: 0 0 10px rgba(255,59,48,0.8);
+            animation: led-flash 1s infinite alternate;
+        }
+        .ticker-marquee {
+            margin-top: 24px;
+            border-top: 3px double var(--led-orange);
+            padding-top: 12px;
+            overflow: hidden;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+        .ticker-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee-animation 15s linear infinite;
+            font-size: 24px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        @keyframes marquee-animation {
+            0%   { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+        @keyframes led-flash {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="led-panel">
+        <div class="led-header">
+            <div class="stop-name" id="stop-name-title">CARREGANDO...</div>
+            <div class="panel-clock" id="live-clock">18:00:00</div>
+        </div>
+
+        <div id="arrivals-container">
+            <!-- Arrivals rows loaded dynamically -->
+        </div>
+
+        <div class="ticker-marquee">
+            <div class="ticker-text" id="ticker-marquee-text">BEM-VINDO AOS TUB - REDE DE TRANSPORTES URBANOS DE BRAGA</div>
+        </div>
+    </div>
+
+    <script src="shared/api.js"></script>
+    <script>
+        // Parse URL params
+        const params = new URLSearchParams(window.location.search);
+        const panelId = params.get("panelId") || "PMD-004";
+
+        // Map String Code PMD-00x to numerical ID
+        const idMatch = panelId.match(/\d+/);
+        const painelDbId = idMatch ? parseInt(idMatch[0]) : 4;
+
+        // Clock Update
+        function updateClock() {
+            const clock = document.getElementById("live-clock");
+            const now = new Date();
+            clock.textContent = now.toTimeString().split(' ')[0];
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        async function fetchDmsData() {
+            try {
+                // Fetch panel info
+                const paineis = await apiGet("/api/paineis");
+                const panel = paineis.find(p => p.panelId === panelId) || {
+                    location: "Paragem TUB",
+                    message: "A carregar dados...",
+                    status: "ONLINE"
+                };
+
+                document.getElementById("stop-name-title").textContent = panel.location;
+                document.getElementById("ticker-marquee-text").textContent = panel.message || "BEM-VINDO AOS TUB - OPERAÇÃO INTEGRADA DE BRAGA";
+
+                const container = document.getElementById("arrivals-container");
+                container.innerHTML = "";
+
+                if (panel.status === 'OFFLINE') {
+                    container.innerHTML = '<div class="offline-message">[ PAINEL SEM SINAL DE REDE ]</div>';
+                    return;
+                }
+
+                // Fetch predictions
+                const previsoes = await apiGet(`/api/previsoes/consulta/${painelDbId}`);
+
+                if (previsoes.length === 0) {
+                    container.innerHTML = `
+                        <div class="arrival-row" style="grid-template-columns: 1fr; text-align:center; font-size:22px; color:var(--led-dim);">
+                            Sem autocarros previstos de momento.
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Sort arrivals by minutes
+                previsoes.sort((a,b) => a.etaMinutos - b.etaMinutos);
+
+                previsoes.forEach(prev => {
+                    const row = document.createElement("div");
+                    row.className = "arrival-row";
+
+                    const isNear = prev.etaMinutos <= 2;
+                    const timeLabel = isNear ? 'A chegar' : `${prev.etaMinutos} MIN`;
+                    const timeClass = isNear ? 'eta-time imminent' : 'eta-time';
+                    const linCode = prev.linha ? prev.linha.codigo : "43";
+
+                    row.innerHTML = `
+                        <div class="line-code">${linCode}</div>
+                        <div class="destination">${prev.destino}</div>
+                        <div class="${timeClass}">${timeLabel}</div>
+                    `;
+                    container.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error("Erro no painel DMS:", err);
+            }
+        }
+
+        // Initialize & Poll
+        fetchDmsData();
+        setInterval(fetchDmsData, 8000);
+    </script>
+</body>
+</html>

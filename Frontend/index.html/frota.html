@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUB – Frota & Geofencing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        #map {
+            height: 480px;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <div class="tub-logo">TUB</div>
+                <div class="logo-text">
+                    <strong>Gestão Urbana</strong>
+                    <span>Plataforma TUB</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-nav">
+                <div class="nav-section"><span>Principal</span></div>
+                <a href="dashboard.html" class="nav-item" id="nav-dashboard">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="frota.html" class="nav-item active" id="nav-frota">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    <span>Frota & GIS</span>
+                </a>
+
+                <div class="nav-section"><span>Operações</span></div>
+                <a href="bilhetica.html" class="nav-item" id="nav-bilhetica">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                    <span>Bilhética</span>
+                </a>
+                <a href="lotacao.html" class="nav-item" id="nav-lotacao">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+                    <span>Lotação (IoT)</span>
+                </a>
+                <a href="paineis.html" class="nav-item" id="nav-dms">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M8 21h8M12 17v4"/></svg>
+                    <span>Painéis DMS</span>
+                </a>
+
+                <div class="nav-section"><span>Administração</span></div>
+                <a href="auditoria.html" class="nav-item" id="nav-auditoria">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    <span>Auditoria</span>
+                </a>
+                <a href="utilizadores.html" class="nav-item" id="nav-utilizadores" style="display:none;">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <span>Utilizadores</span>
+                </a>
+                <a href="relatorios.html" class="nav-item" id="nav-relatorios">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span>Relatórios</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar" id="sidebar-user-avatar">??</div>
+                <div class="user-info">
+                    <strong id="sidebar-user-name">Carregando...</strong>
+                    <span id="sidebar-user-email">...</span>
+                </div>
+                <span class="user-role-badge" id="sidebar-user-role">...</span>
+            </div>
+        </nav>
+        
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <div class="breadcrumb">
+                    <span>TUB</span>
+                    <svg class="sep" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <strong>Frota & GIS</strong>
+                </div>
+                <div class="topbar-actions">
+                    <div class="user-chip">
+                        <div class="user-avatar" id="topbar-user-avatar" style="width:28px;height:28px;font-size:11px;">??</div>
+                        <span id="topbar-user-name">...</span>
+                    </div>
+                    <button class="btn btn-outline btn-sm" id="btn-logout" style="color:var(--danger); border-color:var(--danger);">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        Sair
+                    </button>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT -->
+            <main class="page-content">
+                <div class="page-header">
+                    <h1>Localização da Frota & Geofencing</h1>
+                    <p>Controlo geográfico em tempo real e monitorização de limites territoriais nas linhas urbanas</p>
+                </div>
+
+                <div class="col-7-5">
+                    <!-- GIS Leaflet Map -->
+                    <div class="card">
+                        <div class="card-header">
+                            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="card-title-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                            <h3>Mapa Operacional Integrado</h3>
+                        </div>
+                        <div class="card-body" style="padding:16px;">
+                            <div id="map"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar control panel -->
+                    <div style="display:flex; flex-direction:column; gap:20px;">
+                        <!-- Simulator -->
+                        <div class="card">
+                            <div class="card-header">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="card-title-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                <h3>Simulador de Telemetria Geofence</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-field" style="margin-bottom:12px;">
+                                    <label>Selecionar Viatura</label>
+                                    <select id="sim-viatura-select">
+                                        <!-- Will populate dynamically -->
+                                    </select>
+                                </div>
+                                <div class="form-field" style="margin-bottom:12px;">
+                                    <label>Selecionar Zona de Controlo</label>
+                                    <select id="sim-zona-select">
+                                        <option value="Zona A - Centro Histórico">Zona A - Centro Histórico</option>
+                                        <option value="Zona B - Campus Universitário">Zona B - Campus Universitário</option>
+                                        <option value="Zona C - Hospital">Zona C - Hospital</option>
+                                    </select>
+                                </div>
+                                <div class="form-field" style="margin-bottom:16px;">
+                                    <label>Tipo de Movimento</label>
+                                    <select id="sim-movimento-select">
+                                        <option value="ENTRADA">Entrada na Zona</option>
+                                        <option value="SAIDA">Saída da Zona</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-blue" id="btn-registar-evento" style="width:100%; justify-content:center;">
+                                    Disparar Evento GPS
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Geofence History -->
+                        <div class="card">
+                            <div class="card-header">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="card-title-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <h3>Histórico Geográfico (Tempo Real)</h3>
+                            </div>
+                            <div class="card-body" style="max-height: 250px; overflow-y: auto;">
+                                <div id="geofence-events-timeline">
+                                    <div class="empty-state"><p>Carregando eventos...</p></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active fleet list -->
+                <div class="card" style="margin-top:24px;">
+                    <div class="card-header">
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="card-title-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                        <h3>Monitor de Estado de Viaturas em Operação</h3>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Cód. Viatura</th>
+                                    <th>Linha Ativa</th>
+                                    <th>Passageiros Atuais</th>
+                                    <th>Capacidade Max.</th>
+                                    <th>Taxa de Ocupação</th>
+                                    <th>Estado de Transmissão</th>
+                                </tr>
+                            </thead>
+                            <tbody id="frota-table-body">
+                                <tr><td colspan="6" style="text-align:center;">Carregando estado da frota...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="shared/api.js"></script>
+    <script>
+        // Session Verification
+        const userToken = sessionStorage.getItem("user_token");
+        const userName = sessionStorage.getItem("user_name");
+        const userEmail = sessionStorage.getItem("user_email");
+        const userRole = sessionStorage.getItem("user_role");
+
+        if (!userToken) {
+            window.location.href = "login.html";
+        }
+
+        // Setup User Info
+        document.getElementById("sidebar-user-name").textContent = userName || "Carlos Silva";
+        document.getElementById("sidebar-user-email").textContent = userEmail || "admin@tub.pt";
+        document.getElementById("sidebar-user-role").textContent = userRole || "Admin";
+        document.getElementById("sidebar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
+
+        document.getElementById("topbar-user-name").textContent = userName || "Carlos Silva";
+        document.getElementById("topbar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
+
+        if (userRole === "ADMINISTRADOR") {
+            document.getElementById("nav-utilizadores").style.display = "flex";
+        }
+
+        document.getElementById("btn-logout").addEventListener("click", () => {
+            sessionStorage.clear();
+            window.location.href = "login.html";
+        });
+
+        // Initialize Map
+        const map = L.map('map').setView([41.5503, -8.4200], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let markersLayer = L.layerGroup().addTo(map);
+
+        // Define Zonas de Geofencing
+        const geofences = [
+            { nome: "Zona A - Centro Histórico", lat: 41.5515, lng: -8.4210, raio: 300, cor: "#FF5252" },
+            { nome: "Zona B - Campus Universitário", lat: 41.5610, lng: -8.3970, raio: 400, cor: "#1464A5" },
+            { nome: "Zona C - Hospital", lat: 41.5670, lng: -8.3990, raio: 300, cor: "#FFB800" }
+        ];
+
+        geofences.forEach(gf => {
+            L.circle([gf.lat, gf.lng], {
+                color: gf.cor,
+                fillColor: gf.cor,
+                fillOpacity: 0.15,
+                radius: gf.raio
+            }).addTo(map).bindPopup(`<b>Zona de Controlo:</b> ${gf.nome}`);
+        });
+
+        // Load data on Map & Tables
+        async function loadFrotaData() {
+            markersLayer.clearLayers();
+            try {
+                // Fetch list
+                const frota = await apiGet("/api/monitorizacao/status-geral");
+                
+                // Populate simulator dropdown
+                const simSelect = document.getElementById("sim-viatura-select");
+                const currentVal = simSelect.value;
+                simSelect.innerHTML = "";
+                
+                // Populate table
+                const tableBody = document.getElementById("frota-table-body");
+                tableBody.innerHTML = "";
+
+                frota.forEach(v => {
+                    // Dropdown
+                    const option = document.createElement("option");
+                    option.value = v.id;
+                    option.textContent = `Viatura #${v.id} (${v.linha})`;
+                    simSelect.appendChild(option);
+
+                    // Table row
+                    const tr = document.createElement("tr");
+                    const ocupacaoTaxa = v.capacidade > 0 ? (v.passageiros / v.capacidade * 100).toFixed(1) : 0;
+                    
+                    tr.innerHTML = `
+                        <td><strong>#${v.id}</strong></td>
+                        <td>${v.linha}</td>
+                        <td>${v.passageiros}</td>
+                        <td>${v.capacidade}</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div class="progress-bar" style="width:80px;">
+                                    <div class="progress-fill ${ocupacaoTaxa >= 70 ? 'red' : (ocupacaoTaxa >= 45 ? 'orange' : 'green')}" style="width: ${ocupacaoTaxa}%"></div>
+                                </div>
+                                <span>${ocupacaoTaxa}%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge ${v.sinal ? 'badge-green' : 'badge-red'}">
+                                ${v.sinal ? 'Online' : 'Offline'}
+                            </span>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                if (currentVal) {
+                    simSelect.value = currentVal;
+                }
+
+                // Load stops
+                const paragens = await apiGet("/api/paragens");
+                paragens.forEach(p => {
+                    const circle = L.circleMarker([p.lat, p.lng], {
+                        radius: 6,
+                        fillColor: '#1464A5',
+                        color: "#fff",
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(markersLayer);
+                    circle.bindPopup(`<b>Paragem DMS:</b> ${p.nome}<br><b>Estado:</b> ${p.estado}`);
+                });
+
+                // Load positions
+                const posicoes = await apiGet("/api/frota/posicoes");
+                posicoes.forEach(v => {
+                    const viaturaIcon = L.divIcon({
+                        html: `<div style="background-color: var(--orange); color: white; padding: 4px 8px; border-radius: 12px; border: 2px solid white; font-weight: bold; font-size: 11px; white-space: nowrap;">L${v.linha.replace('Linha ', '')} - #${v.id}</div>`,
+                        className: 'custom-bus-icon',
+                        iconSize: [60, 24],
+                        iconAnchor: [30, 12]
+                    });
+                    
+                    const marker = L.marker([v.lat, v.lng], { icon: viaturaIcon }).addTo(markersLayer);
+                    marker.bindPopup(`<b>Viatura #${v.id}</b><br><b>Linha:</b> ${v.linha}<br><b>Lotação:</b> ${v.lotacao}%<br><b>Estado:</b> ${v.status}`);
+                });
+
+            } catch (err) {
+                console.error("Erro ao carregar dados da frota:", err);
+            }
+        }
+
+        // Load Geofence History
+        async function loadGeofenceHistory() {
+            try {
+                const historico = await apiGet("/api/geofencing/historico");
+                const timeline = document.getElementById("geofence-events-timeline");
+                timeline.innerHTML = "";
+
+                if (historico.length === 0) {
+                    timeline.innerHTML = '<div class="empty-state"><p>Nenhum evento geográfico registado.</p></div>';
+                    return;
+                }
+
+                // Sort history by date descending
+                historico.sort((a,b) => b.id - a.id);
+
+                historico.forEach(ev => {
+                    const isEntrada = ev.tipo === 'ENTRADA';
+                    const timeStr = ev.timestamp ? ev.timestamp.replace('T', ' ').substring(0, 16) : 'N/A';
+                    const item = document.createElement("div");
+                    item.className = "timeline-item";
+
+                    item.innerHTML = `
+                        <div class="timeline-dot ${isEntrada ? 'green' : 'red'}">
+                            ${isEntrada ? '📥' : '📤'}
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Viatura #${ev.viaturaId}</h4>
+                            <p>${isEntrada ? 'Entrou em' : 'Saiu de'} <strong>${ev.detalhes}</strong></p>
+                            <time>${timeStr}</time>
+                        </div>
+                    `;
+                    timeline.appendChild(item);
+                });
+
+            } catch (err) {
+                console.error("Erro ao carregar histórico geofencing:", err);
+            }
+        }
+
+        // Submit geofence event
+        document.getElementById("btn-registar-evento").addEventListener("click", async () => {
+            const viaturaId = document.getElementById("sim-viatura-select").value;
+            const nomeZona = document.getElementById("sim-zona-select").value;
+            const tipoMovimento = document.getElementById("sim-movimento-select").value;
+
+            if (!viaturaId) {
+                alert("Por favor, selecione uma viatura.");
+                return;
+            }
+
+            try {
+                // Post using search parameters in request body or url search params since controller uses @RequestParam
+                const url = `/api/geofencing/registar?viaturaId=${viaturaId}&nomeZona=${encodeURIComponent(nomeZona)}&tipoMovimento=${tipoMovimento}`;
+                
+                // Fetch directly
+                const response = await fetch(`http://localhost:8081${url}`, { method: 'POST' });
+                if (response.ok) {
+                    // Success
+                    loadGeofenceHistory();
+                } else {
+                    alert("Erro ao disparar telemetria geofence!");
+                }
+            } catch (err) {
+                alert("Falha na chamada de API: " + err);
+            }
+        });
+
+        // Initialize
+        loadFrotaData();
+        loadGeofenceHistory();
+
+        // Refresh periodically
+        setInterval(() => {
+            loadFrotaData();
+            loadGeofenceHistory();
+        }, 15000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUB – Gestão de Painéis DMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <div class="tub-logo">TUB</div>
+                <div class="logo-text">
+                    <strong>Gestão Urbana</strong>
+                    <span>Plataforma TUB</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-nav">
+                <div class="nav-section"><span>Principal</span></div>
+                <a href="dashboard.html" class="nav-item" id="nav-dashboard">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="frota.html" class="nav-item" id="nav-frota">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    <span>Frota & GIS</span>
+                </a>
+
+                <div class="nav-section"><span>Operações</span></div>
+                <a href="bilhetica.html" class="nav-item" id="nav-bilhetica">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                    <span>Bilhética</span>
+                </a>
+                <a href="lotacao.html" class="nav-item" id="nav-lotacao">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+                    <span>Lotação (IoT)</span>
+                </a>
+                <a href="paineis.html" class="nav-item active" id="nav-dms">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M8 21h8M12 17v4"/></svg>
+                    <span>Painéis DMS</span>
+                </a>
+
+                <div class="nav-section"><span>Administração</span></div>
+                <a href="auditoria.html" class="nav-item" id="nav-auditoria">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    <span>Auditoria</span>
+                </a>
+                <a href="utilizadores.html" class="nav-item" id="nav-utilizadores" style="display:none;">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <span>Utilizadores</span>
+                </a>
+                <a href="relatorios.html" class="nav-item" id="nav-relatorios">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span>Relatórios</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar" id="sidebar-user-avatar">??</div>
+                <div class="user-info">
+                    <strong id="sidebar-user-name">Carregando...</strong>
+                    <span id="sidebar-user-email">...</span>
+                </div>
+                <span class="user-role-badge" id="sidebar-user-role">...</span>
+            </div>
+        </nav>
+        
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <div class="breadcrumb">
+                    <span>Operações</span>
+                    <svg class="sep" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <strong>Painéis DMS</strong>
+                </div>
+                <div class="topbar-actions">
+                    <div class="user-chip">
+                        <div class="user-avatar" id="topbar-user-avatar" style="width:28px;height:28px;font-size:11px;">??</div>
+                        <span id="topbar-user-name">...</span>
+                    </div>
+                    <button class="btn btn-outline btn-sm" id="btn-logout" style="color:var(--danger); border-color:var(--danger);">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        Sair
+                    </button>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT -->
+            <main class="page-content">
+                <div class="page-header">
+                    <h1>Gestão de Painéis de Informação (DMS)</h1>
+                    <p>Controlo e publicação de informações operacionais e alertas nos painéis LED das paragens</p>
+                </div>
+
+                <div class="tab-nav">
+                    <button class="tab-btn active" id="tab-btn-estado" onclick="switchTab('estado')">Estado dos Painéis</button>
+                    <button class="tab-btn" id="tab-btn-publicar" onclick="switchTab('publicar')">Publicar Mensagem</button>
+                    <button class="tab-btn" id="tab-btn-simulador" onclick="switchTab('simulador')">Previsões (Simulador)</button>
+                </div>
+
+                <!-- TAB: ESTADO -->
+                <div id="tab-content-estado">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Monitores DMS Ativos nas Paragens</h3>
+                        </div>
+                        <div class="card-body" style="padding:0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cód. Painel</th>
+                                        <th>Localização</th>
+                                        <th>Mensagem Exibida</th>
+                                        <th>Estado de Funcionamento</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paineis-table-body">
+                                    <tr><td colspan="5" style="text-align:center;">Carregando estado dos painéis...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: PUBLICAR -->
+                <div id="tab-content-publicar" style="display:none;">
+                    <div class="col-7-5">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Nova Publicação (Tempo Real)</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-field" style="margin-bottom:12px;">
+                                    <label>Destino da Mensagem</label>
+                                    <select id="pub-destino-select">
+                                        <option value="TODOS">Todos os Painéis (Broadcast)</option>
+                                        <!-- Will populate dynamically -->
+                                    </select>
+                                </div>
+                                <div class="form-field" style="margin-bottom:16px;">
+                                    <label>Texto da Mensagem (Máx. 120 car.)</label>
+                                    <textarea id="pub-mensagem-text" placeholder="Escreva a mensagem a exibir no painel..." maxlength="120"></textarea>
+                                    <div class="char-count" id="pub-char-count">0 / 120 caracteres</div>
+                                </div>
+                                <button class="btn btn-orange" id="btn-publicar-dms" style="width:100%; justify-content:center;">
+                                    Publicar Mensagem
+                                </button>
+                                <div id="pub-feedback" class="annotation-box" style="margin-top:14px; display:none; background:#E6F4EA; border-color:#1A6B35; color:#1A6B35;">
+                                    ✓ Mensagem enviada com sucesso para os painéis selecionados!
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Schedule card -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Agendar Mensagem</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-field" style="margin-bottom:12px;">
+                                    <label>Selecionar Painel</label>
+                                    <select id="agd-destino-select">
+                                        <!-- Will populate dynamically -->
+                                    </select>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-field"><label>Data de Início</label><input type="date" id="agd-data" value="2026-05-20"></div>
+                                    <div class="form-field"><label>Hora de Início</label><input type="time" id="agd-hora" value="19:00"></div>
+                                </div>
+                                <div class="form-field" style="margin-bottom:16px;">
+                                    <label>Texto da Mensagem</label>
+                                    <textarea id="agd-mensagem-text" placeholder="Mensagem programada..." maxlength="120"></textarea>
+                                </div>
+                                <button class="btn btn-blue" id="btn-agendar-dms" style="width:100%; justify-content:center;">
+                                    Agendar Exibição
+                                </button>
+                                <div id="agd-feedback" class="annotation-box" style="margin-top:14px; display:none; background:#E6F4EA; border-color:#1A6B35; color:#1A6B35;">
+                                    ✓ Agendamento criado com sucesso!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: SIMULADOR PREVISÕES -->
+                <div id="tab-content-simulador" style="display:none;">
+                    <div class="card" style="max-width:600px;">
+                        <div class="card-header">
+                            <h3>Lançar Previsão de Chegada (Simulador CCO)</h3>
+                        </div>
+                        <div class="card-body">
+                            <p style="color:var(--t2); font-size:13px; margin-bottom:16px;">
+                                Permite aos operadores simular a telemetria enviada pelas viaturas para atualizar as previsões de minutos nos painéis de Braga.
+                            </p>
+                            
+                            <div class="form-field" style="margin-bottom:12px;">
+                                <label>Selecionar Viatura (GPS)</label>
+                                <select id="sim-viatura-select"></select>
+                            </div>
+                            <div class="form-field" style="margin-bottom:12px;">
+                                <label>Paragem Alvo (Painel)</label>
+                                <select id="sim-painel-select">
+                                    <option value="1">Avenida Central (PMD-001)</option>
+                                    <option value="2">Universidade do Minho (PMD-002)</option>
+                                    <option value="3">Hospital de Braga (PMD-003)</option>
+                                    <option value="4">Estação CP (PMD-004)</option>
+                                    <option value="5">Bom Jesus (PMD-005)</option>
+                                </select>
+                            </div>
+                            <div class="form-field" style="margin-bottom:12px;">
+                                <label>Linha de Operação</label>
+                                <select id="sim-linha-select">
+                                    <option value="1">Linha 43 (Gualtar)</option>
+                                    <option value="2">Linha 2 (Hospital)</option>
+                                    <option value="3">Linha 7 (Bom Jesus)</option>
+                                    <option value="4">Linha 24 (Universidade)</option>
+                                    <option value="5">Linha 15 (Estação CP)</option>
+                                </select>
+                            </div>
+                            <div class="form-field" style="margin-bottom:12px;">
+                                <label>Destino Final</label>
+                                <input type="text" id="sim-destino-text" value="Terminal Rodoviário">
+                            </div>
+                            <div class="form-field" style="margin-bottom:16px;">
+                                <label>Paragens Restantes até à chegada</label>
+                                <input type="number" id="sim-restantes-num" value="3" min="1" max="15">
+                            </div>
+                            
+                            <button class="btn btn-orange" id="btn-calcular-previsao" style="width:100%; justify-content:center;">
+                                Calcular e Lançar Previsão
+                            </button>
+                            <div id="sim-feedback" class="annotation-box" style="margin-top:14px; display:none; background:#E6F4EA; border-color:#1A6B35; color:#1A6B35;">
+                                ✓ Previsão enviada para a paragem! A chegada estimada aparecerá no ecrã público da paragem.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="shared/api.js"></script>
+    <script>
+        // Session Verification
+        const userToken = sessionStorage.getItem("user_token");
+        const userName = sessionStorage.getItem("user_name");
+        const userEmail = sessionStorage.getItem("user_email");
+        const userRole = sessionStorage.getItem("user_role");
+
+        if (!userToken) {
+            window.location.href = "login.html";
+        }
+
+        // Setup User Info
+        document.getElementById("sidebar-user-name").textContent = userName || "Carlos Silva";
+        document.getElementById("sidebar-user-email").textContent = userEmail || "admin@tub.pt";
+        document.getElementById("sidebar-user-role").textContent = userRole || "Admin";
+        document.getElementById("sidebar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
+
+        document.getElementById("topbar-user-name").textContent = userName || "Carlos Silva";
+        document.getElementById("topbar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
+
+        if (userRole === "ADMINISTRADOR") {
+            document.getElementById("nav-utilizadores").style.display = "flex";
+        }
+
+        document.getElementById("btn-logout").addEventListener("click", () => {
+            sessionStorage.clear();
+            window.location.href = "login.html";
+        });
+
+        // Tabs switcher
+        function switchTab(tabId) {
+            ['estado', 'publicar', 'simulador'].forEach(t => {
+                document.getElementById(`tab-content-${t}`).style.display = t === tabId ? 'block' : 'none';
+                document.getElementById(`tab-btn-${t}`).classList.toggle('active', t === tabId);
+            });
+        }
+
+        // Handle Textarea character counter
+        const textAreas = [document.getElementById("pub-mensagem-text"), document.getElementById("agd-mensagem-text")];
+        textAreas.forEach(ta => {
+            ta.addEventListener("input", function() {
+                const countDiv = document.getElementById("pub-char-count");
+                if (countDiv && this.id === "pub-mensagem-text") {
+                    countDiv.textContent = `${this.value.length} / 120 caracteres`;
+                }
+            });
+        });
+
+        // Load Panels data
+        let allPaineis = [];
+
+        async function loadPaineisData() {
+            try {
+                allPaineis = await apiGet("/api/paineis");
+                
+                // Populate Table
+                const tbody = document.getElementById("paineis-table-body");
+                tbody.innerHTML = "";
+
+                // Populate Destinos in Forms
+                const pubSelect = document.getElementById("pub-destino-select");
+                const agdSelect = document.getElementById("agd-destino-select");
+                
+                const currentPubVal = pubSelect.value;
+                const currentAgdVal = agdSelect.value;
+
+                pubSelect.innerHTML = '<option value="TODOS">Todos os Painéis (Broadcast)</option>';
+                agdSelect.innerHTML = "";
+
+                allPaineis.forEach(p => {
+                    // Populate Table
+                    const tr = document.createElement("tr");
+                    const statusClass = p.status === 'ONLINE' ? 'badge-green' : (p.status === 'DEGRADADO' ? 'badge-orange' : 'badge-red');
+                    
+                    tr.innerHTML = `
+                        <td><strong>${p.panelId}</strong></td>
+                        <td>${p.location}</td>
+                        <td class="td-muted">${p.message || 'Sem mensagens publicadas'}</td>
+                        <td><span class="badge ${statusClass}">${p.status}</span></td>
+                        <td>
+                            <a href="dms-screen.html?panelId=${p.panelId}" target="_blank" class="btn btn-outline btn-sm">
+                                📺 Ecrã Público
+                            </a>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+
+                    // Populate Selects
+                    const opt = document.createElement("option");
+                    opt.value = p.panelId;
+                    opt.textContent = `${p.location} (${p.panelId})`;
+                    pubSelect.appendChild(opt);
+
+                    const optAgd = document.createElement("option");
+                    optAgd.value = p.panelId;
+                    optAgd.textContent = `${p.location} (${p.panelId})`;
+                    agdSelect.appendChild(optAgd);
+                });
+
+                if (currentPubVal) pubSelect.value = currentPubVal;
+                if (currentAgdVal) agdSelect.value = currentAgdVal;
+
+            } catch (err) {
+                console.error("Erro ao carregar painéis:", err);
+            }
+        }
+
+        // Load Viaturas for prediction simulation
+        async function loadViaturasForSimulation() {
+            try {
+                const viaturas = await apiGet("/api/monitorizacao/status-geral");
+                const viaturaSelect = document.getElementById("sim-viatura-select");
+                viaturaSelect.innerHTML = "";
+                viaturas.forEach(v => {
+                    const opt = document.createElement("option");
+                    opt.value = v.id;
+                    opt.textContent = `Viatura #${v.id} (${v.linha})`;
+                    viaturaSelect.appendChild(opt);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar viaturas no simulador:", err);
+            }
+        }
+
+        // Post Publicar Mensagem
+        document.getElementById("btn-publicar-dms").addEventListener("click", async () => {
+            const panelId = document.getElementById("pub-destino-select").value;
+            const message = document.getElementById("pub-mensagem-text").value;
+
+            if (!message) {
+                alert("Por favor, introduza uma mensagem.");
+                return;
+            }
+
+            try {
+                const res = await apiPost("/api/paineis/publicar", { panelId, message });
+                if (res.resultado) {
+                    const fb = document.getElementById("pub-feedback");
+                    fb.style.display = "block";
+                    document.getElementById("pub-mensagem-text").value = "";
+                    document.getElementById("pub-char-count").textContent = "0 / 120 caracteres";
+                    loadPaineisData();
+                    setTimeout(() => fb.style.display = "none", 5000);
+                } else if (res.erro) {
+                    alert("Erro do Servidor: " + res.erro);
+                }
+            } catch (err) {
+                alert("Erro ao publicar: " + err);
+            }
+        });
+
+        // Post Agendar Mensagem
+        document.getElementById("btn-agendar-dms").addEventListener("click", async () => {
+            const panelId = document.getElementById("agd-destino-select").value;
+            const data = document.getElementById("agd-data").value;
+            const hora = document.getElementById("agd-hora").value;
+            const message = document.getElementById("agd-mensagem-text").value;
+
+            if (!message || !data || !hora) {
+                alert("Por favor, preencha todos os campos.");
+                return;
+            }
+
+            try {
+                // Post mapping a mock message ID (since agenda expects a messageId, let's pass a mock)
+                const res = await apiPost("/api/paineis/agendar", {
+                    mensagemId: 1,
+                    data: data,
+                    hora: hora
+                });
+                if (res.status === 'Sucesso') {
+                    const fb = document.getElementById("agd-feedback");
+                    fb.style.display = "block";
+                    document.getElementById("agd-mensagem-text").value = "";
+                    setTimeout(() => fb.style.display = "none", 5000);
+                }
+            } catch (err) {
+                alert("Erro ao agendar: " + err);
+            }
+        });
+
+        // Simulation Prediction POST
+        document.getElementById("btn-calcular-previsao").addEventListener("click", async () => {
+            const viaturaId = document.getElementById("sim-viatura-select").value;
+            const painelId = document.getElementById("sim-painel-select").value;
+            const linhaId = document.getElementById("sim-linha-select").value;
+            const destino = document.getElementById("sim-destino-text").value;
+            const paragensRestantes = document.getElementById("sim-restantes-num").value;
+
+            if (!viaturaId || !destino || !paragensRestantes) {
+                alert("Preencha todos os parâmetros de simulação.");
+                return;
+            }
+
+            try {
+                const url = `/api/previsoes/calcular?viaturaId=${viaturaId}&painelId=${painelId}&linhaId=${linhaId}&destino=${encodeURIComponent(destino)}&paragensRestantes=${paragensRestantes}`;
+                const response = await fetch(`http://localhost:8081${url}`, { method: 'POST' });
+                if (response.ok) {
+                    const fb = document.getElementById("sim-feedback");
+                    fb.style.display = "block";
+                    setTimeout(() => fb.style.display = "none", 5000);
+                } else {
+                    alert("Erro ao simular previsão!");
+                }
+            } catch (err) {
+                alert("Falha na chamada: " + err);
+            }
+        });
+
+        // Initialize
+        loadPaineisData();
+        loadViaturasForSimulation();
+
+        // Refresh panel status periodically
+        setInterval(loadPaineisData, 10000);
+    </script>
+</body>
+</html>

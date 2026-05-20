@@ -3,12 +3,14 @@ package com.tub.p7_relatorios.controller;
 import com.tub.p7_relatorios.service.ControloTarefasAutomaticas;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/relatorios/agendamentos")
+@CrossOrigin(origins = "*")
 public class InterfaceAgendamentos {
 
     @Autowired
