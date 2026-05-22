@@ -99,7 +99,8 @@
 
                 <div class="tab-nav">
                     <button class="tab-btn active" id="tab-btn-estado" onclick="switchTab('estado')">Estado dos Painéis</button>
-                    <button class="tab-btn" id="tab-btn-publicar" onclick="switchTab('publicar')">Publicar Mensagem</button>
+                    <button class="tab-btn" id="tab-btn-publicar" onclick="switchTab('publicar')">Publicar / Agendar</button>
+                    <button class="tab-btn" id="tab-btn-historico" onclick="switchTab('historico')">Histórico de Mensagens</button>
                     <button class="tab-btn" id="tab-btn-simulador" onclick="switchTab('simulador')">Previsões (Simulador)</button>
                 </div>
 
@@ -143,6 +144,12 @@
                                         <!-- Will populate dynamically -->
                                     </select>
                                 </div>
+                                <div class="form-field" style="margin-bottom:12px;">
+                                    <label>Mensagem Rápida (Modelo)</label>
+                                    <select id="pub-modelo-select" onchange="applyTemplate('pub')">
+                                        <option value="">-- Selecione um modelo (opcional) --</option>
+                                    </select>
+                                </div>
                                 <div class="form-field" style="margin-bottom:16px;">
                                     <label>Texto da Mensagem (Máx. 120 car.)</label>
                                     <textarea id="pub-mensagem-text" placeholder="Escreva a mensagem a exibir no painel..." maxlength="120"></textarea>
@@ -169,6 +176,12 @@
                                         <!-- Will populate dynamically -->
                                     </select>
                                 </div>
+                                <div class="form-field" style="margin-bottom:12px;">
+                                    <label>Mensagem Rápida (Modelo)</label>
+                                    <select id="agd-modelo-select" onchange="applyTemplate('agd')">
+                                        <option value="">-- Selecione um modelo (opcional) --</option>
+                                    </select>
+                                </div>
                                 <div class="form-row">
                                     <div class="form-field"><label>Data de Início</label><input type="date" id="agd-data" value="2026-05-20"></div>
                                     <div class="form-field"><label>Hora de Início</label><input type="time" id="agd-hora" value="19:00"></div>
@@ -184,6 +197,54 @@
                                     ✓ Agendamento criado com sucesso!
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Agendamentos Pendentes -->
+                    <div class="card" style="margin-top: 24px;">
+                        <div class="card-header">
+                            <h3>Agendamentos Pendentes (UC 6.2)</h3>
+                        </div>
+                        <div class="card-body" style="padding:0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cód. Painel</th>
+                                        <th>Data/Hora de Agendamento</th>
+                                        <th>Mensagem</th>
+                                        <th>Prioridade</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="agendamentos-table-body">
+                                    <tr><td colspan="5" style="text-align:center;">Nenhum agendamento pendente encontrado.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: HISTORICO -->
+                <div id="tab-content-historico" style="display:none;">
+                    <div class="card">
+                        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Histórico de Mensagens Emitidas (UC 6.3)</h3>
+                            <button class="btn btn-outline btn-sm" onclick="loadHistorico()">🔄 Atualizar Histórico</button>
+                        </div>
+                        <div class="card-body" style="padding:0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data / Hora</th>
+                                        <th>Destino</th>
+                                        <th>Mensagem Exibida</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historico-table-body">
+                                    <tr><td colspan="4" style="text-align:center;">Carregando histórico de emissões...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -282,10 +343,18 @@
 
         // Tabs switcher
         function switchTab(tabId) {
-            ['estado', 'publicar', 'simulador'].forEach(t => {
-                document.getElementById(`tab-content-${t}`).style.display = t === tabId ? 'block' : 'none';
-                document.getElementById(`tab-btn-${t}`).classList.toggle('active', t === tabId);
+            ['estado', 'publicar', 'historico', 'simulador'].forEach(t => {
+                const content = document.getElementById(`tab-content-${t}`);
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (content) content.style.display = t === tabId ? 'block' : 'none';
+                if (btn) btn.classList.toggle('active', t === tabId);
             });
+            if (tabId === 'publicar') {
+                loadAgendamentos();
+                loadModelos();
+            } else if (tabId === 'historico') {
+                loadHistorico();
+            }
         }
 
         // Handle Textarea character counter
@@ -301,6 +370,7 @@
 
         // Load Panels data
         let allPaineis = [];
+        let allModelos = [];
 
         async function loadPaineisData() {
             try {
@@ -358,6 +428,128 @@
             }
         }
 
+        // Load templates models
+        async function loadModelos() {
+            try {
+                allModelos = await apiGet("/api/paineis/modelos");
+                const pubModelSelect = document.getElementById("pub-modelo-select");
+                const agdModelSelect = document.getElementById("agd-modelo-select");
+
+                pubModelSelect.innerHTML = '<option value="">-- Selecione um modelo (opcional) --</option>';
+                agdModelSelect.innerHTML = '<option value="">-- Selecione um modelo (opcional) --</option>';
+
+                allModelos.forEach(m => {
+                    const opt = document.createElement("option");
+                    opt.value = m.id;
+                    opt.textContent = `[${m.categoria}] ${m.nomeModelo}`;
+                    pubModelSelect.appendChild(opt);
+
+                    const opt2 = opt.cloneNode(true);
+                    agdModelSelect.appendChild(opt2);
+                });
+            } catch (err) {
+                console.error("Erro ao obter modelos:", err);
+            }
+        }
+
+        // Apply selected template message
+        function applyTemplate(prefix) {
+            const select = document.getElementById(`${prefix}-modelo-select`);
+            const val = select.value;
+            const textarea = document.getElementById(`${prefix}-mensagem-text`);
+            if (val) {
+                const modelo = allModelos.find(m => m.id == val);
+                if (modelo) {
+                    textarea.value = modelo.conteudoModelo;
+                    if (prefix === 'pub') {
+                        document.getElementById("pub-char-count").textContent = `${modelo.conteudoModelo.length} / 120 caracteres`;
+                    }
+                }
+            } else {
+                textarea.value = "";
+                if (prefix === 'pub') {
+                    document.getElementById("pub-char-count").textContent = "0 / 120 caracteres";
+                }
+            }
+        }
+
+        // Load Pending Schedules
+        async function loadAgendamentos() {
+            try {
+                const agendamentos = await apiGet("/api/paineis/agendados");
+                const tbody = document.getElementById("agendamentos-table-body");
+                tbody.innerHTML = "";
+
+                if (agendamentos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum agendamento pendente encontrado.</td></tr>';
+                    return;
+                }
+
+                agendamentos.forEach(item => {
+                    const tr = document.createElement("tr");
+                    const dateStr = new Date(item.dataHoraExibicao).toLocaleString();
+                    tr.innerHTML = `
+                        <td><strong>${item.panelId}</strong></td>
+                        <td>${dateStr}</td>
+                        <td class="td-muted">${item.conteudo}</td>
+                        <td><span class="badge badge-orange">${item.prioridade}</span></td>
+                        <td>
+                            <button class="btn btn-outline btn-sm" onclick="cancelarAgendamento(${item.id})" style="color:var(--danger); border-color:var(--danger); background:none;">
+                                ❌ Cancelar
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar agendamentos:", err);
+            }
+        }
+
+        // Cancel scheduled message
+        async function cancelarAgendamento(id) {
+            if (!confirm("Tem a certeza que deseja cancelar este agendamento?")) {
+                return;
+            }
+            try {
+                const res = await apiDelete(`/api/paineis/agendados/${id}`);
+                alert(res.mensagem || "Agendamento cancelado com sucesso!");
+                loadAgendamentos();
+            } catch (err) {
+                alert("Erro ao cancelar agendamento: " + err);
+            }
+        }
+
+        // Load Emission History
+        async function loadHistorico() {
+            try {
+                const historico = await apiGet("/api/paineis/historico");
+                const tbody = document.getElementById("historico-table-body");
+                tbody.innerHTML = "";
+
+                if (historico.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Histórico de emissões vazio.</td></tr>';
+                    return;
+                }
+
+                historico.forEach(item => {
+                    const tr = document.createElement("tr");
+                    const dateStr = new Date(item.dataCriacao).toLocaleString();
+                    const stateClass = item.estado === 'ATIVA' ? 'badge-green' : 'badge-red';
+                    tr.innerHTML = `
+                        <td>${dateStr}</td>
+                        <td><strong>${item.panelId}</strong></td>
+                        <td class="td-muted">${item.conteudo}</td>
+                        <td><span class="badge ${stateClass}">${item.estado}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar histórico:", err);
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--danger);">Erro ao carregar histórico.</td></tr>';
+            }
+        }
+
         // Load Viaturas for prediction simulation
         async function loadViaturasForSimulation() {
             try {
@@ -391,6 +583,7 @@
                     const fb = document.getElementById("pub-feedback");
                     fb.style.display = "block";
                     document.getElementById("pub-mensagem-text").value = "";
+                    document.getElementById("pub-modelo-select").value = "";
                     document.getElementById("pub-char-count").textContent = "0 / 120 caracteres";
                     loadPaineisData();
                     setTimeout(() => fb.style.display = "none", 5000);
@@ -415,9 +608,9 @@
             }
 
             try {
-                // Post mapping a mock message ID (since agenda expects a messageId, let's pass a mock)
                 const res = await apiPost("/api/paineis/agendar", {
-                    mensagemId: 1,
+                    panelId: panelId,
+                    mensagem: message,
                     data: data,
                     hora: hora
                 });
@@ -425,7 +618,11 @@
                     const fb = document.getElementById("agd-feedback");
                     fb.style.display = "block";
                     document.getElementById("agd-mensagem-text").value = "";
+                    document.getElementById("agd-modelo-select").value = "";
+                    loadAgendamentos();
                     setTimeout(() => fb.style.display = "none", 5000);
+                } else if (res.erro) {
+                    alert("Erro: " + res.erro);
                 }
             } catch (err) {
                 alert("Erro ao agendar: " + err);
@@ -460,7 +657,12 @@
             }
         });
 
-        // Initialize
+        // Initialize defaults
+        const initNow = new Date();
+        document.getElementById("agd-data").value = initNow.toISOString().split('T')[0];
+        document.getElementById("agd-hora").value = initNow.toTimeString().split(' ')[0].substring(0, 5);
+
+        // Initialize data load
         loadPaineisData();
         loadViaturasForSimulation();
 

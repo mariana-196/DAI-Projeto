@@ -3,7 +3,9 @@ package com.tub.config;
 import com.tub.p10_gestao_pmd.model.DisplayPanel;
 import com.tub.p10_gestao_pmd.model.Linha;
 import com.tub.p10_gestao_pmd.model.Viatura;
+import com.tub.p10_gestao_pmd.model.CatalogoMensagensRapidas;
 import com.tub.p10_gestao_pmd.repository.DisplayPanelRepository;
+import com.tub.p10_gestao_pmd.repository.CatalogoMensagensRapidasRepository;
 
 import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
 import com.tub.p2_dados_utilizador.repository.RegistoUtilizadorRepository;
@@ -46,6 +48,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
     private final RegistoBilheticaRepository registoBilheticaRepository;
     private final LotacaoViaturaRepository lotacaoViaturaRepository;
     private final AlertaLotacaoRepository alertaLotacaoRepository;
+    private final CatalogoMensagensRapidasRepository catalogoMensagensRapidasRepository;
 
     public DadosDemonstracaoSeeder(
             RegistoUtilizadorRepository utilizadorRepository,
@@ -57,7 +60,8 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             LoteDadosBilheticaRepository loteDadosBilheticaRepository,
             RegistoBilheticaRepository registoBilheticaRepository,
             LotacaoViaturaRepository lotacaoViaturaRepository,
-            AlertaLotacaoRepository alertaLotacaoRepository
+            AlertaLotacaoRepository alertaLotacaoRepository,
+            CatalogoMensagensRapidasRepository catalogoMensagensRapidasRepository
     ) {
         this.utilizadorRepository = utilizadorRepository;
         this.linhaRepository = linhaRepository;
@@ -69,6 +73,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         this.registoBilheticaRepository = registoBilheticaRepository;
         this.lotacaoViaturaRepository = lotacaoViaturaRepository;
         this.alertaLotacaoRepository = alertaLotacaoRepository;
+        this.catalogoMensagensRapidasRepository = catalogoMensagensRapidasRepository;
     }
 
     @Override
@@ -81,6 +86,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         criarPaineisPMD();
         criarDadosBilhetica();
         criarLotacaoEAlertas();
+        criarCatalogoMensagensRapidas();
 
         System.out.println("Dados de demonstração M5 carregados com sucesso.");
     }
@@ -412,5 +418,30 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             "EM_TRATAMENTO",
             "Atraso reportado de 8 minutos devido a tráfego intenso na Avenida Central."
         ));
+    }
+
+    private void criarCatalogoMensagensRapidas() {
+        if (catalogoMensagensRapidasRepository.count() == 0) {
+            catalogoMensagensRapidasRepository.save(new CatalogoMensagensRapidas(
+                    "Atraso Linha 43",
+                    "LINHA 43 COM ATRASO DE 10 MIN DEVIDO A TRANSITO",
+                    "ATRASOS"
+            ));
+            catalogoMensagensRapidasRepository.save(new CatalogoMensagensRapidas(
+                    "Aviso Greve",
+                    "SERVICOS DE TRANSPORTES PODERAO SOFRER PERTURBACOES DEVIDO A GREVE",
+                    "AVISOS"
+            ));
+            catalogoMensagensRapidasRepository.save(new CatalogoMensagensRapidas(
+                    "Boas Vindas",
+                    "BEM-VINDO AOS TRANSPORTES URBANOS DE BRAGA - TUB",
+                    "GERAL"
+            ));
+            catalogoMensagensRapidasRepository.save(new CatalogoMensagensRapidas(
+                    "Desvio de Rota",
+                    "LINHA 2 DESVIADA POR MOTIVO DE OBRAS NA AV. DA LIBERDADE",
+                    "DESVIOS"
+            ));
+        }
     }
 }
