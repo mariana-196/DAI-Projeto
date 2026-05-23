@@ -20,31 +20,43 @@ public class MotorCalculoAnalitico {
     }
 
     public ResultadoAnalitico calcular(ParametrosAnalise parametros) {
-
         ResultadoAnalitico resultado = new ResultadoAnalitico();
 
-        // 2. Ir buscar os registos reais à Base de Dados
-        // (No futuro, podes criar um método no Repository para filtrar pelas datas que vêm nos 'parametros')
         List<RegistoBilhetica> todosOsRegistos = registoRepository.findAll();
 
-        int totalPassageiros = 0;
-        int numeroDeRegistos = todosOsRegistos.size();
+        // Filter by line ID or line code if specified
+        if (parametros.getLinhaId() != null) {
+            String codigoStr = String.valueOf(parametros.getLinhaId());
+            todosOsRegistos = todosOsRegistos.stream()
+                    .filter(r -> r.getLinha() != null && 
+                        (r.getLinha().getId().equals(parametros.getLinhaId()) || 
+                         r.getLinha().getCodigo().equals(codigoStr)))
+                    .toList();
+        }
 
-        // 3. Fazer a matemática real com base nos teus dados
+        int totalPassageiros = 0;
+        double somaTaxas = 0.0;
+        int countComCapacidade = 0;
+
         for (RegistoBilhetica registo : todosOsRegistos) {
-            // Somamos as validações de cada registo (usando o campo que me mostraste na tua Entity)
             if (registo.getValidacoes() != null) {
                 totalPassageiros += registo.getValidacoes();
+                
+                int capacidade = 80; // default capacity
+                if (registo.getViatura() != null && registo.getViatura().getCapacidadeMaxima() != null && registo.getViatura().getCapacidadeMaxima() > 0) {
+                    capacidade = registo.getViatura().getCapacidadeMaxima();
+                }
+                
+                somaTaxas += ((double) registo.getValidacoes() / capacidade) * 100;
+                countComCapacidade++;
             }
         }
 
-        // Calcular uma média (exemplo: média de passageiros por paragem/registo)
         double taxaOcupacao = 0.0;
-        if (numeroDeRegistos > 0) {
-            taxaOcupacao = (double) totalPassageiros / numeroDeRegistos;
+        if (countComCapacidade > 0) {
+            taxaOcupacao = somaTaxas / countComCapacidade;
         }
 
-        // 4. Guardar os valores reais no ResultadoAnalitico
         resultado.setTaxaOcupacaoMedia(taxaOcupacao);
         resultado.setTotalPassageiros(totalPassageiros);
 

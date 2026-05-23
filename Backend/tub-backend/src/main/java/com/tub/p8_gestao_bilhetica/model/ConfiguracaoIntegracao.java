@@ -25,6 +25,12 @@ public class ConfiguracaoIntegracao {
     @Column
     private Integer intervaloMinutos;
 
+    @Column
+    private Integer simulacaoMaxEntradasSaidas = 10;
+
+    @Column
+    private Integer simulacaoMaxOcupacaoPercentual = 90;
+
     public ConfiguracaoIntegracao() {
     }
 
@@ -70,5 +76,21 @@ public class ConfiguracaoIntegracao {
 
     public void setIntervaloMinutos(Integer intervaloMinutos) {
         this.intervaloMinutos = intervaloMinutos;
+    }
+
+    public Integer getSimulacaoMaxEntradasSaidas() {
+        return simulacaoMaxEntradasSaidas;
+    }
+
+    public void setSimulacaoMaxEntradasSaidas(Integer simulacaoMaxEntradasSaidas) {
+        this.simulacaoMaxEntradasSaidas = simulacaoMaxEntradasSaidas;
+    }
+
+    public Integer getSimulacaoMaxOcupacaoPercentual() {
+        return simulacaoMaxOcupacaoPercentual;
+    }
+
+    public void setSimulacaoMaxOcupacaoPercentual(Integer simulacaoMaxOcupacaoPercentual) {
+        this.simulacaoMaxOcupacaoPercentual = simulacaoMaxOcupacaoPercentual;
     }
 }

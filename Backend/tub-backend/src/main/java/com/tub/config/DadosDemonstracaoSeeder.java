@@ -18,9 +18,11 @@ import com.tub.p6_auditoria.model.RegistoAuditoria;
 import com.tub.p6_auditoria.repository.PoliticasAuditoriaRepository;
 import com.tub.p6_auditoria.repository.RegistoAuditoriaRepository;
 
+import com.tub.p8_gestao_bilhetica.model.ConfiguracaoIntegracao;
 import com.tub.p8_gestao_bilhetica.model.EstadoSincronizacao;
 import com.tub.p8_gestao_bilhetica.model.LoteDadosBilhetica;
 import com.tub.p8_gestao_bilhetica.model.RegistoBilhetica;
+import com.tub.p8_gestao_bilhetica.repository.ConfiguracaoIntegracaoRepository;
 import com.tub.p8_gestao_bilhetica.repository.LoteDadosBilheticaRepository;
 import com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository;
 
@@ -48,7 +50,11 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
     private final RegistoBilheticaRepository registoBilheticaRepository;
     private final LotacaoViaturaRepository lotacaoViaturaRepository;
     private final AlertaLotacaoRepository alertaLotacaoRepository;
+<<<<<<< HEAD
+    private final ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository;
+=======
     private final CatalogoMensagensRapidasRepository catalogoMensagensRapidasRepository;
+>>>>>>> 7985b61ad54ebac9db9395e324ec4c9452ecfad8
 
     public DadosDemonstracaoSeeder(
             RegistoUtilizadorRepository utilizadorRepository,
@@ -61,7 +67,11 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             RegistoBilheticaRepository registoBilheticaRepository,
             LotacaoViaturaRepository lotacaoViaturaRepository,
             AlertaLotacaoRepository alertaLotacaoRepository,
+<<<<<<< HEAD
+            ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository
+=======
             CatalogoMensagensRapidasRepository catalogoMensagensRapidasRepository
+>>>>>>> 7985b61ad54ebac9db9395e324ec4c9452ecfad8
     ) {
         this.utilizadorRepository = utilizadorRepository;
         this.linhaRepository = linhaRepository;
@@ -73,7 +83,11 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         this.registoBilheticaRepository = registoBilheticaRepository;
         this.lotacaoViaturaRepository = lotacaoViaturaRepository;
         this.alertaLotacaoRepository = alertaLotacaoRepository;
+<<<<<<< HEAD
+        this.configuracaoIntegracaoRepository = configuracaoIntegracaoRepository;
+=======
         this.catalogoMensagensRapidasRepository = catalogoMensagensRapidasRepository;
+>>>>>>> 7985b61ad54ebac9db9395e324ec4c9452ecfad8
     }
 
     @Override
@@ -86,7 +100,11 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         criarPaineisPMD();
         criarDadosBilhetica();
         criarLotacaoEAlertas();
+<<<<<<< HEAD
+        criarConfiguracaoIntegracao();
+=======
         criarCatalogoMensagensRapidas();
+>>>>>>> 7985b61ad54ebac9db9395e324ec4c9452ecfad8
 
         System.out.println("Dados de demonstração M5 carregados com sucesso.");
     }
@@ -420,6 +438,19 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         ));
     }
 
+<<<<<<< HEAD
+    private void criarConfiguracaoIntegracao() {
+        if (configuracaoIntegracaoRepository.count() == 0) {
+            ConfiguracaoIntegracao config = new ConfiguracaoIntegracao();
+            config.setNome("Sincronizacao Validadores");
+            config.setEndpoint("http://api.tub.pt/validadores");
+            config.setToken("default_token");
+            config.setAtiva(true);
+            config.setIntervaloMinutos(2); // default interval of 2 minutes
+            config.setSimulacaoMaxEntradasSaidas(10);
+            config.setSimulacaoMaxOcupacaoPercentual(90);
+            configuracaoIntegracaoRepository.save(config);
+=======
     private void criarCatalogoMensagensRapidas() {
         if (catalogoMensagensRapidasRepository.count() == 0) {
             catalogoMensagensRapidasRepository.save(new CatalogoMensagensRapidas(
@@ -442,6 +473,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
                     "LINHA 2 DESVIADA POR MOTIVO DE OBRAS NA AV. DA LIBERDADE",
                     "DESVIOS"
             ));
+>>>>>>> 7985b61ad54ebac9db9395e324ec4c9452ecfad8
         }
     }
 }

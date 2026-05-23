@@ -2,6 +2,8 @@ package com.tub.p4_gestao_utilizadores.controller;
 
 import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
 import com.tub.p2_dados_utilizador.repository.RegistoUtilizadorRepository;
+import com.tub.p1_autenticacao.model.SessaoAutenticada;
+import com.tub.p1_autenticacao.repository.SessaoAutenticadaRepository;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,19 +17,71 @@ import java.util.Optional;
 public class ControladorAdministracaoContas {
 
     private final RegistoUtilizadorRepository utilizadorRepository;
+    private final SessaoAutenticadaRepository sessaoAutenticadaRepository;
 
-    public ControladorAdministracaoContas(RegistoUtilizadorRepository utilizadorRepository) {
+    public ControladorAdministracaoContas(
+            RegistoUtilizadorRepository utilizadorRepository,
+            SessaoAutenticadaRepository sessaoAutenticadaRepository) {
         this.utilizadorRepository = utilizadorRepository;
+        this.sessaoAutenticadaRepository = sessaoAutenticadaRepository;
+    }
+
+    private RegistoUtilizador obterUtilizadorAutenticado(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+        String token = authHeader.substring(7).trim();
+        Optional<SessaoAutenticada> opSessao = sessaoAutenticadaRepository.findByToken(token);
+        if (opSessao.isEmpty()) {
+            return null;
+        }
+        SessaoAutenticada sessao = opSessao.get();
+        if (!sessao.isAtiva()) {
+            return null;
+        }
+        if (sessao.getDataExpiracao() != null && sessao.getDataExpiracao().isBefore(java.time.LocalDateTime.now())) {
+            return null;
+        }
+        RegistoUtilizador utilizador = sessao.getUtilizador();
+        if (utilizador == null || !utilizador.isAtivo()) {
+            return null;
+        }
+        return utilizador;
+    }
+
+    private boolean eAdmin(RegistoUtilizador utilizador) {
+        if (utilizador == null) return false;
+        String cargo = utilizador.getCargo();
+        return "ADMINISTRADOR".equalsIgnoreCase(cargo) || "ADMIN".equalsIgnoreCase(cargo);
     }
 
     @GetMapping
-    public List<RegistoUtilizador> listar() {
-        return utilizadorRepository.findAll();
+    public ResponseEntity<?> listar(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
+        if (usuarioAutenticado == null) {
+            return ResponseEntity.status(401).body("Não autorizado");
+        }
+
+        if (eAdmin(usuarioAutenticado)) {
+            return ResponseEntity.ok(utilizadorRepository.findAll());
+        } else {
+            return ResponseEntity.ok(List.of(usuarioAutenticado));
+        }
     }
 
     @PostMapping("/guardar")
-    public ResponseEntity<?> guardar(@RequestBody RegistoUtilizador novoUser) {
-        // --- NOVO: Validação de Formato de Email ---
+    public ResponseEntity<?> guardar(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestBody RegistoUtilizador novoUser) {
+        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
+        if (usuarioAutenticado == null) {
+            return ResponseEntity.status(401).body("Não autorizado");
+        }
+        if (!eAdmin(usuarioAutenticado)) {
+            return ResponseEntity.status(403).body("Apenas administradores podem criar novos utilizadores.");
+        }
+
+        // --- Validação de Formato de Email ---
         if (emailInvalido(novoUser.getEmail())) {
             return ResponseEntity.badRequest().body("Erro: O formato do email é inválido!");
         }
@@ -44,7 +98,20 @@ public class ControladorAdministracaoContas {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> editar(@PathVariable Long id, @RequestBody RegistoUtilizador dadosAtualizados) {
+    public ResponseEntity<?> editar(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id,
+            @RequestBody RegistoUtilizador dadosAtualizados) {
+        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
+        if (usuarioAutenticado == null) {
+            return ResponseEntity.status(401).body("Não autorizado");
+        }
+
+        boolean admin = eAdmin(usuarioAutenticado);
+        if (!admin && !usuarioAutenticado.getId().equals(id)) {
+            return ResponseEntity.status(403).body("Não tem permissão para editar outros utilizadores.");
+        }
+
         Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
 
         if (op.isEmpty()) {
@@ -52,12 +119,23 @@ public class ControladorAdministracaoContas {
         }
 
         RegistoUtilizador utilizador = op.get();
-        utilizador.setNome(dadosAtualizados.getNome());
-        utilizador.setEmail(dadosAtualizados.getEmail());
-        utilizador.setCargo(dadosAtualizados.getCargo());
+        if (!admin) {
+            utilizador.setNome(dadosAtualizados.getNome());
+            // Email, cargo, active status are ignored for non-admins to prevent spoofing
+        } else {
+            utilizador.setNome(dadosAtualizados.getNome());
+            utilizador.setEmail(dadosAtualizados.getEmail());
+            utilizador.setCargo(dadosAtualizados.getCargo());
+            utilizador.setAtivo(dadosAtualizados.isAtivo());
+        }
 
         if (dadosAtualizados.getPassword() != null && !dadosAtualizados.getPassword().isBlank()) {
             utilizador.setPassword(dadosAtualizados.getPassword());
+        }
+
+        // --- Validação de Formato de Email ---
+        if (admin && emailInvalido(utilizador.getEmail())) {
+            return ResponseEntity.badRequest().body("Erro: O formato do email é inválido!");
         }
 
         utilizadorRepository.save(utilizador);
@@ -65,7 +143,17 @@ public class ControladorAdministracaoContas {
     }
 
     @PutMapping("/{id}/desativar")
-    public ResponseEntity<?> desativar(@PathVariable Long id) {
+    public ResponseEntity<?> desativar(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id) {
+        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
+        if (usuarioAutenticado == null) {
+            return ResponseEntity.status(401).body("Não autorizado");
+        }
+        if (!eAdmin(usuarioAutenticado)) {
+            return ResponseEntity.status(403).body("Apenas administradores podem desativar utilizadores.");
+        }
+
         Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
 
         if (op.isEmpty()) {
@@ -80,7 +168,17 @@ public class ControladorAdministracaoContas {
     }
 
     @PutMapping("/{id}/ativar")
-    public ResponseEntity<?> ativar(@PathVariable Long id) {
+    public ResponseEntity<?> ativar(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id) {
+        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
+        if (usuarioAutenticado == null) {
+            return ResponseEntity.status(401).body("Não autorizado");
+        }
+        if (!eAdmin(usuarioAutenticado)) {
+            return ResponseEntity.status(403).body("Apenas administradores podem ativar utilizadores.");
+        }
+
         Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
 
         if (op.isEmpty()) {
@@ -95,7 +193,17 @@ public class ControladorAdministracaoContas {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+    public ResponseEntity<?> eliminar(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable Long id) {
+        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
+        if (usuarioAutenticado == null) {
+            return ResponseEntity.status(401).body("Não autorizado");
+        }
+        if (!eAdmin(usuarioAutenticado)) {
+            return ResponseEntity.status(403).body("Apenas administradores podem eliminar utilizadores.");
+        }
+
         Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
 
         if (op.isEmpty()) {

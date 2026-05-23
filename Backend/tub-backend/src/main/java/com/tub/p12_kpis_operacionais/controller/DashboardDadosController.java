@@ -39,6 +39,7 @@ public class DashboardDadosController {
     public Map<String, Object> obterKpisDashboard() {
         List<Viatura> viaturas = viaturasRepository.findAll();
         List<RegistoBilhetica> registos = registoBilheticaRepository.findAll();
+        List<AlertaLotacao> alertas = alertaLotacaoRepository.findAll();
 
         long totalViaturas = viaturas.size();
         long viaturasAtivas = viaturas.stream()
@@ -52,10 +53,21 @@ public class DashboardDadosController {
             }
         }
 
+        long activeAlerts = alertas.stream()
+                .filter(a -> a.getEstado() == null || !a.getEstado().equalsIgnoreCase("RESOLVIDO"))
+                .count();
+
+        long punctuality = 100 - (activeAlerts * 2);
+        if (punctuality < 75) {
+            punctuality = 75;
+        } else if (punctuality > 98) {
+            punctuality = 98;
+        }
+
         Map<String, Object> kpis = new HashMap<>();
         kpis.put("ativas", viaturasAtivas);
         kpis.put("total", totalViaturas);
-        kpis.put("pontualidade", 92);
+        kpis.put("pontualidade", punctuality);
         kpis.put("validacoes", totalValidacoes);
 
         return kpis;

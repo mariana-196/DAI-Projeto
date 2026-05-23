@@ -21,6 +21,14 @@
             font-weight: 600;
             color: var(--navy);
         }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            display: inline-block;
+            animation: spin 1.2s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -95,10 +103,14 @@
                     <strong>Dashboard Operacional</strong>
                 </div>
                 <div class="topbar-actions">
-                    <div class="user-chip">
+                    <button class="btn btn-orange btn-sm" id="btn-sincronizar-manual" style="display:flex; align-items:center; gap:6px; border:none; box-shadow: var(--shadow);">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15H19c0-.422-.058-.838-.17-1.24"/></svg>
+                        Sincronizar
+                    </button>
+                    <a href="utilizadores.html?tab=perfil" class="user-chip" title="O Meu Perfil" style="text-decoration:none;">
                         <div class="user-avatar" id="topbar-user-avatar" style="width:28px;height:28px;font-size:11px;">??</div>
                         <span id="topbar-user-name">...</span>
-                    </div>
+                    </a>
                     <button class="btn btn-outline btn-sm" id="btn-logout" style="color:var(--danger); border-color:var(--danger);">
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                         Sair
@@ -281,15 +293,18 @@
                 // Load buses
                 const posicoes = await apiGet("/api/frota/posicoes");
                 posicoes.forEach(v => {
+                    const isCritical = v.lotacao >= 70;
+                    const markerBgColor = isCritical ? 'var(--danger)' : 'var(--orange)';
                     const viaturaIcon = L.divIcon({
-                        html: `<div style="background-color: var(--orange); color: white; padding: 4px 8px; border-radius: 12px; border: 2px solid white; font-weight: bold; font-size: 11px; white-space: nowrap;">L${v.linha.replace('Linha ', '')} - #${v.id}</div>`,
+                        html: `<div style="background-color: ${markerBgColor}; color: white; padding: 4px 8px; border-radius: 12px; border: 2px solid white; font-weight: bold; font-size: 11px; white-space: nowrap;">${isCritical ? '⚠️ ' : '' }L${v.linha.replace('Linha ', '')} - #${v.id}</div>`,
                         className: 'custom-bus-icon',
-                        iconSize: [60, 24],
-                        iconAnchor: [30, 12]
+                        iconSize: [65, 24],
+                        iconAnchor: [32, 12]
                     });
                     
                     const marker = L.marker([v.lat, v.lng], { icon: viaturaIcon }).addTo(markersLayer);
-                    marker.bindPopup(`<b>Viatura #${v.id}</b><br><b>Linha:</b> ${v.linha}<br><b>Lotação:</b> ${v.lotacao}%<br><b>Telemetria:</b> ${v.status}`);
+                    const criticalWarning = isCritical ? '<br><span style="color:var(--danger); font-weight:bold;">⚠️ Lotação Crítica</span>' : '';
+                    marker.bindPopup(`<b>Viatura #${v.id}</b><br><b>Linha:</b> ${v.linha}<br><b>Lotação:</b> ${v.lotacao}%${criticalWarning}<br><b>Telemetria:</b> ${v.status}`);
                 });
 
             } catch (err) {
@@ -401,6 +416,42 @@
                 listContainer.appendChild(div);
             });
         }
+
+        // Manual Sync trigger
+        document.getElementById("btn-sincronizar-manual").addEventListener("click", async () => {
+            const btn = document.getElementById("btn-sincronizar-manual");
+            const originalHTML = btn.innerHTML;
+            try {
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <svg class="animate-spin" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15H19c0-.422-.058-.838-.17-1.24"/></svg>
+                    Sincronizando...
+                `;
+                
+                await apiPost("/api/bilhetica/importar");
+                
+                // Immediately refresh all elements
+                await Promise.all([
+                    loadKPIs(),
+                    loadMapData(),
+                    loadAlerts()
+                ]);
+                
+                // Visual feedback of success
+                btn.innerHTML = `✓ Concluído!`;
+                btn.style.backgroundColor = "var(--success)";
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    btn.style.backgroundColor = "";
+                }, 2000);
+            } catch (err) {
+                alert("Erro ao sincronizar dados: " + err);
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+                btn.style.backgroundColor = "";
+            }
+        });
 
         // Initial loading and polling
         loadKPIs();

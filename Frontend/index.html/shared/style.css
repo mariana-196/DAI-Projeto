@@ -174,7 +174,9 @@ body { font-family: 'Outfit', sans-serif; font-size: 14px; color: var(--t1); bac
 .topbar .user-chip {
   display: flex; align-items: center; gap: 8px; padding: 6px 12px;
   border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+  text-decoration: none; transition: background .15s;
 }
+.topbar .user-chip:hover { background: var(--bg); }
 .topbar .user-chip span { font-size: 13px; font-weight: 500; color: var(--t1); }
 
 /* PAGE CONTENT */
