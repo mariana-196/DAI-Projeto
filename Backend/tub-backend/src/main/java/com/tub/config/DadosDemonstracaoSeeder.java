@@ -272,17 +272,16 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         }
 
         if (painelPMDRepository.count() == 0) {
-            painelPMDRepository.save(criarPainelPMDEntidade(1L, "PMD-001", "Avenida Central", "Avenida Central", "Centro", 41.5518, -8.4229, "ONLINE"));
-            painelPMDRepository.save(criarPainelPMDEntidade(2L, "PMD-002", "Universidade do Minho", "Gualtar", "Gualtar", 41.5612, -8.3978, "ONLINE"));
-            painelPMDRepository.save(criarPainelPMDEntidade(3L, "PMD-003", "Hospital de Braga", "Hospital", "Hospital", 41.5683, -8.3995, "DEGRADADO"));
-            painelPMDRepository.save(criarPainelPMDEntidade(4L, "PMD-004", "Estação CP", "Estação CP", "Estação", 41.5492, -8.4344, "ONLINE"));
-            painelPMDRepository.save(criarPainelPMDEntidade(5L, "PMD-005", "Bom Jesus", "Bom Jesus", "Tenões", 41.5546, -8.3775, "OFFLINE"));
+            painelPMDRepository.save(criarPainelPMDEntidade("PMD-001", "Avenida Central", "Avenida Central", "Centro", 41.5518, -8.4229, "ONLINE"));
+            painelPMDRepository.save(criarPainelPMDEntidade("PMD-002", "Universidade do Minho", "Gualtar", "Gualtar", 41.5612, -8.3978, "ONLINE"));
+            painelPMDRepository.save(criarPainelPMDEntidade("PMD-003", "Hospital de Braga", "Hospital", "Hospital", 41.5683, -8.3995, "DEGRADADO"));
+            painelPMDRepository.save(criarPainelPMDEntidade("PMD-004", "Estação CP", "Estação CP", "Estação", 41.5492, -8.4344, "ONLINE"));
+            painelPMDRepository.save(criarPainelPMDEntidade("PMD-005", "Bom Jesus", "Bom Jesus", "Tenões", 41.5546, -8.3775, "OFFLINE"));
         }
     }
 
-    private PainelPMD criarPainelPMDEntidade(Long id, String codigo, String nome, String localizacao, String zona, Double lat, Double lng, String estado) {
+    private PainelPMD criarPainelPMDEntidade(String codigo, String nome, String localizacao, String zona, Double lat, Double lng, String estado) {
         PainelPMD p = new PainelPMD();
-        p.setId(id);
         p.setCodigo(codigo);
         p.setNome(nome);
         p.setLocalizacao(localizacao);

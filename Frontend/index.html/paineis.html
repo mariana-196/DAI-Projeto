@@ -266,23 +266,11 @@
                             </div>
                             <div class="form-field" style="margin-bottom:12px;">
                                 <label>Paragem Alvo (Painel)</label>
-                                <select id="sim-painel-select">
-                                    <option value="1">Avenida Central (PMD-001)</option>
-                                    <option value="2">Universidade do Minho (PMD-002)</option>
-                                    <option value="3">Hospital de Braga (PMD-003)</option>
-                                    <option value="4">Estação CP (PMD-004)</option>
-                                    <option value="5">Bom Jesus (PMD-005)</option>
-                                </select>
+                                <select id="sim-painel-select"></select>
                             </div>
                             <div class="form-field" style="margin-bottom:12px;">
                                 <label>Linha de Operação</label>
-                                <select id="sim-linha-select">
-                                    <option value="1">Linha 43 (Gualtar)</option>
-                                    <option value="2">Linha 2 (Hospital)</option>
-                                    <option value="3">Linha 7 (Bom Jesus)</option>
-                                    <option value="4">Linha 24 (Universidade)</option>
-                                    <option value="5">Linha 15 (Estação CP)</option>
-                                </select>
+                                <select id="sim-linha-select"></select>
                             </div>
                             <div class="form-field" style="margin-bottom:12px;">
                                 <label>Destino Final</label>
@@ -567,6 +555,40 @@
             }
         }
 
+        // Load Painéis PMD for prediction simulation
+        async function loadPaineisForSimulation() {
+            try {
+                const paineis = await apiGet("/api/previsoes/paineis-pmd");
+                const painelSelect = document.getElementById("sim-painel-select");
+                painelSelect.innerHTML = "";
+                paineis.forEach(p => {
+                    const opt = document.createElement("option");
+                    opt.value = p.id;
+                    opt.textContent = `${p.nome} (${p.codigo})`;
+                    painelSelect.appendChild(opt);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar painéis no simulador:", err);
+            }
+        }
+
+        // Load Linhas for prediction simulation
+        async function loadLinhasForSimulation() {
+            try {
+                const linhas = await apiGet("/api/previsoes/linhas");
+                const linhaSelect = document.getElementById("sim-linha-select");
+                linhaSelect.innerHTML = "";
+                linhas.forEach(l => {
+                    const opt = document.createElement("option");
+                    opt.value = l.id;
+                    opt.textContent = `Linha ${l.codigo} (${l.destino})`;
+                    linhaSelect.appendChild(opt);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar linhas no simulador:", err);
+            }
+        }
+
         // Post Publicar Mensagem
         document.getElementById("btn-publicar-dms").addEventListener("click", async () => {
             const panelId = document.getElementById("pub-destino-select").value;
@@ -665,6 +687,8 @@
         // Initialize data load
         loadPaineisData();
         loadViaturasForSimulation();
+        loadPaineisForSimulation();
+        loadLinhasForSimulation();
 
         // Refresh panel status periodically
         setInterval(loadPaineisData, 10000);

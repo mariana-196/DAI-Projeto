@@ -163,13 +163,28 @@
 
     <script src="shared/api.js"></script>
     <script>
-        // Parse URL params
-        const params = new URLSearchParams(window.location.search);
-        const panelId = params.get("panelId") || "PMD-004";
+        // URL Parameter panelId
+        const urlParams = new URLSearchParams(window.location.search);
+        const panelId = urlParams.get('panelId') || 'PMD-001';
 
-        // Map String Code PMD-00x to numerical ID
-        const idMatch = panelId.match(/\d+/);
-        const painelDbId = idMatch ? parseInt(idMatch[0]) : 4;
+        let painelDbId = null;
+
+        async function obterPainelDbId() {
+            try {
+                const paineisPmd = await apiGet("/api/previsoes/paineis-pmd");
+                const pmd = paineisPmd.find(p => p.codigo === panelId);
+                if (pmd) {
+                    painelDbId = pmd.id;
+                }
+            } catch (err) {
+                console.error("Erro ao obter ID do painel PMD:", err);
+            }
+            if (!painelDbId) {
+                // Fallback
+                const idMatch = panelId.match(/\d+/);
+                painelDbId = idMatch ? parseInt(idMatch[0]) : 4;
+            }
+        }
 
         // Clock Update
         function updateClock() {
@@ -182,6 +197,9 @@
 
         async function fetchDmsData() {
             try {
+                if (!painelDbId) {
+                    await obterPainelDbId();
+                }
                 // Fetch panel info
                 const paineis = await apiGet("/api/paineis");
                 const panel = paineis.find(p => p.panelId === panelId) || {

@@ -62,6 +62,7 @@ public class PrevisaoService {
         previsao.setLinha(linha);
         previsao.setDestino(destino);
         previsao.setEtaMinutos(tempoFinal); 
+        previsao.setTimestamp(LocalDateTime.now());
 
         PrevisaoChegada savedPrevisao = previsaoRepository.save(previsao);
 
@@ -114,5 +115,13 @@ public class PrevisaoService {
 
     public boolean isStatusOk() {
         return true;
+    }
+
+    public List<PainelPMD> obterTodosOsPaineisPMD() {
+        return painelPMDRepository.findAll();
+    }
+
+    public List<Linha> obterTodasAsLinhas() {
+        return linhaRepository.findAll();
     }
 }

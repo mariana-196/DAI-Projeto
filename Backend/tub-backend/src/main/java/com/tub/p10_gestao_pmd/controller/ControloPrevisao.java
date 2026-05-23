@@ -1,6 +1,8 @@
 package com.tub.p10_gestao_pmd.controller;
 
 import com.tub.p10_gestao_pmd.model.PrevisaoChegada;
+import com.tub.p10_gestao_pmd.model.Linha;
+import com.tub.p10_gestao_pmd.model.PainelPMD;
 import com.tub.p10_gestao_pmd.service.PrevisaoService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,5 +40,15 @@ public class ControloPrevisao {
     @GetMapping("/alive")
     public ResponseEntity<String> verificarEstado() {
         return ResponseEntity.ok("UP - Controlador de Previsão Operacional");
+    }
+
+    @GetMapping("/linhas")
+    public ResponseEntity<List<Linha>> obterLinhas() {
+        return ResponseEntity.ok(previsaoService.obterTodasAsLinhas());
+    }
+
+    @GetMapping("/paineis-pmd")
+    public ResponseEntity<List<PainelPMD>> obterPaineisPMD() {
+        return ResponseEntity.ok(previsaoService.obterTodosOsPaineisPMD());
     }
 }

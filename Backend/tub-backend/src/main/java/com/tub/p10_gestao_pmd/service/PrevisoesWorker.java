@@ -84,6 +84,7 @@ public class PrevisoesWorker {
                         previsao.setViatura(viaturaAleatoria);
                         previsao.setDestino(linhaAleatoria.getDestino());
                         previsao.setEtaMinutos(etaMinutos);
+                        previsao.setTimestamp(LocalDateTime.now());
                         previsaoChegadaRepository.save(previsao);
                     }
 
