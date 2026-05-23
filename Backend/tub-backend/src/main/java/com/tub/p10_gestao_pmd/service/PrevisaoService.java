@@ -79,11 +79,9 @@ public class PrevisaoService {
                 return;
             }
 
-            // Buscar previsões recentes dos últimos 15 minutos para este painel
+            // Buscar previsões recentes dos últimos 15 minutos para este painel utilizando query otimizada
             LocalDateTime limiteRecente = LocalDateTime.now().minusMinutes(15);
-            List<PrevisaoChegada> previsoesAtivas = previsaoRepository.findAll().stream()
-                    .filter(p -> p.getPainel() != null && p.getPainel().getId().equals(painelId))
-                    .filter(p -> p.getTimestamp() != null && p.getTimestamp().isAfter(limiteRecente))
+            List<PrevisaoChegada> previsoesAtivas = previsaoRepository.findByPainelIdAndTimestampAfter(painelId, limiteRecente).stream()
                     .sorted((p1, p2) -> p1.getEtaMinutos().compareTo(p2.getEtaMinutos()))
                     .collect(Collectors.toList());
 
@@ -109,9 +107,7 @@ public class PrevisaoService {
     public List<PrevisaoChegada> obterPrevisoesDaParagem(Long painelId) {
         // Obter apenas as previsões mais recentes dos últimos 15 minutos para serem exibidas no ecrã público
         LocalDateTime limiteRecente = LocalDateTime.now().minusMinutes(15);
-        return previsaoRepository.findAll().stream()
-                .filter(p -> p.getPainel() != null && p.getPainel().getId().equals(painelId))
-                .filter(p -> p.getTimestamp() != null && p.getTimestamp().isAfter(limiteRecente))
+        return previsaoRepository.findByPainelIdAndTimestampAfter(painelId, limiteRecente).stream()
                 .sorted((p1, p2) -> p1.getEtaMinutos().compareTo(p2.getEtaMinutos()))
                 .collect(Collectors.toList());
     }

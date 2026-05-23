@@ -52,15 +52,9 @@ public class PrevisoesWorker {
         try {
             System.out.println(">>> [WORKER GPS] A receber coordenadas GPS da frota...");
 
-            // 1. Limpeza de previsões desatualizadas anteriores a 15 minutos
+            // 1. Limpeza de previsões desatualizadas anteriores a 15 minutos utilizando método nativo e otimizado
             LocalDateTime limiteAntigo = LocalDateTime.now().minusMinutes(15);
-            List<PrevisaoChegada> antigas = previsaoChegadaRepository.findAll().stream()
-                    .filter(p -> p.getTimestamp() == null || p.getTimestamp().isBefore(limiteAntigo))
-                    .toList();
-            if (!antigas.isEmpty()) {
-                previsaoChegadaRepository.deleteAll(antigas);
-                System.out.println(">>> [WORKER GPS] Limpeza de " + antigas.size() + " previsões expiradas efetuada.");
-            }
+            previsaoChegadaRepository.deleteByTimestampBefore(limiteAntigo);
 
             List<PainelPMD> paineis = painelPMDRepository.findAll();
             List<Linha> linhas = linhaRepository.findAll();
@@ -74,11 +68,8 @@ public class PrevisoesWorker {
             // 2. Simular e persistir 1 ou 2 previsões para cada painel que esteja online na base de dados
             for (PainelPMD painel : paineis) {
                 if ("ONLINE".equals(painel.getEstado())) {
-                    // Limpar previsões recentes do painel para evitar acumular muitas previsões duplicadas do simulador automático
-                    List<PrevisaoChegada> recentesPainel = previsaoChegadaRepository.findAll().stream()
-                            .filter(p -> p.getPainel() != null && p.getPainel().getId().equals(painel.getId()))
-                            .toList();
-                    previsaoChegadaRepository.deleteAll(recentesPainel);
+                    // Limpar previsões recentes do painel de forma otimizada via query do repositório
+                    previsaoChegadaRepository.deleteByPainelId(painel.getId());
 
                     // Gerar 2 previsões aleatórias consistentes
                     for (int i = 0; i < 2; i++) {
