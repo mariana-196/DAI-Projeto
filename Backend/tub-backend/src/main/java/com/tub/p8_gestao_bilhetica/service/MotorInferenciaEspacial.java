@@ -23,31 +23,33 @@ public class MotorInferenciaEspacial {
         DatasetGeoJSON geojson = new DatasetGeoJSON();
         List<RegistoBilhetica> registos = registoRepository.findAll();
 
-        Map<String, Integer> passageirosPorParagem = new HashMap<>();
+        Map<String, RegistoAggregator> dadosPorParagem = new HashMap<>();
+
         for (RegistoBilhetica r : registos) {
             String paragem = r.getParagemOrigem();
             if (paragem != null) {
                 int validacoes = (r.getValidacoes() != null) ? r.getValidacoes() : 1;
-                passageirosPorParagem.put(paragem, passageirosPorParagem.getOrDefault(paragem, 0) + validacoes);
+                dadosPorParagem.putIfAbsent(paragem, new RegistoAggregator(paragem, r.getLatitude(), r.getLongitude()));
+                dadosPorParagem.get(paragem).addValidacoes(validacoes);
             }
         }
 
-        for (Map.Entry<String, Integer> entry : passageirosPorParagem.entrySet()) {
-            String nomeParagem = entry.getKey();
-            int totalPassageiros = entry.getValue();
-
+        for (RegistoAggregator agg : dadosPorParagem.values()) {
             Map<String, Object> feature = new HashMap<>();
             feature.put("type", "Feature");
 
             Map<String, Object> geometry = new HashMap<>();
             geometry.put("type", "Point");
-            geometry.put("coordinates", inferirCoordenadas(nomeParagem));
+            // If latitude or longitude is null, provide a default or skip
+            double lng = agg.longitude != null ? agg.longitude : -8.4200;
+            double lat = agg.latitude != null ? agg.latitude : 41.5500;
+            geometry.put("coordinates", new double[]{lng, lat});
             feature.put("geometry", geometry);
 
             Map<String, Object> properties = new HashMap<>();
-            properties.put("nome", nomeParagem);
-            properties.put("totalValidacoes", totalPassageiros);
-            properties.put("hotspot", totalPassageiros > 50);
+            properties.put("nome", agg.nomeParagem);
+            properties.put("totalValidacoes", agg.totalPassageiros);
+            properties.put("hotspot", agg.totalPassageiros > 50);
             feature.put("properties", properties);
 
             geojson.getFeatures().add(feature);
@@ -56,18 +58,20 @@ public class MotorInferenciaEspacial {
         return geojson;
     }
 
-    private double[] inferirCoordenadas(String paragem) {
-        paragem = paragem.toLowerCase();
+    private static class RegistoAggregator {
+        String nomeParagem;
+        Double latitude;
+        Double longitude;
+        int totalPassageiros = 0;
 
-        if (paragem.contains("gualtar") || paragem.contains("uminho")) return new double[]{-8.3970, 41.5610};
-        if (paragem.contains("central") || paragem.contains("avenida")) return new double[]{-8.4210, 41.5515};
-        if (paragem.contains("hospital")) return new double[]{-8.3990, 41.5670};
-        if (paragem.contains("estação") || paragem.contains("cp")) return new double[]{-8.4340, 41.5490};
-        if (paragem.contains("arcada")) return new double[]{-8.4230, 41.5510};
-        if (paragem.contains("bom jesus")) return new double[]{-8.3775, 41.5545};
+        public RegistoAggregator(String nomeParagem, Double latitude, Double longitude) {
+            this.nomeParagem = nomeParagem;
+            this.latitude = latitude;
+            this.longitude = longitude;
+        }
 
-        double lng = -8.4200 + (Math.random() * 0.03 - 0.015);
-        double lat = 41.5500 + (Math.random() * 0.03 - 0.015);
-        return new double[]{lng, lat};
+        public void addValidacoes(int qtd) {
+            this.totalPassageiros += qtd;
+        }
     }
 }
