@@ -1,19 +1,10 @@
 package com.tub.p8_gestao_bilhetica.service;
 
-import com.tub.p10_gestao_pmd.model.Linha;
 import com.tub.p5_lotacao.repository.LinhaRepository;
-import com.tub.p8_gestao_bilhetica.model.EstadoSincronizacao;
-import com.tub.p8_gestao_bilhetica.model.LoteDadosBilhetica;
-import com.tub.p8_gestao_bilhetica.model.RegistoBilhetica;
 import com.tub.p8_gestao_bilhetica.repository.LoteDadosBilheticaRepository;
 import com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.time.LocalDateTime;
 
 @Component
 public class DataLoader implements CommandLineRunner {

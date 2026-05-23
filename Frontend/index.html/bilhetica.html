@@ -488,6 +488,72 @@
 
         // Initial Loading
         obterAnalise("vazia");
+
+        // --- MAPA DE BILHÉTICA ---
+        let map;
+        let mapLayerGroup;
+
+        function initMap() {
+            // Centro de Braga
+            map = L.map('map-bilhetica').setView([41.5510, -8.4230], 13);
+            
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            mapLayerGroup = L.layerGroup().addTo(map);
+            loadMapData();
+        }
+
+        async function loadMapData() {
+            try {
+                const geojson = await apiGet("/api/gis/render/dados-mapa");
+                mapLayerGroup.clearLayers();
+
+                if (!geojson || !geojson.features || geojson.features.length === 0) {
+                    return;
+                }
+
+                geojson.features.forEach(feature => {
+                    const coords = feature.geometry.coordinates; // [lng, lat]
+                    const props = feature.properties;
+
+                    const lat = coords[1];
+                    const lng = coords[0];
+                    const validacoes = props.totalValidacoes || 0;
+                    const paragem = props.nome || "Desconhecida";
+                    const isHotspot = props.hotspot;
+
+                    const raio = Math.max(8, Math.min(validacoes / 5, 40));
+
+                    const circle = L.circleMarker([lat, lng], {
+                        radius: raio,
+                        fillColor: isHotspot ? '#e63946' : '#2D62ED',
+                        color: isHotspot ? '#c1121f' : '#1A4BB8',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.65
+                    });
+
+                    circle.bindPopup(`
+                        <div style="font-family:'Outfit'; text-align:center; padding:4px;">
+                            <strong style="display:block; margin-bottom:4px; color:#1e293b; font-size:14px;">${paragem}</strong>
+                            <span style="color:#64748b; font-size:12px;">Validações: </span>
+                            <strong style="color:#2D62ED; font-size:14px;">${validacoes}</strong>
+                            ${isHotspot ? '<br><span style="color:#e63946; font-weight:600; font-size:11px; margin-top:4px; display:block;">⚠️ ALTA DENSIDADE</span>' : ''}
+                        </div>
+                    `);
+
+                    circle.addTo(mapLayerGroup);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar dados do mapa GIS:", err);
+            }
+        }
+
+        // Initialize map
+        initMap();
     </script>
 </body>
 </html>
