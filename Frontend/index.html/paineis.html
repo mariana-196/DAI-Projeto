@@ -540,20 +540,24 @@
 
         // Load Viaturas for prediction simulation
         async function loadViaturasForSimulation() {
-            try {
-                const viaturas = await apiGet("/api/monitorizacao/status-geral");
-                const viaturaSelect = document.getElementById("sim-viatura-select");
-                viaturaSelect.innerHTML = "";
-                viaturas.forEach(v => {
-                    const opt = document.createElement("option");
-                    opt.value = v.id;
-                    opt.textContent = `Viatura #${v.id} (${v.linha})`;
-                    viaturaSelect.appendChild(opt);
-                });
-            } catch (err) {
-                console.error("Erro ao carregar viaturas no simulador:", err);
-            }
-        }
+            const viaturaSelect = document.getElementById("sim-viatura-select");
+            viaturaSelect.innerHTML = "";
+
+            const viaturas = [
+            { id: 1, label: "Viatura #101" },
+            { id: 2, label: "Viatura #102" },
+            { id: 3, label: "Viatura #103" },
+            { id: 4, label: "Viatura #104" },
+            { id: 5, label: "Viatura #105" }
+        ];
+
+        viaturas.forEach(v => {
+            const opt = document.createElement("option");
+            opt.value = v.id;
+            opt.textContent = v.label;
+            viaturaSelect.appendChild(opt);
+        });
+    }
 
         // Load Painéis PMD for prediction simulation
         async function loadPaineisForSimulation() {
@@ -658,8 +662,15 @@
             const linhaId = document.getElementById("sim-linha-select").value;
             const destino = document.getElementById("sim-destino-text").value;
             const paragensRestantes = document.getElementById("sim-restantes-num").value;
+            console.log("Dados previsão:", {
+                viaturaId,
+                painelId,
+                linhaId,
+                destino,
+                paragensRestantes
+            });
 
-            if (!viaturaId || !destino || !paragensRestantes) {
+            if (!viaturaId || !painelId || !linhaId || !destino || !paragensRestantes) {
                 alert("Preencha todos os parâmetros de simulação.");
                 return;
             }
@@ -672,7 +683,9 @@
                     fb.style.display = "block";
                     setTimeout(() => fb.style.display = "none", 5000);
                 } else {
-                    alert("Erro ao simular previsão!");
+                    const erroTexto = await response.text();
+                    alert("Erro ao simular previsão: " + erroTexto);
+                    console.error("Erro previsão:", response.status, erroTexto);
                 }
             } catch (err) {
                 alert("Falha na chamada: " + err);
