@@ -125,10 +125,10 @@
                     <strong>Lotação (IoT)</strong>
                 </div>
                 <div class="topbar-actions">
-                    <div class="user-chip">
+                    <a href="utilizadores.html?tab=perfil" class="user-chip" title="O Meu Perfil" style="text-decoration:none;">
                         <div class="user-avatar" id="topbar-user-avatar" style="width:28px;height:28px;font-size:11px;">??</div>
                         <span id="topbar-user-name">...</span>
-                    </div>
+                    </a>
                     <button class="btn btn-outline btn-sm" id="btn-logout" style="color:var(--danger); border-color:var(--danger);">
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                         Sair
@@ -260,8 +260,8 @@
             filtered.forEach(v => {
                 const tax = v.capacidade > 0 ? (v.passageiros / v.capacidade * 100) : 0;
                 const roundedTax = Math.round(tax);
-                const isCritical = roundedTax >= 80;
-                const isMedium = roundedTax >= 50 && roundedTax < 80;
+                const isCritical = roundedTax >= 70;
+                const isMedium = roundedTax >= 40 && roundedTax < 70;
 
                 const colorClass = isCritical ? 'red' : (isMedium ? 'orange' : 'green');
                 const badgeColor = v.sinal ? 'badge-green' : 'badge-red';
@@ -269,11 +269,17 @@
 
                 const card = document.createElement("div");
                 card.className = "lot-card";
+                if (isCritical) {
+                    card.style.border = "1.5px solid var(--danger)";
+                }
 
                 card.innerHTML = `
                     <div class="lot-card-header">
                         <span class="lot-card-title">Viatura #${v.id}</span>
-                        <span class="badge ${badgeColor}">${badgeLabel}</span>
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            ${isCritical ? '<span class="badge badge-red" style="animation: pulse 2s infinite;">⚠️ CRÍTICO</span>' : ''}
+                            <span class="badge ${badgeColor}">${badgeLabel}</span>
+                        </div>
                     </div>
                     <div class="lot-info-row">
                         <span>Linha Ativa</span>

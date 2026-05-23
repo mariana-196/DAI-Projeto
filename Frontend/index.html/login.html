@@ -135,8 +135,15 @@
             document.getElementById("login-error-banner").style.display = "none";
 
             try {
-                const response = await apiPost("/api/auth/login", { email, password });
-                if (response.token && response.utilizador) {
+                const resp = await fetch("http://localhost:8081/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const response = await resp.json();
+
+                if (resp.ok && response.token && response.utilizador) {
                     sessionStorage.setItem("user_token", response.token);
                     sessionStorage.setItem("user_id", response.utilizador.id);
                     sessionStorage.setItem("user_name", response.utilizador.nome);
@@ -144,10 +151,16 @@
                     sessionStorage.setItem("user_role", response.utilizador.cargo);
                     window.location.href = "dashboard.html";
                 } else {
-                    showError(response.mensagem || "Falha na autenticação!");
+                    const msg = response.mensagem || "Falha na autenticação!";
+                    const bloqueada = msg.toLowerCase().includes("bloqueada") || msg.toLowerCase().includes("inativo");
+                    if (bloqueada) {
+                        showError("🔒 Conta bloqueada. Contacte o administrador.");
+                    } else {
+                        showError("Credenciais inválidas. Verifique o email e a palavra-passe.");
+                    }
                 }
             } catch (err) {
-                showError("Credenciais inválidas ou utilizador inativo!");
+                showError("Não foi possível ligar ao servidor. Verifique a ligação.");
             }
         });
 
@@ -163,8 +176,15 @@
             }
 
             try {
-                const response = await apiPost("/api/auth/login-gov", { email, codigoGov });
-                if (response.token && response.utilizador) {
+                const resp = await fetch("http://localhost:8081/api/auth/login-gov", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, codigoGov })
+                });
+
+                const response = await resp.json();
+
+                if (resp.ok && response.token && response.utilizador) {
                     sessionStorage.setItem("user_token", response.token);
                     sessionStorage.setItem("user_id", response.utilizador.id);
                     sessionStorage.setItem("user_name", response.utilizador.nome);
@@ -172,10 +192,16 @@
                     sessionStorage.setItem("user_role", response.utilizador.cargo);
                     window.location.href = "dashboard.html";
                 } else {
-                    showError(response.mensagem || "Falha na autenticação CMD!");
+                    const msg = response.mensagem || "Falha na autenticação CMD!";
+                    const bloqueada = msg.toLowerCase().includes("bloqueada") || msg.toLowerCase().includes("inativo");
+                    if (bloqueada) {
+                        showError("🔒 Conta bloqueada. Contacte o administrador.");
+                    } else {
+                        showError("Credenciais inválidas. Verifique o email e o código CMD.");
+                    }
                 }
             } catch (err) {
-                showError("Autenticação CMD falhou ou utilizador não registado!");
+                showError("Autenticação CMD falhou. Verifique o código ou tente novamente.");
             }
         });
     </script>

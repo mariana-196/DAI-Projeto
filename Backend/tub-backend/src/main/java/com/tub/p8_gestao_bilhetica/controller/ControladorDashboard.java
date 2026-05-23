@@ -16,9 +16,14 @@ import com.tub.p8_gestao_bilhetica.service.MotorCalculoAnalitico;
 public class ControladorDashboard {
 
     private final MotorCalculoAnalitico motorCalculoAnalitico;
+    private final com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository registoRepository;
 
-    public ControladorDashboard(MotorCalculoAnalitico motorCalculoAnalitico) {
+    public ControladorDashboard(
+            MotorCalculoAnalitico motorCalculoAnalitico,
+            com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository registoRepository
+    ) {
         this.motorCalculoAnalitico = motorCalculoAnalitico;
+        this.registoRepository = registoRepository;
     }
 
     @GetMapping("/dashboard/resultados")
@@ -50,13 +55,39 @@ public class ControladorDashboard {
         map.put("taxaOcupacaoMedia", res.getTaxaOcupacaoMedia());
         map.put("totalPassageiros", total);
 
-        java.util.List<Integer> procura = java.util.Arrays.asList(
-            (int) (total * 0.15),
-            (int) (total * 0.35),
-            (int) (total * 0.25),
-            (int) (total * 0.15),
-            (int) (total * 0.10)
-        );
+        // Fetch real database records to compute the hourly distribution
+        java.util.List<com.tub.p8_gestao_bilhetica.model.RegistoBilhetica> todosOsRegistos = registoRepository.findAll();
+        if (linha != null && !linha.isEmpty() && !linha.equals("vazia")) {
+            todosOsRegistos = todosOsRegistos.stream()
+                    .filter(r -> r.getLinha() != null && 
+                        (String.valueOf(r.getLinha().getId()).equals(linha) || 
+                         r.getLinha().getCodigo().equals(linha)))
+                    .toList();
+        }
+
+        int slot0 = 0; // 08h-10h (or earlier)
+        int slot1 = 0; // 10h-12h
+        int slot2 = 0; // 12h-14h
+        int slot3 = 0; // 14h-16h
+        int slot4 = 0; // 16h-18h (or later)
+
+        for (com.tub.p8_gestao_bilhetica.model.RegistoBilhetica r : todosOsRegistos) {
+            int hour = r.getDataHora().getHour();
+            int vals = r.getValidacoes() != null ? r.getValidacoes() : 0;
+            if (hour < 10) {
+                slot0 += vals;
+            } else if (hour < 12) {
+                slot1 += vals;
+            } else if (hour < 14) {
+                slot2 += vals;
+            } else if (hour < 16) {
+                slot3 += vals;
+            } else {
+                slot4 += vals;
+            }
+        }
+
+        java.util.List<Integer> procura = java.util.Arrays.asList(slot0, slot1, slot2, slot3, slot4);
         map.put("procura", procura);
 
         return org.springframework.http.ResponseEntity.ok(map);

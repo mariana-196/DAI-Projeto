@@ -5,6 +5,7 @@ import com.tub.p3_integracao_externa.model.PassengerCount;
 import com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura;
 import com.tub.p9_monitorizacao_iot.repository.LotacaoViaturaRepository;
 import com.tub.p10_gestao_pmd.model.Viatura;
+import com.tub.p11_gestao_alertas.model.AlertaLotacao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ArrayList;
 
 @RestController("controladorMonitorizacaoLotacaoController")
@@ -29,6 +31,12 @@ public class ControladorMonitorizacaoLotacao {
     @Autowired
     private LotacaoViaturaRepository lotacaoViaturaRepository;
 
+    @Autowired
+    private com.tub.p8_gestao_bilhetica.service.ProcesadorArmazenamento procesadorArmazenamento;
+
+    @Autowired
+    private com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository alertaLotacaoRepository;
+
     private int passageirosAtual = 10;
     private boolean sinalAtivo = true;
     private final int CAPACIDADE_MAXIMA = 50;
@@ -39,6 +47,13 @@ public class ControladorMonitorizacaoLotacao {
 
         contagemService.processarContagens(contagens);
 
+        // Run the dynamic database-backed sensor simulation
+        try {
+            procesadorArmazenamento.simularSensoresLotacao();
+        } catch (Exception e) {
+            System.err.println("Erro ao executar simulação de sensores de lotação: " + e.getMessage());
+        }
+
         for (PassengerCount c : contagens) {
             this.passageirosAtual += (c.getPassengersIn() - c.getPassengersOut());
         }
@@ -48,6 +63,88 @@ public class ControladorMonitorizacaoLotacao {
         }
 
         return ResponseEntity.ok(contagens);
+    }
+
+    @PostMapping("/sensor-movel")
+    public ResponseEntity<?> receberDadosSensorMovel(@RequestBody Map<String, Object> payload) {
+        try {
+            Object viaturaIdObj = payload.get("viaturaId");
+            Object passageirosObj = payload.get("passageiros");
+
+            if (viaturaIdObj == null || passageirosObj == null) {
+                return ResponseEntity.badRequest().body("Campos viaturaId e passageiros são obrigatórios.");
+            }
+
+            Integer viaturaCodigo;
+            if (viaturaIdObj instanceof Number) {
+                viaturaCodigo = ((Number) viaturaIdObj).intValue();
+            } else {
+                viaturaCodigo = Integer.parseInt(viaturaIdObj.toString());
+            }
+
+            Integer passageiros;
+            if (passageirosObj instanceof Number) {
+                passageiros = ((Number) passageirosObj).intValue();
+            } else {
+                passageiros = Integer.parseInt(passageirosObj.toString());
+            }
+
+            Optional<EstadoOcupacaoViatura> estadoOpt = lotacaoViaturaRepository.findAll().stream()
+                    .filter(e -> e.getViatura() != null && e.getViatura().getCodigo().equals(viaturaCodigo))
+                    .findFirst();
+
+            if (estadoOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            EstadoOcupacaoViatura estado = estadoOpt.get();
+            Viatura v = estado.getViatura();
+            int capMax = v.getCapacidadeMaxima() != null ? v.getCapacidadeMaxima() : 80;
+
+            if (passageiros < 0) {
+                passageiros = 0;
+            }
+            if (passageiros > capMax) {
+                passageiros = capMax;
+            }
+
+            double taxa = ((double) passageiros / capMax) * 100;
+
+            estado.setPassageirosAtuais(passageiros);
+            estado.setTaxaOcupacao(taxa);
+            estado.setUltimaAtualizacao(java.time.LocalDateTime.now());
+            lotacaoViaturaRepository.save(estado);
+
+            // Handle AlertaLotacao for critical occupancies (>= 70%)
+            if (taxa >= 70.0) {
+                boolean alertaExiste = alertaLotacaoRepository.findAll().stream()
+                        .anyMatch(a -> a.getViatura() != null && 
+                                       a.getViatura().getId().equals(v.getId()) && 
+                                       a.getEstado() != null && 
+                                       !a.getEstado().equalsIgnoreCase("RESOLVIDO"));
+
+                if (!alertaExiste) {
+                    AlertaLotacao novoAlerta = new AlertaLotacao(
+                            v,
+                            estado.getLinha(),
+                            "CRITICO",
+                            "PENDENTE",
+                            "Lotação Crítica - Viatura #" + viaturaCodigo + " (Sensor Móvel) atingiu " + String.format("%.1f", taxa) + "% na " + estado.getLinha()
+                    );
+                    alertaLotacaoRepository.save(novoAlerta);
+                }
+            }
+
+            Map<String, Object> resposta = new HashMap<>();
+            resposta.put("status", "Sucesso");
+            resposta.put("viaturaId", viaturaCodigo);
+            resposta.put("passageiros", passageiros);
+            resposta.put("taxaOcupacao", taxa);
+            return ResponseEntity.ok(resposta);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro ao processar dados de telemetria móvel: " + e.getMessage());
+        }
     }
 
     @GetMapping("/status")

@@ -7,47 +7,93 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="shared/style.css">
     <style>
+        /* ── MODAL ── */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
             backdrop-filter: blur(4px);
-            z-index: 100;
+            z-index: 200;
             justify-content: center;
             align-items: center;
         }
-        .modal.open {
-            display: flex;
-        }
+        .modal.open { display: flex; }
         .modal-card {
             background: var(--card);
-            border-radius: 12px;
+            border-radius: 14px;
             width: 100%;
-            max-width: 480px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 500px;
+            padding: 28px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
             border: 1px solid var(--border);
         }
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
             border-bottom: 1.5px solid var(--border);
-            padding-bottom: 12px;
+            padding-bottom: 14px;
         }
-        .modal-header h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--t1);
-        }
+        .modal-header h3 { font-size: 18px; font-weight: 700; color: var(--t1); }
         .modal-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: var(--t3);
+            background: none; border: none; font-size: 22px;
+            cursor: pointer; color: var(--t3); line-height: 1;
+        }
+        .modal-close:hover { color: var(--danger); }
+
+        /* ── TABS ── */
+        .page-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 28px;
+        }
+        .page-tab {
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 22px; border: none; background: none; cursor: pointer;
+            font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 500;
+            color: var(--t2); border-bottom: 2.5px solid transparent; margin-bottom: -2px;
+            transition: all .15s;
+        }
+        .page-tab.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 700; }
+        .page-tab:hover:not(.active) { color: var(--t1); }
+        .page-tab svg { flex-shrink: 0; }
+
+        /* ── PROFILE CARD ── */
+        .profile-card {
+            background: var(--card); border-radius: 16px; border: 1px solid var(--border);
+            box-shadow: var(--shadow-md); padding: 32px; max-width: 560px;
+        }
+        .profile-avatar-lg {
+            width: 72px; height: 72px; border-radius: 50%; background: var(--orange);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; font-weight: 700; color: #fff; flex-shrink: 0;
+            margin-bottom: 20px;
+        }
+        .profile-info-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 0; border-bottom: 1px solid var(--border);
+        }
+        .profile-info-row:last-of-type { border-bottom: none; }
+        .profile-info-row .pir-label { font-size: 12px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: .5px; }
+        .profile-info-row .pir-value { font-size: 14px; font-weight: 600; color: var(--t1); }
+
+        /* ── TOGGLE FIELD ── */
+        .status-toggle-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 0;
+        }
+        .status-toggle-row label { font-size: 13.5px; font-weight: 500; color: var(--t1); cursor: pointer; }
+
+        /* ── TOPBAR CHIP clickable ── */
+        .topbar .user-chip { cursor: pointer; }
+        .topbar .user-chip:hover { background: var(--bg); }
+
+        /* Disabled field style */
+        input:disabled, select:disabled {
+            background: #F4F6F9; color: var(--t3); cursor: not-allowed;
         }
     </style>
 </head>
@@ -71,7 +117,7 @@
                 </a>
                 <a href="frota.html" class="nav-item" id="nav-frota">
                     <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                    <span>Frota & GIS</span>
+                    <span>Frota &amp; GIS</span>
                 </a>
 
                 <div class="nav-section"><span>Operações</span></div>
@@ -95,7 +141,7 @@
                 </a>
                 <a href="utilizadores.html" class="nav-item active" id="nav-utilizadores">
                     <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <span>Utilizadores</span>
+                    <span id="nav-utilizadores-label">Utilizadores</span>
                 </a>
                 <a href="relatorios.html" class="nav-item" id="nav-relatorios">
                     <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
@@ -118,15 +164,16 @@
             <!-- TOPBAR -->
             <header class="topbar">
                 <div class="breadcrumb">
-                    <span>Administração</span>
+                    <span id="breadcrumb-section">Conta</span>
                     <svg class="sep" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    <strong>Utilizadores</strong>
+                    <strong id="breadcrumb-page">Utilizadores</strong>
                 </div>
                 <div class="topbar-actions">
-                    <div class="user-chip">
+                    <!-- User chip is now a link to this page (profile) -->
+                    <a href="utilizadores.html?tab=perfil" class="user-chip" style="display:flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;">
                         <div class="user-avatar" id="topbar-user-avatar" style="width:28px;height:28px;font-size:11px;">??</div>
-                        <span id="topbar-user-name">...</span>
-                    </div>
+                        <span id="topbar-user-name" style="font-size:13px;font-weight:500;color:var(--t1);">...</span>
+                    </a>
                     <button class="btn btn-outline btn-sm" id="btn-logout" style="color:var(--danger); border-color:var(--danger);">
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                         Sair
@@ -136,37 +183,89 @@
 
             <!-- PAGE CONTENT -->
             <main class="page-content">
-                <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <h1>Gestão de Utilizadores</h1>
-                        <p>Administração de contas de operador, gestor e administrador com controlo de permissões</p>
-                    </div>
-                    <div>
-                        <button class="btn btn-blue" onclick="openCreateModal()">
-                            + Novo Utilizador
+
+                <!-- ══ ADMIN: tab navigation ══ -->
+                <div id="admin-tabs" style="display:none;">
+                    <div class="page-tabs">
+                        <button class="page-tab active" id="tab-btn-perfil" onclick="switchAdminTab('perfil')">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            A Minha Conta
+                        </button>
+                        <button class="page-tab" id="tab-btn-gerir" onclick="switchAdminTab('gerir')">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                            Gerir Contas
                         </button>
                     </div>
                 </div>
 
-                <!-- Users Table -->
-                <div class="card">
-                    <div class="card-body" style="padding:0;">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Nome</th>
-                                    <th>Email</th>
-                                    <th>Cargo</th>
-                                    <th>Estado</th>
-                                    <th style="text-align:right;">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="users-table-body">
-                                <tr><td colspan="5" style="text-align:center;">Carregando utilizadores...</td></tr>
-                            </tbody>
-                        </table>
+                <!-- ══ TAB: A Minha Conta (admin + operator) ══ -->
+                <div id="section-perfil">
+                    <div class="page-header" style="margin-bottom:24px;">
+                        <h1>A Minha Conta</h1>
+                        <p>Informações e definições da sua conta pessoal</p>
+                    </div>
+
+                    <div class="profile-card">
+                        <div class="profile-avatar-lg" id="profile-avatar-lg">??</div>
+
+                        <div class="profile-info-row">
+                            <span class="pir-label">Nome Completo</span>
+                            <span class="pir-value" id="profile-nome">—</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="pir-label">Email</span>
+                            <span class="pir-value" id="profile-email">—</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="pir-label">Cargo / Perfil</span>
+                            <span class="pir-value" id="profile-cargo">—</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="pir-label">Estado</span>
+                            <span class="pir-value" id="profile-estado">—</span>
+                        </div>
+
+                        <div style="margin-top: 24px; display:flex; gap:12px; flex-wrap:wrap;">
+                            <button class="btn btn-blue" id="btn-edit-my-profile">
+                                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                Editar Perfil
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                <!-- ══ TAB: Gerir Contas (admin only) ══ -->
+                <div id="section-gerir" style="display:none;">
+                    <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                        <div>
+                            <h1>Gestão de Contas</h1>
+                            <p>Administração de todas as contas de utilizador do sistema</p>
+                        </div>
+                        <button class="btn btn-blue" onclick="openCreateModal()">
+                            + Novo Utilizador
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body" style="padding:0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Email</th>
+                                        <th>Cargo</th>
+                                        <th>Estado</th>
+                                        <th style="text-align:right;">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table-body">
+                                    <tr><td colspan="5" style="text-align:center;">Carregando utilizadores...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
             </main>
         </div>
     </div>
@@ -186,12 +285,12 @@
                     <input type="text" id="user-nome" placeholder="ex: Maria Santos">
                 </div>
                 
-                <div class="form-field" style="margin-bottom:12px;">
+                <div class="form-field" style="margin-bottom:12px;" id="field-email-wrap">
                     <label>Endereço de Email</label>
                     <input type="email" id="user-email" placeholder="ex: maria.santos@tub.pt">
                 </div>
 
-                <div class="form-field" style="margin-bottom:12px;">
+                <div class="form-field" style="margin-bottom:12px;" id="field-cargo-wrap">
                     <label>Cargo (Permissões)</label>
                     <select id="user-cargo">
                         <option value="ADMINISTRADOR">Administrador</option>
@@ -200,13 +299,24 @@
                     </select>
                 </div>
 
-                <div class="form-field" style="margin-bottom:16px;">
+                <div class="form-field" style="margin-bottom:12px;" id="field-estado-wrap">
+                    <label>Estado da Conta</label>
+                    <div class="status-toggle-row">
+                        <label class="toggle">
+                            <input type="checkbox" id="user-ativo" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <label for="user-ativo" id="user-ativo-label">Conta Ativa</label>
+                    </div>
+                </div>
+
+                <div class="form-field" style="margin-bottom:18px;">
                     <label id="pwd-label">Palavra-passe</label>
                     <input type="password" id="user-password" placeholder="Mínimo 6 caracteres">
                 </div>
 
                 <button class="btn btn-blue" id="btn-save-user" style="width:100%; justify-content:center;">
-                    Guardar Utilizador
+                    Guardar
                 </button>
             </div>
         </div>
@@ -214,174 +324,232 @@
 
     <script src="shared/api.js"></script>
     <script>
-        // Session Verification
+        // ── Session ──
         const userToken = sessionStorage.getItem("user_token");
-        const userName = sessionStorage.getItem("user_name");
+        const userName  = sessionStorage.getItem("user_name");
         const userEmail = sessionStorage.getItem("user_email");
-        const userRole = sessionStorage.getItem("user_role");
+        const userRole  = sessionStorage.getItem("user_role");
+        const userId    = sessionStorage.getItem("user_id");
 
-        if (!userToken) {
-            window.location.href = "login.html";
-        }
+        if (!userToken) { window.location.href = "login.html"; }
 
         const isAdmin = (userRole === "ADMINISTRADOR");
 
-        // Dynamic page content and navigation elements for Operator
-        const navUtilizadores = document.getElementById("nav-utilizadores");
-        if (navUtilizadores && !isAdmin) {
-            const span = navUtilizadores.querySelector("span");
-            if (span) span.textContent = "O Meu Perfil";
+        let allUsers = [];
+
+        // ── Cargo label helper ──
+        function translateCargo(cargo) {
+            if (cargo === "ADMINISTRADOR")      return "Administrador";
+            if (cargo === "GESTOR_TRANSPORTES") return "Gestor de Transportes";
+            if (cargo === "OPERADOR_CCO")       return "Operador CCO";
+            return cargo || "Utilizador";
         }
 
-        if (!isAdmin) {
-            // Adjust Breadcrumbs
-            const breadcrumbStrong = document.querySelector(".breadcrumb strong");
-            if (breadcrumbStrong) breadcrumbStrong.textContent = "O Meu Perfil";
-            
-            // Adjust Page Headers
-            const pageHeaderH1 = document.querySelector(".page-header h1");
-            if (pageHeaderH1) pageHeaderH1.textContent = "O Meu Perfil";
-            
-            const pageHeaderP = document.querySelector(".page-header p");
-            if (pageHeaderP) pageHeaderP.textContent = "Consulte e edite as informações da sua conta de utilizador";
-            
-            // Hide "Novo Utilizador" Button
-            const createBtn = document.querySelector("button[onclick='openCreateModal()']");
-            if (createBtn) createBtn.style.display = "none";
+        // ── Sidebar nav label ──
+        const navLabel = document.getElementById("nav-utilizadores-label");
+        if (navLabel) navLabel.textContent = isAdmin ? "Utilizadores" : "O Meu Perfil";
+
+        // ── User info ──
+        const initials = (userName || "??").split(" ").map(n => n[0]).join("").toUpperCase();
+        document.getElementById("sidebar-user-name").textContent  = userName  || "—";
+        document.getElementById("sidebar-user-email").textContent = userEmail || "—";
+        document.getElementById("sidebar-user-role").textContent  = translateCargo(userRole);
+        document.getElementById("sidebar-user-avatar").textContent = initials;
+        document.getElementById("topbar-user-name").textContent   = userName  || "—";
+        document.getElementById("topbar-user-avatar").textContent = initials;
+        document.getElementById("profile-avatar-lg").textContent  = initials;
+        document.getElementById("profile-nome").textContent       = userName  || "—";
+        document.getElementById("profile-email").textContent      = userEmail || "—";
+        document.getElementById("profile-cargo").textContent      = translateCargo(userRole);
+        document.getElementById("profile-estado").innerHTML       = '<span class="badge badge-green">● Ativa</span>';
+
+        // ── Breadcrumbs ──
+        document.getElementById("breadcrumb-section").textContent = isAdmin ? "Administração" : "Conta";
+        document.getElementById("breadcrumb-page").textContent    = isAdmin ? "Utilizadores" : "O Meu Perfil";
+
+        // ── Tab switching (admin) ──
+        function switchAdminTab(tab) {
+            const isGerir = (tab === "gerir");
+            document.getElementById("section-perfil").style.display  = isGerir ? "none"  : "block";
+            document.getElementById("section-gerir").style.display   = isGerir ? "block" : "none";
+            document.getElementById("tab-btn-perfil").classList.toggle("active", !isGerir);
+            document.getElementById("tab-btn-gerir").classList.toggle("active",  isGerir);
+
+            document.getElementById("breadcrumb-page").textContent = isGerir ? "Gerir Contas" : "A Minha Conta";
+
+            if (isGerir) loadAllUsers();
         }
 
-        // Setup User Info
-        document.getElementById("sidebar-user-name").textContent = userName || "Carlos Silva";
-        document.getElementById("sidebar-user-email").textContent = userEmail || "admin@tub.pt";
-        document.getElementById("sidebar-user-role").textContent = translateCargo(userRole) || "Admin";
-        document.getElementById("sidebar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
+        // ── Admin tabs & initial state ──
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestedTab = urlParams.get('tab');
 
-        document.getElementById("topbar-user-name").textContent = userName || "Carlos Silva";
-        document.getElementById("topbar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
+        if (isAdmin) {
+            document.getElementById("admin-tabs").style.display = "block";
+            if (requestedTab === 'perfil') {
+                switchAdminTab('perfil');
+            } else {
+                switchAdminTab('gerir');
+            }
+        } else {
+            document.getElementById("admin-tabs").style.display = "none";
+            switchAdminTab('perfil');
+        }
 
+        // ── Load profile from DB ──
+        async function loadProfile() {
+            try {
+                const users = await apiGet("/api/utilizadores");
+                allUsers = users;
+                const u = users.find(x => String(x.id) === String(userId));
+                if (u) {
+                    const initials = u.nome.split(" ").map(n => n[0]).join("").toUpperCase();
+                    document.getElementById("sidebar-user-name").textContent  = u.nome;
+                    document.getElementById("sidebar-user-email").textContent = u.email;
+                    document.getElementById("sidebar-user-role").textContent  = translateCargo(u.cargo);
+                    document.getElementById("sidebar-user-avatar").textContent = initials;
+                    document.getElementById("topbar-user-name").textContent   = u.nome;
+                    document.getElementById("topbar-user-avatar").textContent = initials;
+                    
+                    document.getElementById("profile-avatar-lg").textContent  = initials;
+                    document.getElementById("profile-nome").textContent       = u.nome;
+                    document.getElementById("profile-email").textContent      = u.email;
+                    document.getElementById("profile-cargo").textContent      = translateCargo(u.cargo);
+                    
+                    const statusBadge = (u.ativo !== false)
+                        ? '<span class="badge badge-green">● Ativa</span>'
+                        : '<span class="badge badge-red">● Bloqueada</span>';
+                    document.getElementById("profile-estado").innerHTML = statusBadge;
+                }
+            } catch (err) {
+                console.error("Erro ao carregar perfil:", err);
+            }
+        }
+        loadProfile();
+
+        // ── Logout ──
         document.getElementById("btn-logout").addEventListener("click", () => {
             sessionStorage.clear();
             window.location.href = "login.html";
         });
 
-        let allUsers = [];
+        // ── Edit own profile btn ──
+        document.getElementById("btn-edit-my-profile").addEventListener("click", () => {
+            openEditSelfModal();
+        });
 
-        function translateCargo(cargo) {
-            if (cargo === "ADMINISTRADOR") return "Administrador";
-            if (cargo === "GESTOR_TRANSPORTES") return "Gestor de Transportes";
-            if (cargo === "OPERADOR_CCO") return "Operador CCO";
-            return cargo || "Utilizador";
-        }
-
-        async function loadUsers() {
+        // ── Load own user from API (to get up-to-date ativo state) ──
+        async function loadAllUsers() {
             try {
                 allUsers = await apiGet("/api/utilizadores");
-                const tbody = document.getElementById("users-table-body");
-                tbody.innerHTML = "";
-
-                // Determine display list: Admin sees all, Operators only see their own profile
-                let usersToDisplay = allUsers;
-                if (!isAdmin) {
-                    const loggedInId = sessionStorage.getItem("user_id");
-                    const loggedInEmail = sessionStorage.getItem("user_email");
-                    usersToDisplay = allUsers.filter(u => 
-                        (loggedInId && String(u.id) === String(loggedInId)) ||
-                        (loggedInEmail && u.email && u.email.toLowerCase() === loggedInEmail.toLowerCase())
-                    );
-                }
-
-                usersToDisplay.forEach(u => {
-                    const tr = document.createElement("tr");
-                    const statusClass = u.ativo ? 'badge-green' : 'badge-red';
-                    const statusLabel = u.ativo ? 'Ativo' : 'Inativo';
-                    const toggleLabel = u.ativo ? 'Desativar' : 'Ativar';
-
-                    let actionsHtml = "";
-                    if (isAdmin) {
-                        actionsHtml = `
-                            <div style="display:flex; justify-content:flex-end; gap:8px;">
-                                <button class="btn btn-outline btn-sm" onclick="openEditModal(${u.id})">Editar</button>
-                                <button class="btn btn-outline btn-sm" onclick="toggleUserStatus(${u.id}, ${u.ativo})">${toggleLabel}</button>
-                                <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="deleteUser(${u.id})">Eliminar</button>
-                            </div>
-                        `;
-                    } else {
-                        actionsHtml = `
-                            <div style="display:flex; justify-content:flex-end; gap:8px;">
-                                <button class="btn btn-outline btn-sm" onclick="openEditModal(${u.id})">Editar Perfil</button>
-                            </div>
-                        `;
-                    }
-
-                    tr.innerHTML = `
-                        <td><strong>${u.nome}</strong></td>
-                        <td>${u.email}</td>
-                        <td>${translateCargo(u.cargo)}</td>
-                        <td><span class="badge ${statusClass}">${statusLabel}</span></td>
-                        <td style="text-align:right;">
-                            ${actionsHtml}
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                renderUsersTable(allUsers);
             } catch (err) {
                 console.error("Erro ao carregar utilizadores:", err);
             }
         }
 
-        // Modal triggers
-        function openCreateModal() {
-            if (!isAdmin) return; // Prevent access
-            document.getElementById("modal-title").textContent = "Registar Novo Utilizador";
-            document.getElementById("user-id").value = "";
-            document.getElementById("user-nome").value = "";
-            document.getElementById("user-email").value = "";
-            document.getElementById("user-cargo").value = "OPERADOR_CCO";
-            document.getElementById("user-password").value = "";
-            document.getElementById("pwd-label").textContent = "Palavra-passe";
-            
-            // Enable inputs for Admin
-            document.getElementById("user-email").disabled = false;
-            document.getElementById("user-cargo").disabled = false;
-            
+        function renderUsersTable(users) {
+            const tbody = document.getElementById("users-table-body");
+            tbody.innerHTML = "";
+
+            if (!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum utilizador encontrado.</td></tr>';
+                return;
+            }
+
+            users.forEach(u => {
+                const tr = document.createElement("tr");
+                const ativo = u.ativo !== false;
+                const statusBadge = ativo
+                    ? '<span class="badge badge-green">● Ativo</span>'
+                    : '<span class="badge badge-red">● Bloqueado</span>';
+                const toggleLabel = ativo ? "Bloquear" : "Desbloquear";
+                const toggleStyle = ativo
+                    ? 'color:var(--warn); border-color:var(--warn);'
+                    : 'color:var(--success); border-color:var(--success);';
+
+                tr.innerHTML = `
+                    <td><strong>${u.nome}</strong></td>
+                    <td>${u.email}</td>
+                    <td>${translateCargo(u.cargo)}</td>
+                    <td>${statusBadge}</td>
+                    <td style="text-align:right;">
+                        <div style="display:flex; justify-content:flex-end; gap:8px;">
+                            <button class="btn btn-outline btn-sm" onclick="openEditModal(${u.id})">Editar</button>
+                            <button class="btn btn-outline btn-sm" style="${toggleStyle}" onclick="toggleUserStatus(${u.id}, ${u.ativo})">${toggleLabel}</button>
+                            <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="deleteUser(${u.id})">Eliminar</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ── Modal: open for self edit (limited fields) ──
+        function openEditSelfModal() {
+            document.getElementById("modal-title").textContent = "Editar O Meu Perfil";
+            document.getElementById("user-id").value          = userId || "";
+            document.getElementById("user-nome").value        = userName || "";
+            document.getElementById("user-email").value       = userEmail || "";
+            document.getElementById("user-cargo").value       = userRole || "OPERADOR_CCO";
+            document.getElementById("user-password").value    = "";
+            document.getElementById("user-ativo").checked     = true;
+            document.getElementById("pwd-label").textContent  = "Nova Palavra-passe (deixe em branco para manter)";
+
+            // Non-admin (operator/manager) has restricted fields
+            const lockFields = !isAdmin;
+            document.getElementById("user-email").disabled = lockFields;
+            document.getElementById("user-cargo").disabled = lockFields;
+            if (lockFields) {
+                document.getElementById("field-estado-wrap").style.display = "none";
+            } else {
+                document.getElementById("field-estado-wrap").style.display = "block";
+            }
+
             document.getElementById("user-modal").classList.add("open");
         }
 
-        function openEditModal(userId) {
-            // Check if Operator is trying to edit someone else
-            if (!isAdmin) {
-                const loggedInId = sessionStorage.getItem("user_id");
-                const loggedInEmail = sessionStorage.getItem("user_email");
-                const target = allUsers.find(user => user.id === userId);
-                const isOwn = target && (
-                    (loggedInId && String(target.id) === String(loggedInId)) ||
-                    (loggedInEmail && target.email.toLowerCase() === loggedInEmail.toLowerCase())
-                );
-                if (!isOwn) {
-                    alert("Erro: Não tem permissão para editar outros perfis.");
-                    return;
-                }
-            }
+        // ── Modal: open for admin edit any user ──
+        function openEditModal(uId) {
+            if (!isAdmin) { openEditSelfModal(); return; }
 
-            const u = allUsers.find(user => user.id === userId);
+            const u = allUsers.find(x => x.id === uId);
             if (!u) return;
 
-            document.getElementById("modal-title").textContent = isAdmin ? "Editar Utilizador" : "Editar O Meu Perfil";
-            document.getElementById("user-id").value = u.id;
-            document.getElementById("user-nome").value = u.nome;
-            document.getElementById("user-email").value = u.email;
-            document.getElementById("user-cargo").value = u.cargo;
-            document.getElementById("user-password").value = "";
-            document.getElementById("pwd-label").textContent = "Nova Palavra-passe (Deixe em branco para manter a atual)";
-            
-            // Limit inputs if not admin
-            if (isAdmin) {
-                document.getElementById("user-email").disabled = false;
-                document.getElementById("user-cargo").disabled = false;
-            } else {
-                document.getElementById("user-email").disabled = true;
-                document.getElementById("user-cargo").disabled = true;
-            }
+            document.getElementById("modal-title").textContent = "Editar Utilizador";
+            document.getElementById("user-id").value          = u.id;
+            document.getElementById("user-nome").value        = u.nome;
+            document.getElementById("user-email").value       = u.email;
+            document.getElementById("user-cargo").value       = u.cargo;
+            document.getElementById("user-password").value    = "";
+            document.getElementById("user-ativo").checked     = u.ativo !== false;
+            updateAtivoLabel();
+            document.getElementById("pwd-label").textContent  = "Nova Palavra-passe (deixe em branco para manter)";
+
+            // Admin can edit all fields
+            document.getElementById("user-email").disabled = false;
+            document.getElementById("user-cargo").disabled = false;
+            document.getElementById("field-estado-wrap").style.display = "block";
+
+            document.getElementById("user-modal").classList.add("open");
+        }
+
+        // ── Modal: open for admin create ──
+        function openCreateModal() {
+            if (!isAdmin) return;
+            document.getElementById("modal-title").textContent = "Novo Utilizador";
+            document.getElementById("user-id").value          = "";
+            document.getElementById("user-nome").value        = "";
+            document.getElementById("user-email").value       = "";
+            document.getElementById("user-cargo").value       = "OPERADOR_CCO";
+            document.getElementById("user-password").value    = "";
+            document.getElementById("user-ativo").checked     = true;
+            updateAtivoLabel();
+            document.getElementById("pwd-label").textContent  = "Palavra-passe";
+
+            document.getElementById("user-email").disabled = false;
+            document.getElementById("user-cargo").disabled = false;
+            document.getElementById("field-estado-wrap").style.display = "block";
 
             document.getElementById("user-modal").classList.add("open");
         }
@@ -390,131 +558,113 @@
             document.getElementById("user-modal").classList.remove("open");
         }
 
-        // POST / PUT Save handler
+        // ── Ativo toggle label ──
+        function updateAtivoLabel() {
+            const checked = document.getElementById("user-ativo").checked;
+            document.getElementById("user-ativo-label").textContent = checked ? "Conta Ativa" : "Conta Bloqueada";
+        }
+        document.getElementById("user-ativo").addEventListener("change", updateAtivoLabel);
+
+        // ── Save handler ──
         document.getElementById("btn-save-user").addEventListener("click", async () => {
-            const id = document.getElementById("user-id").value;
-            const nome = document.getElementById("user-nome").value;
-            const email = document.getElementById("user-email").value;
-            const cargo = document.getElementById("user-cargo").value;
+            const id       = document.getElementById("user-id").value;
+            const nome     = document.getElementById("user-nome").value.trim();
+            const email    = document.getElementById("user-email").value.trim();
+            const cargo    = document.getElementById("user-cargo").value;
+            const ativo    = document.getElementById("user-ativo").checked;
             const password = document.getElementById("user-password").value;
 
-            if (!nome || !email) {
-                alert("Preencha o Nome e o Email.");
-                return;
-            }
+            if (!nome) { alert("Preencha o Nome Completo."); return; }
 
-            // Security check on save for non-admin
-            if (id && !isAdmin) {
-                const loggedInId = sessionStorage.getItem("user_id");
-                const loggedInEmail = sessionStorage.getItem("user_email");
-                const target = allUsers.find(user => String(user.id) === String(id));
-                const isOwn = target && (
-                    (loggedInId && String(target.id) === String(loggedInId)) ||
-                    (loggedInEmail && target.email.toLowerCase() === loggedInEmail.toLowerCase())
-                );
-                if (!isOwn) {
-                    alert("Acesso negado.");
-                    return;
-                }
-            }
-
-            const payload = { 
-                nome, 
-                email: isAdmin ? email : document.getElementById("user-email").value, 
-                cargo: isAdmin ? cargo : document.getElementById("user-cargo").value, 
-                ativo: true 
-            };
-            if (password) {
-                payload.password = password;
-            }
+            const payload = { nome, email, cargo, ativo };
+            if (password) payload.password = password;
 
             try {
                 if (id) {
-                    // PUT Edit
+                    // PUT: edit existing
                     const res = await apiPut(`/api/utilizadores/${id}`, payload);
                     if (res) {
-                        // If updating own profile, update sessionStorage display info
-                        const loggedInId = sessionStorage.getItem("user_id");
-                        const loggedInEmail = sessionStorage.getItem("user_email");
-                        if (String(id) === String(loggedInId) || email.toLowerCase() === String(loggedInEmail).toLowerCase()) {
+                        // If editing own account, update session display
+                        if (String(id) === String(userId)) {
                             sessionStorage.setItem("user_name", nome);
+                            sessionStorage.setItem("user_email", email);
+                            sessionStorage.setItem("user_role", cargo);
+
                             document.getElementById("sidebar-user-name").textContent = nome;
-                            document.getElementById("topbar-user-name").textContent = nome;
+                            document.getElementById("sidebar-user-email").textContent = email;
+                            document.getElementById("sidebar-user-role").textContent = translateCargo(cargo);
+                            document.getElementById("topbar-user-name").textContent  = nome;
+                            document.getElementById("profile-nome").textContent      = nome;
+                            document.getElementById("profile-email").textContent     = email;
+                            document.getElementById("profile-cargo").textContent     = translateCargo(cargo);
+
+                            const newInitials = nome.split(" ").map(n => n[0]).join("").toUpperCase();
+                            document.getElementById("sidebar-user-avatar").textContent = newInitials;
+                            document.getElementById("topbar-user-avatar").textContent  = newInitials;
+                            document.getElementById("profile-avatar-lg").textContent   = newInitials;
                         }
                         closeModal();
-                        loadUsers();
+                        if (isAdmin && document.getElementById("section-gerir").style.display !== "none") {
+                            loadAllUsers();
+                        }
                     }
                 } else {
-                    if (!isAdmin) return; // Non-admin cannot create users
-                    // POST Guardar (requires password)
-                    if (!password) {
-                        alert("Defina uma palavra-passe para o novo utilizador.");
-                        return;
-                    }
+                    // POST: create new (admin only)
+                    if (!password) { alert("Defina uma palavra-passe para o novo utilizador."); return; }
                     payload.password = password;
-                    
-                    const response = await fetch("http://localhost:8081/api/utilizadores/guardar", {
-                        method: 'POST',
+
+                    const resp = await fetch("http://localhost:8081/api/utilizadores/guardar", {
+                        method: "POST",
                         headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + userToken
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer " + userToken
                         },
                         body: JSON.stringify(payload)
                     });
 
-                    if (response.ok) {
+                    if (resp.ok) {
                         closeModal();
-                        loadUsers();
+                        loadAllUsers();
                     } else {
-                        const txt = await response.text();
+                        const txt = await resp.text();
                         alert("Erro: " + txt);
                     }
                 }
             } catch (err) {
-                alert("Erro ao gravar utilizador: " + err);
+                alert("Erro ao guardar: " + err);
             }
         });
 
-        // Toggle user status
-        async function toggleUserStatus(userId, currentStatus) {
-            if (!isAdmin) return; // Prevent access
+        // ── Toggle active/blocked ──
+        async function toggleUserStatus(uId, currentAtivo) {
+            if (!isAdmin) return;
+            const action = currentAtivo ? "desativar" : "ativar";
             try {
-                const action = currentStatus ? "desativar" : "ativar";
-                const res = await apiPut(`/api/utilizadores/${userId}/${action}`);
-                if (res) {
-                    loadUsers();
-                }
+                await apiPut(`/api/utilizadores/${uId}/${action}`);
+                loadAllUsers();
             } catch (err) {
-                alert("Erro ao alterar estado do utilizador: " + err);
+                alert("Erro ao alterar estado: " + err);
             }
         }
 
-        // Delete user
-        async function deleteUser(userId) {
-            if (!isAdmin) return; // Prevent access
+        // ── Delete user ──
+        async function deleteUser(uId) {
+            if (!isAdmin) return;
             if (!confirm("Tem a certeza que deseja eliminar permanentemente este utilizador?")) return;
-
             try {
-                const response = await fetch(`http://localhost:8081/api/utilizadores/${userId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer ' + userToken
-                    }
+                const resp = await fetch(`http://localhost:8081/api/utilizadores/${uId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": "Bearer " + userToken }
                 });
-
-                if (response.ok) {
-                    loadUsers();
+                if (resp.ok) {
+                    loadAllUsers();
                 } else {
-                    const txt = await response.text();
-                    alert("Erro: " + txt);
+                    alert("Erro: " + await resp.text());
                 }
             } catch (err) {
-                alert("Erro ao eliminar utilizador: " + err);
+                alert("Erro ao eliminar: " + err);
             }
         }
-
-        // Initialize
-        loadUsers();
     </script>
 </body>
 </html>

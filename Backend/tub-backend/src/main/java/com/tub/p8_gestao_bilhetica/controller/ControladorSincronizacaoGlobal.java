@@ -1,21 +1,16 @@
 package com.tub.p8_gestao_bilhetica.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 import com.tub.p3_integracao_externa.model.Validation;
 import com.tub.p8_gestao_bilhetica.model.LoteDadosBilhetica;
-import com.tub.p8_gestao_bilhetica.repository.LoteDadosBilheticaRepository;
+import com.tub.p8_gestao_bilhetica.model.ConfiguracaoIntegracao;
+import com.tub.p8_gestao_bilhetica.repository.ConfiguracaoIntegracaoRepository;
 import com.tub.p8_gestao_bilhetica.service.ConnectionService;
-import com.tub.p8_gestao_bilhetica.service.GestorExtracao;
-import com.tub.p8_gestao_bilhetica.service.ProcessadorValidacao;
+import com.tub.p8_gestao_bilhetica.service.ProcesadorArmazenamento;
 
 @RestController
 @RequestMapping("/api/bilhetica")
@@ -23,41 +18,87 @@ import com.tub.p8_gestao_bilhetica.service.ProcessadorValidacao;
 public class ControladorSincronizacaoGlobal {
 
     private final ConnectionService connectionService;
-    private final GestorExtracao gestorExtracao;
-    private final ProcessadorValidacao processadorValidacao;
-    private final LoteDadosBilheticaRepository loteDadosBilheticaRepository;
+    private final ProcesadorArmazenamento procesadorArmazenamento;
+    private final ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository;
 
     public ControladorSincronizacaoGlobal(
             ConnectionService connectionService,
-            GestorExtracao gestorExtracao,
-            ProcessadorValidacao processadorValidacao,
-            LoteDadosBilheticaRepository loteDadosBilheticaRepository
+            ProcesadorArmazenamento procesadorArmazenamento,
+            ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository
     ) {
         this.connectionService = connectionService;
-        this.gestorExtracao = gestorExtracao;
-        this.processadorValidacao = processadorValidacao;
-        this.loteDadosBilheticaRepository = loteDadosBilheticaRepository;
+        this.procesadorArmazenamento = procesadorArmazenamento;
+        this.configuracaoIntegracaoRepository = configuracaoIntegracaoRepository;
     }
 
     @GetMapping("/sincronizar")
     public ResponseEntity<?> sincronizar() {
         List<Validation> dados = connectionService.obterDadosBilhetica();
-        List<LoteDadosBilhetica> lotes = gestorExtracao.extrair(dados);
-        List<LoteDadosBilhetica> validos = processadorValidacao.validar(lotes);
-
-        loteDadosBilheticaRepository.saveAll(validos);
-
-        return ResponseEntity.ok(validos);
+        LoteDadosBilhetica lote = procesadorArmazenamento.processarEGuardarSincronizacao(dados);
+        return ResponseEntity.ok(lote != null ? List.of(lote) : List.of());
     }
 
     @PostMapping("/importar")
     public ResponseEntity<?> importar(@RequestParam(required = false) String periodo) {
         List<Validation> dados = connectionService.obterDadosBilhetica();
-        List<LoteDadosBilhetica> lotes = gestorExtracao.extrair(dados);
-        List<LoteDadosBilhetica> validos = processadorValidacao.validar(lotes);
+        LoteDadosBilhetica lote = procesadorArmazenamento.processarEGuardarSincronizacao(dados);
+        return ResponseEntity.ok(lote != null ? List.of(lote) : List.of());
+    }
 
-        loteDadosBilheticaRepository.saveAll(validos);
+    @GetMapping("/configuracao")
+    public ResponseEntity<?> obterConfiguracao() {
+        ConfiguracaoIntegracao config = configuracaoIntegracaoRepository.findAll().stream()
+                .findFirst()
+                .orElseGet(() -> {
+                    ConfiguracaoIntegracao defaultCc = new ConfiguracaoIntegracao();
+                    defaultCc.setNome("Sincronizacao Validadores");
+                    defaultCc.setEndpoint("http://api.tub.pt/validadores");
+                    defaultCc.setToken("default_token");
+                    defaultCc.setAtiva(true);
+                    defaultCc.setIntervaloMinutos(2);
+                    defaultCc.setSimulacaoMaxEntradasSaidas(10);
+                    defaultCc.setSimulacaoMaxOcupacaoPercentual(90);
+                    return configuracaoIntegracaoRepository.save(defaultCc);
+                });
+        return ResponseEntity.ok(config);
+    }
 
-        return ResponseEntity.ok(validos);
+    @PostMapping("/configuracao")
+    public ResponseEntity<?> atualizarConfiguracao(@RequestBody ConfiguracaoIntegracao novaConfig) {
+        ConfiguracaoIntegracao config = configuracaoIntegracaoRepository.findAll().stream()
+                .findFirst()
+                .orElseGet(() -> {
+                    ConfiguracaoIntegracao defaultCc = new ConfiguracaoIntegracao();
+                    defaultCc.setNome("Sincronizacao Validadores");
+                    defaultCc.setEndpoint("http://api.tub.pt/validadores");
+                    defaultCc.setToken("default_token");
+                    defaultCc.setAtiva(true);
+                    defaultCc.setIntervaloMinutos(2);
+                    defaultCc.setSimulacaoMaxEntradasSaidas(10);
+                    defaultCc.setSimulacaoMaxOcupacaoPercentual(90);
+                    return defaultCc;
+                });
+        
+        if (novaConfig.getIntervaloMinutos() != null) {
+            config.setIntervaloMinutos(novaConfig.getIntervaloMinutos());
+        }
+        if (novaConfig.getAtiva() != null) {
+            config.setAtiva(novaConfig.getAtiva());
+        }
+        if (novaConfig.getEndpoint() != null) {
+            config.setEndpoint(novaConfig.getEndpoint());
+        }
+        if (novaConfig.getToken() != null) {
+            config.setToken(novaConfig.getToken());
+        }
+        if (novaConfig.getSimulacaoMaxEntradasSaidas() != null) {
+            config.setSimulacaoMaxEntradasSaidas(novaConfig.getSimulacaoMaxEntradasSaidas());
+        }
+        if (novaConfig.getSimulacaoMaxOcupacaoPercentual() != null) {
+            config.setSimulacaoMaxOcupacaoPercentual(novaConfig.getSimulacaoMaxOcupacaoPercentual());
+        }
+        
+        configuracaoIntegracaoRepository.save(config);
+        return ResponseEntity.ok(config);
     }
 }
