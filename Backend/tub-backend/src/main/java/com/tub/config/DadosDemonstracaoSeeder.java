@@ -3,7 +3,9 @@ package com.tub.config;
 import com.tub.p10_gestao_pmd.model.DisplayPanel;
 import com.tub.p10_gestao_pmd.model.Linha;
 import com.tub.p10_gestao_pmd.model.Viatura;
+import com.tub.p10_gestao_pmd.model.CatalogoMensagensRapidas;
 import com.tub.p10_gestao_pmd.repository.DisplayPanelRepository;
+import com.tub.p10_gestao_pmd.repository.CatalogoMensagensRapidasRepository;
 
 import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
 import com.tub.p2_dados_utilizador.repository.RegistoUtilizadorRepository;
@@ -48,7 +50,11 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
     private final RegistoBilheticaRepository registoBilheticaRepository;
     private final LotacaoViaturaRepository lotacaoViaturaRepository;
     private final AlertaLotacaoRepository alertaLotacaoRepository;
+<<<<<<< HEAD
     private final ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository;
+=======
+    private final CatalogoMensagensRapidasRepository catalogoMensagensRapidasRepository;
+>>>>>>> 7985b61ad54ebac9db9395e324ec4c9452ecfad8
 
     public DadosDemonstracaoSeeder(
             RegistoUtilizadorRepository utilizadorRepository,
@@ -61,7 +67,11 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             RegistoBilheticaRepository registoBilheticaRepository,
             LotacaoViaturaRepository lotacaoViaturaRepository,
             AlertaLotacaoRepository alertaLotacaoRepository,
+<<<<<<< HEAD
             ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository
+=======
+            CatalogoMensagensRapidasRepository catalogoMensagensRapidasRepository
+>>>>>>> 7985b61ad54ebac9db9395e324ec4c9452ecfad8
     ) {
         this.utilizadorRepository = utilizadorRepository;
         this.linhaRepository = linhaRepository;
@@ -73,7 +83,11 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         this.registoBilheticaRepository = registoBilheticaRepository;
         this.lotacaoViaturaRepository = lotacaoViaturaRepository;
         this.alertaLotacaoRepository = alertaLotacaoRepository;
+<<<<<<< HEAD
         this.configuracaoIntegracaoRepository = configuracaoIntegracaoRepository;
+=======
+        this.catalogoMensagensRapidasRepository = catalogoMensagensRapidasRepository;
+>>>>>>> 7985b61ad54ebac9db9395e324ec4c9452ecfad8
     }
 
     @Override
@@ -86,7 +100,11 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         criarPaineisPMD();
         criarDadosBilhetica();
         criarLotacaoEAlertas();
+<<<<<<< HEAD
         criarConfiguracaoIntegracao();
+=======
+        criarCatalogoMensagensRapidas();
+>>>>>>> 7985b61ad54ebac9db9395e324ec4c9452ecfad8
 
         System.out.println("Dados de demonstração M5 carregados com sucesso.");
     }
@@ -420,6 +438,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         ));
     }
 
+<<<<<<< HEAD
     private void criarConfiguracaoIntegracao() {
         if (configuracaoIntegracaoRepository.count() == 0) {
             ConfiguracaoIntegracao config = new ConfiguracaoIntegracao();
@@ -431,6 +450,30 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             config.setSimulacaoMaxEntradasSaidas(10);
             config.setSimulacaoMaxOcupacaoPercentual(90);
             configuracaoIntegracaoRepository.save(config);
+=======
+    private void criarCatalogoMensagensRapidas() {
+        if (catalogoMensagensRapidasRepository.count() == 0) {
+            catalogoMensagensRapidasRepository.save(new CatalogoMensagensRapidas(
+                    "Atraso Linha 43",
+                    "LINHA 43 COM ATRASO DE 10 MIN DEVIDO A TRANSITO",
+                    "ATRASOS"
+            ));
+            catalogoMensagensRapidasRepository.save(new CatalogoMensagensRapidas(
+                    "Aviso Greve",
+                    "SERVICOS DE TRANSPORTES PODERAO SOFRER PERTURBACOES DEVIDO A GREVE",
+                    "AVISOS"
+            ));
+            catalogoMensagensRapidasRepository.save(new CatalogoMensagensRapidas(
+                    "Boas Vindas",
+                    "BEM-VINDO AOS TRANSPORTES URBANOS DE BRAGA - TUB",
+                    "GERAL"
+            ));
+            catalogoMensagensRapidasRepository.save(new CatalogoMensagensRapidas(
+                    "Desvio de Rota",
+                    "LINHA 2 DESVIADA POR MOTIVO DE OBRAS NA AV. DA LIBERDADE",
+                    "DESVIOS"
+            ));
+>>>>>>> 7985b61ad54ebac9db9395e324ec4c9452ecfad8
         }
     }
 }

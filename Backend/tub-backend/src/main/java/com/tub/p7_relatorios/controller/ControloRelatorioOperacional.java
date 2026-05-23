@@ -20,7 +20,7 @@ public class ControloRelatorioOperacional {
 
     public ControloRelatorioOperacional(MotorGrafico motorGrafico) {
         this.motorGrafico = motorGrafico;
-    }
+    }   
 
     @PostMapping
     public ResponseEntity<DadosRelatorio> gerarRelatorioOperacional(

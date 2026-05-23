@@ -15,6 +15,13 @@ public class TarefaAgendada {
     private LocalDateTime dataHoraExecucao;
     private String estado; // Ex: "SUCESSO", "FALHA", "EM_EXECUCAO"
 
+    // Parametrizador do Agendamento (4SRS U 7.4.1.d)
+    private String emailDestinatario;
+    private String periodicidade; // Ex: "DIARIA", "SEMANAL", "MENSAL"
+    private String formato;       // Ex: "PDF", "CSV"
+    private String tipoRelatorio; // Ex: "OPERACIONAL", "AUDITORIA"
+    private boolean ativo = true;
+
     // Construtor vazio que o Hibernate exige
     public TarefaAgendada() {}
 
@@ -23,6 +30,17 @@ public class TarefaAgendada {
         this.nomeTarefa = nomeTarefa;
         this.estado = estado;
         this.dataHoraExecucao = LocalDateTime.now();
+    }
+
+    public TarefaAgendada(String nomeTarefa, String emailDestinatario, String periodicidade, String formato, String tipoRelatorio) {
+        this.nomeTarefa = nomeTarefa;
+        this.emailDestinatario = emailDestinatario;
+        this.periodicidade = periodicidade;
+        this.formato = formato;
+        this.tipoRelatorio = tipoRelatorio;
+        this.estado = "CONFIGURADO";
+        this.dataHoraExecucao = LocalDateTime.now();
+        this.ativo = true;
     }
 
     // Getters e Setters
@@ -34,4 +52,15 @@ public class TarefaAgendada {
     public void setDataHoraExecucao(LocalDateTime dataHoraExecucao) { this.dataHoraExecucao = dataHoraExecucao; }
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    public String getEmailDestinatario() { return emailDestinatario; }
+    public void setEmailDestinatario(String emailDestinatario) { this.emailDestinatario = emailDestinatario; }
+    public String getPeriodicidade() { return periodicidade; }
+    public void setPeriodicidade(String periodicidade) { this.periodicidade = periodicidade; }
+    public String getFormato() { return formato; }
+    public void setFormato(String formato) { this.formato = formato; }
+    public String getTipoRelatorio() { return tipoRelatorio; }
+    public void setTipoRelatorio(String tipoRelatorio) { this.tipoRelatorio = tipoRelatorio; }
+    public boolean isAtivo() { return ativo; }
+    public void setAtivo(boolean ativo) { this.ativo = ativo; }
 }

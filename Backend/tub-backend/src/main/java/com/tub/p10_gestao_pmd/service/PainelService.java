@@ -1,7 +1,9 @@
 package com.tub.p10_gestao_pmd.service;
 
 import com.tub.p10_gestao_pmd.model.DisplayPanel;
+import com.tub.p10_gestao_pmd.model.MensagemPMD;
 import com.tub.p10_gestao_pmd.repository.DisplayPanelRepository;
+import com.tub.p10_gestao_pmd.repository.MensagemPMDRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,9 @@ public class PainelService {
 
     @Autowired
     private DisplayPanelRepository repository;
+
+    @Autowired
+    private MensagemPMDRepository mensagemPMDRepository;
 
     // Listar para o ecrã de histórico (L98/L99)
     public List<DisplayPanel> listarTodosOsPaineis() {
@@ -34,6 +39,16 @@ public class PainelService {
         painel.setMessage(mensagem);
         painel.setTimestamp(LocalDateTime.now());
 
+        // Grava no histórico (MensagemPMD ativa)
+        MensagemPMD msgLog = new MensagemPMD();
+        msgLog.setTitulo("Mensagem para " + panelId);
+        msgLog.setConteudo(mensagem);
+        msgLog.setPrioridade("MEDIA");
+        msgLog.setEstado("ATIVA");
+        msgLog.setPanelId(panelId);
+        msgLog.setDataCriacao(LocalDateTime.now());
+        mensagemPMDRepository.save(msgLog);
+
         // LINHA 101: O repository.save garante que o SQL faz o UPDATE
         return repository.save(painel);
     }
@@ -50,5 +65,15 @@ public class PainelService {
                 repository.save(p); // Grava na BD existente
             }
         }
+
+        // Grava no histórico (MensagemPMD ativa para TODOS)
+        MensagemPMD msgLog = new MensagemPMD();
+        msgLog.setTitulo("Mensagem Broadcast");
+        msgLog.setConteudo(mensagem);
+        msgLog.setPrioridade("MEDIA");
+        msgLog.setEstado("ATIVA");
+        msgLog.setPanelId("TODOS");
+        msgLog.setDataCriacao(LocalDateTime.now());
+        mensagemPMDRepository.save(msgLog);
     }
 }

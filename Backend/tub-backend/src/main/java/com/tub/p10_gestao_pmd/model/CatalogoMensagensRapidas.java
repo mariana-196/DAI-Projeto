@@ -3,8 +3,8 @@ package com.tub.p10_gestao_pmd.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "modelos_mensagem")
-public class ModeloMensagem {
+@Table(name = "catalogo_mensagens_rapidas")
+public class CatalogoMensagensRapidas {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +19,13 @@ public class ModeloMensagem {
     @Column(nullable = false)
     private String categoria;
 
-    public ModeloMensagem() {}
+    public CatalogoMensagensRapidas() {}
+
+    public CatalogoMensagensRapidas(String nomeModelo, String conteudoModelo, String categoria) {
+        this.nomeModelo = nomeModelo;
+        this.conteudoModelo = conteudoModelo;
+        this.categoria = categoria;
+    }
 
     public Long getId() { return id; }
 
