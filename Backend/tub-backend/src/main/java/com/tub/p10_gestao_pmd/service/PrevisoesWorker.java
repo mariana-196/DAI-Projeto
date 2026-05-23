@@ -1,7 +1,15 @@
 package com.tub.p10_gestao_pmd.service;
 
 import com.tub.p10_gestao_pmd.model.DisplayPanel;
+import com.tub.p10_gestao_pmd.model.PainelPMD;
+import com.tub.p10_gestao_pmd.model.Linha;
+import com.tub.p10_gestao_pmd.model.Viatura;
+import com.tub.p10_gestao_pmd.model.PrevisaoChegada;
 import com.tub.p10_gestao_pmd.repository.DisplayPanelRepository;
+import com.tub.p10_gestao_pmd.repository.PainelPMDRepository;
+import com.tub.p10_gestao_pmd.repository.PrevisaoChegadaRepository;
+import com.tub.p5_lotacao.repository.LinhaRepository;
+import com.tub.p5_lotacao.repository.ViaturasRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -9,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 
 @Component
 public class PrevisoesWorker {
@@ -17,51 +26,89 @@ public class PrevisoesWorker {
     private DisplayPanelRepository painelRepository;
 
     @Autowired
+    private PainelPMDRepository painelPMDRepository;
+
+    @Autowired
+    private PrevisaoChegadaRepository previsaoChegadaRepository;
+
+    @Autowired
+    private LinhaRepository linhaRepository;
+
+    @Autowired
+    private ViaturasRepository viaturasRepository;
+
+    @Autowired
     private PrevisaoService previsaoService; 
 
     private boolean isAlive = true;
+    private final Random random = new Random();
 
     /**
      * Linha 104: Worker Background
-     * Corre automaticamente a cada 30 segundos para processar dados de localização.
+     * Corre automaticamente a cada 30 segundos para processar dados de localização e gerar previsões consistentes.
      */
     @Scheduled(fixedRate = 30000)
     public void processarCoordenadasEAtualizarPaineis() {
         try {
             System.out.println(">>> [WORKER GPS] A receber coordenadas GPS da frota...");
 
-            int paragensRestantesL43 = extrairParagensPeloGps("L43");
-            int paragensRestantesL02 = extrairParagensPeloGps("L02");
+            // 1. Limpeza de previsões desatualizadas anteriores a 15 minutos
+            LocalDateTime limiteAntigo = LocalDateTime.now().minusMinutes(15);
+            List<PrevisaoChegada> antigas = previsaoChegadaRepository.findAll().stream()
+                    .filter(p -> p.getTimestamp() == null || p.getTimestamp().isBefore(limiteAntigo))
+                    .toList();
+            if (!antigas.isEmpty()) {
+                previsaoChegadaRepository.deleteAll(antigas);
+                System.out.println(">>> [WORKER GPS] Limpeza de " + antigas.size() + " previsões expiradas efetuada.");
+            }
 
-            // CORREÇÃO: Fazemos a conta da Média (2.5 minutos) diretamente aqui, 
-            // evitando assim o erro do método em falta no PrevisaoService!
-            double etaL43 = paragensRestantesL43 * 2.5;
-            double etaL02 = paragensRestantesL02 * 2.5;
+            List<PainelPMD> paineis = painelPMDRepository.findAll();
+            List<Linha> linhas = linhaRepository.findAll();
+            List<Viatura> viaturas = viaturasRepository.findAll();
 
-            // Formatar a mensagem para o ecrã LED (sem casas decimais)
-            String mensagemPrevisao = String.format("L43: %.0f MIN | L02: %.0f MIN", etaL43, etaL02);
+            if (paineis.isEmpty() || linhas.isEmpty() || viaturas.isEmpty()) {
+                System.out.println(">>> [WORKER GPS] Sem painéis, linhas ou viaturas para simulação de previsões.");
+                return;
+            }
 
-            // Atualizar os Painéis na Base de Dados
-            List<DisplayPanel> paineis = painelRepository.findAll();
-            for (DisplayPanel painel : paineis) {
-                if ("ONLINE".equals(painel.getStatus())) {
-                    painel.setMessage(mensagemPrevisao);
-                    painel.setTimestamp(LocalDateTime.now());
-                    painelRepository.save(painel);
+            // 2. Simular e persistir 1 ou 2 previsões para cada painel que esteja online na base de dados
+            for (PainelPMD painel : paineis) {
+                if ("ONLINE".equals(painel.getEstado())) {
+                    // Limpar previsões recentes do painel para evitar acumular muitas previsões duplicadas do simulador automático
+                    List<PrevisaoChegada> recentesPainel = previsaoChegadaRepository.findAll().stream()
+                            .filter(p -> p.getPainel() != null && p.getPainel().getId().equals(painel.getId()))
+                            .toList();
+                    previsaoChegadaRepository.deleteAll(recentesPainel);
+
+                    // Gerar 2 previsões aleatórias consistentes
+                    for (int i = 0; i < 2; i++) {
+                        Linha linhaAleatoria = linhas.get(random.nextInt(linhas.size()));
+                        Viatura viaturaAleatoria = viaturas.get(random.nextInt(viaturas.size()));
+                        int paragensRestantes = random.nextInt(6) + 1; // 1 a 6 paragens restantes
+                        int etaMinutos = (int) Math.round(paragensRestantes * 2.5);
+
+                        PrevisaoChegada previsao = new PrevisaoChegada();
+                        previsao.setPainel(painel);
+                        previsao.setLinha(linhaAleatoria);
+                        previsao.setViatura(viaturaAleatoria);
+                        previsao.setDestino(linhaAleatoria.getDestino());
+                        previsao.setEtaMinutos(etaMinutos);
+                        previsaoChegadaRepository.save(previsao);
+                    }
+
+                    // 3. Atualizar a mensagem do painel eletrónico correspondente (DisplayPanel) com base nos novos dados
+                    previsaoService.atualizarMensagemPainelComPrevisoes(painel.getId(), painel.getCodigo());
                 }
             }
             
             isAlive = true; 
-            System.out.println(">>> [WORKER GPS] Painéis atualizados com o novo ETA médio.");
+            System.out.println(">>> [WORKER GPS] Painéis atualizados com o novo ETA médio real e consistência de dados.");
 
         } catch (Exception e) {
             isAlive = false; 
             System.err.println(">>> [WORKER GPS] Erro crítico ao processar coordenadas: " + e.getMessage());
+            e.printStackTrace();
         }
-    }
-
-    private int extrairParagensPeloGps(String linha) {
-        return (int) (Math.random() * 6) + 1; 
     }
 
     public boolean isWorkerAlive() {

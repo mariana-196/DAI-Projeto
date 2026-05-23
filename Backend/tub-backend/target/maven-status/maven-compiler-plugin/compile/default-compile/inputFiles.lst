@@ -54,6 +54,7 @@ C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\mai
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p9_monitorizacao_iot\controller\ControladorMonitorizacaoLotacao.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p7_relatorios\repository\TarefaAgendadaRepository.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p7_relatorios\service\ControloAnonimizacao.java
+C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p8_gestao_bilhetica\service\DataLoader.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p7_relatorios\dto\MetricasOperacionais.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p12_kpis_operacionais\model\ResultadoIndicadoresBilhetica.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p10_gestao_pmd\repository\AgendamentoPMDRepository.java
@@ -87,6 +88,7 @@ C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\mai
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p10_gestao_pmd\repository\MensagemPMDRepository.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p10_gestao_pmd\repository\PainelPMDRepository.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p7_relatorios\controller\ControloRelatorioOperacional.java
+C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p8_gestao_bilhetica\service\ImportadorCSV.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p2_dados_utilizador\model\RegistoUtilizador.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p11_gestao_alertas\controller\ControladorGestaoAlerta.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p12_kpis_operacionais\controller\DashboardDadosController.java
@@ -104,6 +106,7 @@ C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\mai
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p10_gestao_pmd\service\PainelService.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p6_auditoria\repository\ConfiguracaoNotificacoesRepository.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p8_gestao_bilhetica\model\ResultadoAnalitico.java
+C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p8_gestao_bilhetica\repository\ConfiguracaoIntegracaoRepository.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p12_kpis_operacionais\service\ServicoEstadoOperacao.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p7_relatorios\service\ControloTarefasAutomaticas.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p5_lotacao\model\RegraAlerta.java
@@ -120,6 +123,7 @@ C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\mai
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p10_gestao_pmd\repository\RepositorioTarefasExibicaoRepository.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p8_gestao_bilhetica\controller\ControladorConfiguracaoAnalise.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p6_auditoria\repository\PoliticasAuditoriaRepository.java
+C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p8_gestao_bilhetica\service\SincronizacaoAgendadorService.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p9_monitorizacao_iot\repository\LotacaoViaturaRepository.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p6_auditoria\config\AuditoriaDataLoader.java
 C:\Users\marto\OneDrive\Documents\GitHub\DAI-Projeto\Backend\tub-backend\src\main\java\com\tub\p10_gestao_pmd\service\PrevisoesWorker.java

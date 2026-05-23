@@ -11,6 +11,7 @@ com\tub\p8_gestao_bilhetica\repository\LoteDadosBilheticaRepository.class
 com\tub\p11_gestao_alertas\repository\AlertaLotacaoRepository.class
 com\tub\p10_gestao_pmd\repository\DisplayPanelRepository.class
 com\tub\p10_gestao_pmd\model\PainelPMD.class
+com\tub\p8_gestao_bilhetica\service\SincronizacaoAgendadorService.class
 com\tub\p8_gestao_bilhetica\model\RelatorioExportacao.class
 com\tub\p7_relatorios\service\ControloAnonimizacao.class
 com\tub\p5_lotacao\service\MotorAvaliacaoAlertas.class
@@ -58,6 +59,7 @@ com\tub\p8_gestao_bilhetica\repository\MetricaIngestaoRepository.class
 com\tub\p10_gestao_pmd\model\PrevisaoChegada.class
 com\tub\p12_kpis_operacionais\controller\ControladorEstadoOperacao.class
 com\tub\p9_monitorizacao_iot\repository\LotacaoViaturaRepository.class
+com\tub\p8_gestao_bilhetica\service\MotorInferenciaEspacial$RegistoAggregator.class
 com\tub\p10_gestao_pmd\repository\PainelPMDRepository.class
 com\tub\p8_gestao_bilhetica\controller\ControladorConfiguracaoAnalise.class
 com\tub\p10_gestao_pmd\controller\ControladorDetalheElemento.class
@@ -79,6 +81,7 @@ com\tub\p8_gestao_bilhetica\model\DatasetGeoJSON.class
 com\tub\p1_autenticacao\service\ControloSegurancaAutenticacao$ResultadoAutenticacao.class
 com\tub\p6_auditoria\model\EntidadeConfiguracoesAuditoria.class
 com\tub\p8_gestao_bilhetica\controller\ControladorDashboard.class
+com\tub\p8_gestao_bilhetica\service\ImportadorCSV.class
 com\tub\p2_dados_utilizador\repository\RegistoUtilizadorRepository.class
 com\tub\p8_gestao_bilhetica\service\MotorInferenciaEspacial.class
 com\tub\p10_gestao_pmd\controller\ControladorPublicacaoMensagem.class
@@ -121,6 +124,7 @@ com\tub\p10_gestao_pmd\repository\PrevisaoChegadaRepository.class
 com\tub\p7_relatorios\dto\DadosRelatorio.class
 com\tub\p10_gestao_pmd\model\Linha.class
 com\tub\p10_gestao_pmd\controller\ControladorTrajetosGeofencing.class
+com\tub\p8_gestao_bilhetica\service\DataLoader.class
 com\tub\p7_relatorios\dto\FicheiroPDF.class
 com\tub\p8_gestao_bilhetica\controller\ControladorSincronizacaoGlobal.class
 com\tub\p3_integracao_externa\adapter\AdaptadorAutenticacaoGov.class
@@ -130,5 +134,6 @@ com\tub\p11_gestao_alertas\service\ProcessadorTriagemAlertas.class
 com\tub\p6_auditoria\repository\ConfiguracaoNotificacoesRepository.class
 com\tub\p5_lotacao\model\Viatura.class
 com\tub\p10_gestao_pmd\model\EventoPMD.class
+com\tub\p8_gestao_bilhetica\repository\ConfiguracaoIntegracaoRepository.class
 com\tub\p12_kpis_operacionais\model\ResumoEstadoOperacao.class
 com\tub\p10_gestao_pmd\repository\PublicacaoPMDRepository.class

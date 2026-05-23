@@ -3,8 +3,10 @@ package com.tub.config;
 import com.tub.p10_gestao_pmd.model.DisplayPanel;
 import com.tub.p10_gestao_pmd.model.Linha;
 import com.tub.p10_gestao_pmd.model.Viatura;
+import com.tub.p10_gestao_pmd.model.PainelPMD;
 import com.tub.p10_gestao_pmd.model.CatalogoMensagensRapidas;
 import com.tub.p10_gestao_pmd.repository.DisplayPanelRepository;
+import com.tub.p10_gestao_pmd.repository.PainelPMDRepository;
 import com.tub.p10_gestao_pmd.repository.CatalogoMensagensRapidasRepository;
 
 import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
@@ -44,6 +46,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
     private final LinhaRepository linhaRepository;
     private final ViaturasRepository viaturasRepository;
     private final DisplayPanelRepository displayPanelRepository;
+    private final PainelPMDRepository painelPMDRepository;
     private final PoliticasAuditoriaRepository politicasAuditoriaRepository;
     private final RegistoAuditoriaRepository registoAuditoriaRepository;
     private final LoteDadosBilheticaRepository loteDadosBilheticaRepository;
@@ -58,6 +61,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             LinhaRepository linhaRepository,
             ViaturasRepository viaturasRepository,
             DisplayPanelRepository displayPanelRepository,
+            PainelPMDRepository painelPMDRepository,
             PoliticasAuditoriaRepository politicasAuditoriaRepository,
             RegistoAuditoriaRepository registoAuditoriaRepository,
             LoteDadosBilheticaRepository loteDadosBilheticaRepository,
@@ -71,6 +75,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         this.linhaRepository = linhaRepository;
         this.viaturasRepository = viaturasRepository;
         this.displayPanelRepository = displayPanelRepository;
+        this.painelPMDRepository = painelPMDRepository;
         this.politicasAuditoriaRepository = politicasAuditoriaRepository;
         this.registoAuditoriaRepository = registoAuditoriaRepository;
         this.loteDadosBilheticaRepository = loteDadosBilheticaRepository;
@@ -265,6 +270,29 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
                     LocalDateTime.now()
             ));
         }
+
+        if (painelPMDRepository.count() == 0) {
+            painelPMDRepository.save(criarPainelPMDEntidade(1L, "PMD-001", "Avenida Central", "Avenida Central", "Centro", 41.5518, -8.4229, "ONLINE"));
+            painelPMDRepository.save(criarPainelPMDEntidade(2L, "PMD-002", "Universidade do Minho", "Gualtar", "Gualtar", 41.5612, -8.3978, "ONLINE"));
+            painelPMDRepository.save(criarPainelPMDEntidade(3L, "PMD-003", "Hospital de Braga", "Hospital", "Hospital", 41.5683, -8.3995, "DEGRADADO"));
+            painelPMDRepository.save(criarPainelPMDEntidade(4L, "PMD-004", "Estação CP", "Estação CP", "Estação", 41.5492, -8.4344, "ONLINE"));
+            painelPMDRepository.save(criarPainelPMDEntidade(5L, "PMD-005", "Bom Jesus", "Bom Jesus", "Tenões", 41.5546, -8.3775, "OFFLINE"));
+        }
+    }
+
+    private PainelPMD criarPainelPMDEntidade(Long id, String codigo, String nome, String localizacao, String zona, Double lat, Double lng, String estado) {
+        PainelPMD p = new PainelPMD();
+        p.setId(id);
+        p.setCodigo(codigo);
+        p.setNome(nome);
+        p.setLocalizacao(localizacao);
+        p.setZona(zona);
+        p.setLatitude(lat);
+        p.setLongitude(lng);
+        p.setEstado(estado);
+        p.setAtivo(true);
+        p.setUltimaAtualizacao(LocalDateTime.now());
+        return p;
     }
 
     private void criarDadosBilhetica() {
