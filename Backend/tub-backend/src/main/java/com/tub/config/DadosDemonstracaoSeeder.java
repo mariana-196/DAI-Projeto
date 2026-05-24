@@ -97,6 +97,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         criarLotacaoEAlertas();
         criarConfiguracaoIntegracao();
         criarCatalogoMensagensRapidas();
+        criarDadosBilhetica();
 
         System.out.println("Dados de demonstração M5 carregados com sucesso.");
     }

@@ -40,8 +40,9 @@ public class ImportadorCSV {
         lote.setEstado(EstadoSincronizacao.PROCESSADO);
         loteRepository.save(lote);
 
-        // Obter ou criar uma linha por defeito
-        Linha linha = linhaRepository.findAll().stream().findFirst().orElseGet(() -> {
+        // Obter todas as linhas do repositório para correspondência dinâmica
+        List<Linha> todasLinhas = linhaRepository.findAll();
+        Linha linhaDefeito = todasLinhas.stream().findFirst().orElseGet(() -> {
             Linha l = new Linha();
             l.setCodigo("L1");
             l.setNome("Linha Principal Braga");
@@ -67,8 +68,34 @@ public class ImportadorCSV {
                     try {
                         RegistoBilhetica registo = new RegistoBilhetica();
                         registo.setLote(lote);
+                        
+                        // 1. Procurar Linha correspondente se o código for fornecido na 6ª coluna
+                        Linha linha = linhaDefeito;
+                        if (data.length >= 6 && !data[5].trim().isEmpty()) {
+                            String codigoLinha = data[5].trim();
+                            linha = todasLinhas.stream()
+                                    .filter(l -> l.getCodigo().equalsIgnoreCase(codigoLinha))
+                                    .findFirst()
+                                    .orElse(linhaDefeito);
+                        }
                         registo.setLinha(linha);
-                        registo.setDataHora(LocalDateTime.now());
+
+                        // 2. Obter Data/Hora correspondente se fornecida na 7ª coluna
+                        LocalDateTime dataHora = LocalDateTime.now();
+                        if (data.length >= 7 && !data[6].trim().isEmpty()) {
+                            try {
+                                String dtStr = data[6].trim().replace(" ", "T");
+                                // Remover aspas se existirem
+                                if (dtStr.startsWith("\"") && dtStr.endsWith("\"")) {
+                                    dtStr = dtStr.substring(1, dtStr.length() - 1);
+                                }
+                                dataHora = LocalDateTime.parse(dtStr);
+                            } catch (Exception e) {
+                                // Fallback para a data/hora atual se o formato for inválido
+                            }
+                        }
+                        registo.setDataHora(dataHora);
+
                         registo.setParagemOrigem(data[0].trim());
                         registo.setLatitude(Double.parseDouble(data[1].trim()));
                         registo.setLongitude(Double.parseDouble(data[2].trim()));
