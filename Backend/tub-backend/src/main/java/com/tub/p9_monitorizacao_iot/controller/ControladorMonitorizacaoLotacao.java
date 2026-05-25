@@ -5,7 +5,7 @@ import com.tub.p3_integracao_externa.model.PassengerCount;
 import com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura;
 import com.tub.p9_monitorizacao_iot.repository.LotacaoViaturaRepository;
 import com.tub.p10_gestao_pmd.model.Viatura;
-import com.tub.p11_gestao_alertas.model.AlertaLotacao;
+import com.tub.p11_gestao_alertas.model.AlertaOperacional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +35,7 @@ public class ControladorMonitorizacaoLotacao {
     private com.tub.p8_gestao_bilhetica.service.ProcesadorArmazenamento procesadorArmazenamento;
 
     @Autowired
-    private com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository alertaLotacaoRepository;
+    private com.tub.p11_gestao_alertas.repository.AlertaOperacionalRepository alertaOperacionalRepository;
 
     private int passageirosAtual = 10;
     private boolean sinalAtivo = true;
@@ -117,21 +117,26 @@ public class ControladorMonitorizacaoLotacao {
 
             // Handle AlertaLotacao for critical occupancies (>= 70%)
             if (taxa >= 70.0) {
-                boolean alertaExiste = alertaLotacaoRepository.findAll().stream()
+                boolean alertaExiste = alertaOperacionalRepository.findAll().stream()
                         .anyMatch(a -> a.getViatura() != null && 
                                        a.getViatura().getId().equals(v.getId()) && 
                                        a.getEstado() != null && 
-                                       !a.getEstado().equalsIgnoreCase("RESOLVIDO"));
+                                       !a.getEstado().equalsIgnoreCase("RESOLVIDO") &&
+                                       "LOTACAO".equals(a.getTema()));
 
                 if (!alertaExiste) {
-                    AlertaLotacao novoAlerta = new AlertaLotacao(
+                    AlertaOperacional novoAlerta = new AlertaOperacional(
                             v,
                             estado.getLinha(),
+                            "Lotação Crítica (Sensor Móvel)",
+                            "LOTACAO",
                             "CRITICO",
                             "PENDENTE",
-                            "Lotação Crítica - Viatura #" + viaturaCodigo + " (Sensor Móvel) atingiu " + String.format("%.1f", taxa) + "% na " + estado.getLinha()
+                            "Lotação Crítica - Viatura #" + viaturaCodigo + " (Sensor Móvel) atingiu " + String.format("%.1f", taxa) + "% na " + estado.getLinha(),
+                            "Wavecom IoT",
+                            "Sensor Móvel - Taxa: " + String.format("%.1f", taxa) + "%. Passageiros: " + passageiros + "/" + capMax
                     );
-                    alertaLotacaoRepository.save(novoAlerta);
+                    alertaOperacionalRepository.save(novoAlerta);
                 }
             }
 

@@ -29,6 +29,218 @@
             display: inline-block;
             animation: spin 1.2s linear infinite;
         }
+
+        /* ── OPERATIONAL ALERTS CUSTOM STYLING ── */
+        .alert-item.theme-lotacao { border-left-color: var(--danger); }
+        .alert-item.theme-dms { border-left-color: var(--blue); }
+        .alert-item.theme-gps { border-left-color: #009688; }
+        .alert-item.theme-bilhetica { border-left-color: #9c27b0; }
+        .alert-item.theme-vehicle_iot { border-left-color: #ff9800; }
+        .alert-item.theme-operations { border-left-color: #607d8b; }
+        
+        .alert-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--t3);
+            margin-bottom: 6px;
+            align-items: center;
+        }
+        .alert-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .alert-meta .alert-origin-badge {
+            background: #E8F1FA;
+            color: var(--blue);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .alert-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .alert-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--blue);
+        }
+
+        /* MODAL DIALOGS STYLING */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(12, 42, 84, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .modal-container {
+            background: var(--card);
+            border-radius: 16px;
+            width: 800px;
+            max-width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(12, 42, 84, 0.15);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            animation: scaleUp 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--t1);
+            margin-top: 4px;
+        }
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--t3);
+            transition: color 0.15s;
+        }
+        .modal-close-btn:hover {
+            color: var(--danger);
+        }
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 24px;
+        }
+        .modal-left {
+            border-right: 1px solid var(--border);
+            padding-right: 24px;
+            max-height: 55vh;
+            overflow-y: auto;
+        }
+        .modal-right h3 {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--t3);
+            margin-bottom: 12px;
+        }
+        .modal-right h4 {
+            margin-bottom: 6px;
+            font-size: 11.5px;
+        }
+        .detail-section {
+            margin-bottom: 16px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .detail-desc {
+            font-size: 13.5px;
+            color: var(--t1);
+            line-height: 1.5;
+            background: var(--bg);
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .detail-text {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--navy);
+            background: var(--blue-light);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        .modal-action-box {
+            background: #FAFBFD;
+            border: 1.5px solid var(--border);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        /* VERTICAL TIMELINE */
+        .alert-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            padding-left: 20px;
+            margin-top: 16px;
+        }
+        .alert-timeline::before {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 6px;
+            bottom: 6px;
+            width: 2px;
+            background: var(--border);
+        }
+        .timeline-log {
+            position: relative;
+            font-size: 12.5px;
+            color: var(--t2);
+            line-height: 1.4;
+        }
+        .timeline-log::after {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            border: 2px solid var(--card);
+        }
+        .timeline-log.highlight::after {
+            background: var(--blue);
+        }
+        .timeline-log.success::after {
+            background: var(--success);
+        }
+        .timeline-log.warning::after {
+            background: var(--warn);
+        }
+        .timeline-log time {
+            font-weight: 600;
+            color: var(--t1);
+            display: block;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleUp {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -224,6 +436,86 @@
         </div>
     </div>
 
+    <!-- Alert Details & Actions Modal -->
+    <div id="alert-detail-modal" class="modal-backdrop" style="display:none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="modal-category-badge" class="badge">DMS</span>
+                    <h2 id="modal-title">Detalhe do Alerta</h2>
+                </div>
+                <button class="modal-close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-grid">
+                    <!-- Left Side: Timeline and Logs -->
+                    <div class="modal-left">
+                        <h3 style="font-size:14px; font-weight:700; color:var(--navy); margin-bottom:12px;">Linha Temporal & Histórico de Ações</h3>
+                        <div id="modal-timeline" class="alert-timeline">
+                            <!-- Timeline items will be loaded dynamically -->
+                        </div>
+                    </div>
+                    <!-- Right Side: Details & Actions -->
+                    <div class="modal-right">
+                        <div class="detail-section">
+                            <h4>Descrição Operacional</h4>
+                            <p id="modal-description" class="detail-desc">Carregando...</p>
+                        </div>
+                        
+                        <div class="detail-section grid-2">
+                            <div>
+                                <h4>Severidade</h4>
+                                <span id="modal-priority-badge" class="badge">CRÍTICO</span>
+                            </div>
+                            <div>
+                                <h4>Origem / Canal</h4>
+                                <span id="modal-origin" class="detail-text">Wavecom IoT</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-section grid-2" id="modal-association-section">
+                            <div>
+                                <h4>Viatura</h4>
+                                <span id="modal-viatura" class="detail-text">#101 (AA-10-TB)</span>
+                            </div>
+                            <div>
+                                <h4>Linha</h4>
+                                <span id="modal-linha" class="detail-text">Linha 43</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4>Metadados Técnicos (Telemetry)</h4>
+                            <div id="modal-tech-specs" class="pmd-screen" style="font-size:11.5px; font-family:monospace; word-break:break-all; line-height: 1.4; background:#0f172a; color:#38bdf8; padding:10px; border-radius:8px; border:1px solid #334155;">
+                                Sensor: OCC-101, Val: 92%
+                            </div>
+                        </div>
+
+                        <!-- Actions Form -->
+                        <div class="detail-section modal-action-box">
+                            <h4>Registrar Ação / Triagem CCO</h4>
+                            <div class="form-field" style="margin-bottom:12px;">
+                                <label for="modal-action-status" style="font-size:11px; font-weight:600; text-transform:uppercase; color:var(--t2); display:block; margin-bottom:4px;">Alterar Estado</label>
+                                <select id="modal-action-status" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border); font-family:'Outfit'; font-size:13px;">
+                                    <option value="PENDENTE">Pendente</option>
+                                    <option value="EM_TRATAMENTO">Em Análise</option>
+                                    <option value="RESOLVIDO">Resolvido</option>
+                                </select>
+                            </div>
+                            <div class="form-field" style="margin-bottom:12px;">
+                                <label for="modal-action-comment" style="font-size:11px; font-weight:600; text-transform:uppercase; color:var(--t2); display:block; margin-bottom:4px;">Nota de Resolução / Ação</label>
+                                <textarea id="modal-action-comment" placeholder="Descreva as medidas tomadas (ex: Piquete enviado, reinício de validador efetuado...)" rows="3" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border); font-family:'Outfit'; font-size:13px; resize:vertical;"></textarea>
+                            </div>
+                            <button id="modal-save-btn" class="btn btn-blue" style="width:100%; justify-content:center; padding:10px; font-size:13.5px; border-radius:8px; cursor:pointer;">
+                                Guardar Alterações & Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Leaflet MAP JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="shared/api.js"></script>
@@ -329,6 +621,116 @@
         let allAlerts = [];
         let typeFilter = 'ALL';
         let stateFilter = 'ALL';
+        let activeModalAlertId = null;
+
+        async function openAlertDetails(alertId) {
+            activeModalAlertId = alertId;
+            const modal = document.getElementById("alert-detail-modal");
+            modal.style.display = "flex";
+            
+            // Set placeholders
+            document.getElementById("modal-title").textContent = "Carregando Alerta...";
+            document.getElementById("modal-description").textContent = "Carregando...";
+            document.getElementById("modal-origin").textContent = "...";
+            document.getElementById("modal-viatura").textContent = "...";
+            document.getElementById("modal-linha").textContent = "...";
+            document.getElementById("modal-tech-specs").textContent = "...";
+            document.getElementById("modal-timeline").innerHTML = "<div class='empty-state'><p>Carregando histórico...</p></div>";
+            document.getElementById("modal-action-comment").value = "";
+            
+            try {
+                const a = await apiGet(`/api/alertas/${alertId}/detalhe`);
+                
+                document.getElementById("modal-title").textContent = a.titulo;
+                document.getElementById("modal-description").textContent = a.descricao;
+                document.getElementById("modal-origin").textContent = a.origem;
+                
+                const catBadge = document.getElementById("modal-category-badge");
+                catBadge.textContent = a.tema;
+                catBadge.className = `badge ${a.tema === 'LOTACAO' ? 'badge-red' : (a.tema === 'DMS' ? 'badge-blue' : (a.tema === 'GPS' ? 'badge-orange' : (a.tema === 'BILHETICA' ? 'badge-orange' : 'badge-gray')))}`;
+                
+                const prioBadge = document.getElementById("modal-priority-badge");
+                prioBadge.textContent = a.prioridade === 'ALTA' ? 'CRÍTICO' : 'MÉDIO';
+                prioBadge.className = `badge ${a.prioridade === 'ALTA' ? 'badge-red' : 'badge-orange'}`;
+                
+                if (a.viatura) {
+                    document.getElementById("modal-association-section").style.display = "grid";
+                    document.getElementById("modal-viatura").textContent = `#${a.viatura.codigo} (${a.viatura.matricula}) - ${a.viatura.modelo}`;
+                } else {
+                    document.getElementById("modal-association-section").style.display = "none";
+                }
+                document.getElementById("modal-linha").textContent = a.linha && a.linha !== 'N/A' ? a.linha : "N/A";
+                
+                document.getElementById("modal-tech-specs").textContent = a.infoAdicional || "Sem metadados adicionais";
+                
+                let statusVal = "PENDENTE";
+                if (a.estado === "Em Análise") statusVal = "EM_TRATAMENTO";
+                if (a.estado === "Resolvido") statusVal = "RESOLVIDO";
+                document.getElementById("modal-action-status").value = statusVal;
+                
+                const timeline = document.getElementById("modal-timeline");
+                timeline.innerHTML = "";
+                if (a.historico && a.historico.length > 0) {
+                    a.historico.forEach((log, idx) => {
+                        const div = document.createElement("div");
+                        let itemClass = "timeline-log";
+                        if (log.includes("Resolvido")) itemClass += " success";
+                        else if (log.includes("Em Análise") || log.includes("TRATAMENTO") || log.includes("alterado para")) itemClass += " warning";
+                        else if (idx === 0) itemClass += " highlight";
+                        
+                        let dateStr = "";
+                        let textStr = log;
+                        if (log.includes(" - ")) {
+                            const parts = log.split(" - ");
+                            dateStr = parts[0];
+                            textStr = parts.slice(1).join(" - ");
+                        }
+                        
+                        div.className = itemClass;
+                        div.innerHTML = `
+                            <time>${dateStr || a.timestamp.substring(0, 16).replace('T', ' ')}</time>
+                            <div>${textStr}</div>
+                        `;
+                        timeline.appendChild(div);
+                    });
+                } else {
+                    timeline.innerHTML = "<div class='empty-state'><p>Nenhum histórico disponível.</p></div>";
+                }
+            } catch (err) {
+                console.error("Erro ao carregar detalhes do alerta:", err);
+                document.getElementById("modal-title").textContent = "Erro de Conexão";
+                document.getElementById("modal-description").textContent = "Não foi possível carregar os detalhes do alerta do servidor.";
+            }
+        }
+
+        function closeModal() {
+            document.getElementById("alert-detail-modal").style.display = "none";
+            activeModalAlertId = null;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("modal-save-btn").addEventListener("click", async () => {
+                if (!activeModalAlertId) return;
+                const newStatus = document.getElementById("modal-action-status").value;
+                const comment = document.getElementById("modal-action-comment").value;
+                
+                try {
+                    const res = await apiPut(`/api/alertas/${activeModalAlertId}`, { 
+                        estado: newStatus,
+                        comentario: comment
+                    });
+                    
+                    if (res.status === 'Sucesso') {
+                        closeModal();
+                        loadAlerts();
+                    } else {
+                        alert("Erro ao gravar alterações: " + (res.mensagem || "Erro Desconhecido"));
+                    }
+                } catch (err) {
+                    alert("Erro ao gravar alterações: " + err);
+                }
+            });
+        });
 
         async function loadAlerts() {
             try {
@@ -378,7 +780,10 @@
             listContainer.innerHTML = "";
 
             const filtered = allAlerts.filter(a => {
-                const matchesType = typeFilter === 'ALL' || a.titulo.toUpperCase().includes(typeFilter);
+                const matchesType = typeFilter === 'ALL' || 
+                                    (a.tema && a.tema.toUpperCase() === typeFilter.toUpperCase()) || 
+                                    (a.titulo && a.titulo.toUpperCase().includes(typeFilter.toUpperCase())) ||
+                                    (typeFilter === 'LOTAÇÃO' && a.tema === 'LOTACAO');
                 const matchesState = stateFilter === 'ALL' || a.estado === stateFilter;
                 return matchesType && matchesState;
             });
@@ -391,26 +796,40 @@
             filtered.forEach(a => {
                 const isCritical = a.prioridade === 'ALTA';
                 const div = document.createElement("div");
-                div.className = `alert-item ${isCritical ? 'critical' : ''}`;
+                div.className = `alert-item theme-${(a.tema || 'operations').toLowerCase()} ${isCritical ? 'critical' : ''}`;
                 
+                let timeStr = "";
+                if (a.timestamp) {
+                    const datePart = a.timestamp.split("T");
+                    if (datePart.length > 1) {
+                        timeStr = datePart[1].substring(0, 5);
+                    } else {
+                        timeStr = a.timestamp.substring(11, 16);
+                    }
+                }
+
                 div.innerHTML = `
-                    <div class="alert-header">
+                    <div class="alert-meta" onclick="openAlertDetails(${a.id})">
+                        <span class="alert-origin-badge">${a.origem || 'CCO'}</span>
+                        <span>
+                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            ${timeStr || 'Recent'}
+                        </span>
+                        ${a.linha && a.linha !== 'N/A' ? `<span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>${a.linha}</span>` : ''}
+                    </div>
+                    <div class="alert-header" onclick="openAlertDetails(${a.id})">
                         <strong class="alert-title">${a.titulo}</strong>
                         <span class="badge ${a.estado === 'Pendente' ? 'badge-red' : (a.estado === 'Em Análise' ? 'badge-orange' : 'badge-green')}" style="margin-left:auto;">
                             ${a.estado}
                         </span>
                     </div>
-                    <p class="alert-desc">${a.descricao}</p>
+                    <p class="alert-desc" onclick="openAlertDetails(${a.id})">${a.descricao}</p>
                     <div class="alert-actions">
-                        <span style="font-size:11px; color:var(--t3)">Prioridade: ${a.prioridade}</span>
-                        <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
-                            <span style="font-size:12px; color:var(--t2)">Mudar Estado:</span>
-                            <select onchange="updateAlertStatus(${a.id}, this.value)">
-                                <option value="PENDENTE" ${a.estado === 'Pendente' ? 'selected' : ''}>Pendente</option>
-                                <option value="EM_TRATAMENTO" ${a.estado === 'Em Análise' ? 'selected' : ''}>Em Análise</option>
-                                <option value="RESOLVIDO" ${a.estado === 'Resolvido' ? 'selected' : ''}>Resolvido</option>
-                            </select>
-                        </div>
+                        <span style="font-size:11px; color:var(--t3)">Severidade: ${a.prioridade === 'ALTA' ? 'CRÍTICO' : 'MÉDIA'}</span>
+                        <button class="btn btn-outline btn-sm btn-icon" onclick="openAlertDetails(${a.id})" style="margin-left:auto; padding:4px 8px; font-size:11px; border-radius:6px; font-weight:600; display:flex; align-items:center; gap:4px;">
+                            Ver Detalhes & Histórico
+                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
                     </div>
                 `;
                 listContainer.appendChild(div);

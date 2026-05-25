@@ -20,8 +20,8 @@ import com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository;
 
 import com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura;
 import com.tub.p9_monitorizacao_iot.repository.LotacaoViaturaRepository;
-import com.tub.p11_gestao_alertas.model.AlertaLotacao;
-import com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository;
+import com.tub.p11_gestao_alertas.model.AlertaOperacional;
+import com.tub.p11_gestao_alertas.repository.AlertaOperacionalRepository;
 import com.tub.p8_gestao_bilhetica.model.ConfiguracaoIntegracao;
 import com.tub.p8_gestao_bilhetica.repository.ConfiguracaoIntegracaoRepository;
 
@@ -34,7 +34,7 @@ public class ProcesadorArmazenamento {
     private final LinhaRepository linhaRepository;
     private final ViaturasRepository viaturasRepository;
     private final LotacaoViaturaRepository lotacaoViaturaRepository;
-    private final AlertaLotacaoRepository alertaLotacaoRepository;
+    private final AlertaOperacionalRepository alertaOperacionalRepository;
     private final ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository;
 
     public ProcesadorArmazenamento(
@@ -44,7 +44,7 @@ public class ProcesadorArmazenamento {
             LinhaRepository linhaRepository,
             ViaturasRepository viaturasRepository,
             LotacaoViaturaRepository lotacaoViaturaRepository,
-            AlertaLotacaoRepository alertaLotacaoRepository,
+            AlertaOperacionalRepository alertaOperacionalRepository,
             ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository
     ) {
         this.loteRepository = loteRepository;
@@ -53,7 +53,7 @@ public class ProcesadorArmazenamento {
         this.linhaRepository = linhaRepository;
         this.viaturasRepository = viaturasRepository;
         this.lotacaoViaturaRepository = lotacaoViaturaRepository;
-        this.alertaLotacaoRepository = alertaLotacaoRepository;
+        this.alertaOperacionalRepository = alertaOperacionalRepository;
         this.configuracaoIntegracaoRepository = configuracaoIntegracaoRepository;
     }
 
@@ -214,21 +214,26 @@ public class ProcesadorArmazenamento {
 
             // Handle alert generation on exceeding pre-defined limits (>= 90%)
             if (taxa >= 90.0) {
-                boolean alertaExiste = alertaLotacaoRepository.findAll().stream()
+                boolean alertaExiste = alertaOperacionalRepository.findAll().stream()
                         .anyMatch(a -> a.getViatura() != null && 
                                        a.getViatura().getId().equals(v.getId()) && 
                                        a.getEstado() != null && 
-                                       !a.getEstado().equalsIgnoreCase("RESOLVIDO"));
+                                       !a.getEstado().equalsIgnoreCase("RESOLVIDO") &&
+                                       "LOTACAO".equals(a.getTema()));
 
                 if (!alertaExiste) {
-                    AlertaLotacao novoAlerta = new AlertaLotacao(
+                    AlertaOperacional novoAlerta = new AlertaOperacional(
                             v,
                             estado.getLinha(),
+                            "Lotação Crítica (IoT)",
+                            "LOTACAO",
                             "CRITICO",
                             "PENDENTE",
-                            "Lotação Crítica - Ocupação atingiu " + String.format("%.1f", taxa) + "% na " + estado.getLinha()
+                            "Lotação Crítica - Ocupação atingiu " + String.format("%.1f", taxa) + "% na " + estado.getLinha(),
+                            "Wavecom IoT",
+                            "Taxa: " + String.format("%.1f", taxa) + "%. Passageiros: " + novosPassageiros + "/" + capMax
                     );
-                    alertaLotacaoRepository.save(novoAlerta);
+                    alertaOperacionalRepository.save(novoAlerta);
                 }
             }
         }
