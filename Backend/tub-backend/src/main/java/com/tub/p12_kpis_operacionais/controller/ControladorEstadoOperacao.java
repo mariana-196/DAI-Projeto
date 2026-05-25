@@ -18,8 +18,9 @@ import com.tub.p8_gestao_bilhetica.model.ResultadoAnalitico;
 import com.tub.p8_gestao_bilhetica.service.MotorCalculoAnalitico;
 import com.tub.p10_gestao_pmd.model.DisplayPanel;
 import com.tub.p10_gestao_pmd.repository.DisplayPanelRepository;
-import com.tub.p11_gestao_alertas.model.AlertaLotacao;
-import com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository;
+import com.tub.p11_gestao_alertas.model.AlertaOperacional;
+import com.tub.p11_gestao_alertas.repository.AlertaOperacionalRepository;
+import org.springframework.http.ResponseEntity;
 
 
 @RestController
@@ -32,7 +33,7 @@ public class ControladorEstadoOperacao {
     private final MotorCalculoAnalitico analiseService;
     private final LotacaoViaturaRepository lotacaoViaturaRepository;
     private final DisplayPanelRepository displayPanelRepository;
-    private final AlertaLotacaoRepository alertaLotacaoRepository;
+    private final AlertaOperacionalRepository alertaOperacionalRepository;
 
     // CONSTRUTOR UNIFICADO (Resolve o conflito das dependências)
     public ControladorEstadoOperacao( ProcessadorTriagemAlertas alertCenterService, 
@@ -40,13 +41,13 @@ public class ControladorEstadoOperacao {
                                MotorCalculoAnalitico analiseService,
                                LotacaoViaturaRepository lotacaoViaturaRepository,
                                DisplayPanelRepository displayPanelRepository,
-                               AlertaLotacaoRepository alertaLotacaoRepository) {
+                               AlertaOperacionalRepository alertaOperacionalRepository) {
         this.alertCenterService = alertCenterService;
         this.dashboardService = dashboardService;
         this.analiseService = analiseService;
         this.lotacaoViaturaRepository = lotacaoViaturaRepository;
         this.displayPanelRepository = displayPanelRepository;
-        this.alertaLotacaoRepository = alertaLotacaoRepository;
+        this.alertaOperacionalRepository = alertaOperacionalRepository;
     }
 
     // --- LINHA 43: ANÁLISE DE RESULTADOS ---
@@ -80,27 +81,96 @@ public class ControladorEstadoOperacao {
 
     // --- LINHA 88: DETALHE DO ALERTA ---
     @GetMapping("/alertas/{id}/detalhe")
-    public ContextoAlerta getDetalheAlerta(@PathVariable Long id) {
-        List<String> historico = Arrays.asList(
-            "2023-10-27 10:00 - Gerado pelo Sistema",
-            "2023-10-27 10:15 - Prioridade atualizada por CCO"
-        );
-        return new ContextoAlerta(id, "Motor Sobreaquecido", "Viatura #405 a 105°C.", "Wavecom IoT", "ALTA", "Pendente", "Local: Variante", historico);
+    public ResponseEntity<?> getDetalheAlerta(@PathVariable Long id) {
+        Optional<AlertaOperacional> alertaOpt = alertaOperacionalRepository.findById(id);
+        if (alertaOpt.isPresent()) {
+            AlertaOperacional alerta = alertaOpt.get();
+            Map<String, Object> detalhe = new HashMap<>();
+            detalhe.put("id", alerta.getId());
+            detalhe.put("titulo", alerta.getTitulo());
+            detalhe.put("tema", alerta.getTema());
+            detalhe.put("descricao", alerta.getDescricao());
+            detalhe.put("origem", alerta.getOrigem());
+            detalhe.put("timestamp", alerta.getTimestamp().toString());
+            detalhe.put("prioridade", calcularPrioridade(alerta.getSeveridade()));
+            detalhe.put("estado", formatarEstado(alerta.getEstado()));
+            detalhe.put("infoAdicional", alerta.getInfoAdicional() != null ? alerta.getInfoAdicional() : "Sem metadados adicionais");
+            detalhe.put("linha", alerta.getLinha());
+            detalhe.put("historico", alerta.getHistorico());
+            
+            if (alerta.getViatura() != null) {
+                Map<String, Object> viatInfo = new HashMap<>();
+                viatInfo.put("codigo", alerta.getViatura().getCodigo());
+                viatInfo.put("matricula", alerta.getViatura().getMatricula());
+                viatInfo.put("modelo", alerta.getViatura().getModelo());
+                viatInfo.put("capacidadeMaxima", alerta.getViatura().getCapacidadeMaxima());
+                detalhe.put("viatura", viatInfo);
+            } else {
+                detalhe.put("viatura", null);
+            }
+            
+            return ResponseEntity.ok(detalhe);
+        }
+        return ResponseEntity.notFound().build();
     }
 
     // --- LINHA 86: GESTÃO/PERSISTÊNCIA DO ALERTA ---
     @PutMapping({"/alertas/{id}", "/alerts/{id}"})
-    public Map<String, String> atualizarAlerta(@PathVariable Long id, @RequestBody Map<String, String> dados) {
-        System.out.println("Alerta " + id + " atualizado para: " + dados.get("estado"));
-        Optional<AlertaLotacao> alertaOpt = alertaLotacaoRepository.findById(id);
-        if (alertaOpt.isPresent()) {
-            AlertaLotacao alerta = alertaOpt.get();
-            alerta.setEstado(dados.get("estado"));
-            alertaLotacaoRepository.save(alerta);
-        }
+    public ResponseEntity<Map<String, String>> atualizarAlerta(
+            @PathVariable Long id, 
+            @RequestBody Map<String, String> dados
+    ) {
+        String novoEstado = dados.get("estado");
+        String comentario = dados.get("comentario");
+        System.out.println("Alerta " + id + " atualizado para: " + novoEstado);
+        
+        Optional<AlertaOperacional> alertaOpt = alertaOperacionalRepository.findById(id);
         Map<String, String> res = new HashMap<>();
-        res.put("status", "Sucesso");
-        return res;
+        
+        if (alertaOpt.isPresent()) {
+            AlertaOperacional alerta = alertaOpt.get();
+            alerta.setEstado(novoEstado);
+            
+            String logMsg = "Estado alterado para " + formatarEstado(novoEstado) + " por Operador CCO.";
+            if (comentario != null && !comentario.trim().isEmpty()) {
+                logMsg += " Comentário: \"" + comentario.trim() + "\"";
+            }
+            alerta.adicionarLogHistorico(logMsg);
+            
+            alertaOperacionalRepository.save(alerta);
+            res.put("status", "Sucesso");
+            return ResponseEntity.ok(res);
+        }
+        
+        res.put("status", "Erro");
+        res.put("mensagem", "Alerta não encontrado.");
+        return ResponseEntity.status(404).body(res);
+    }
+
+    private String formatarEstado(String estado) {
+        if (estado == null) {
+            return "Indeterminado";
+        }
+        if (estado.equalsIgnoreCase("PENDENTE")) {
+            return "Pendente";
+        }
+        if (estado.equalsIgnoreCase("EM_TRATAMENTO")) {
+            return "Em Análise";
+        }
+        if (estado.equalsIgnoreCase("RESOLVIDO")) {
+            return "Resolvido";
+        }
+        return estado;
+    }
+
+    private String calcularPrioridade(String severidade) {
+        if (severidade == null) {
+            return "MEDIA";
+        }
+        if (severidade.equalsIgnoreCase("CRÍTICO") || severidade.equalsIgnoreCase("CRITICO")) {
+            return "ALTA";
+        }
+        return "MEDIA";
     }
 
     // --- AUXILIARES ---

@@ -33,8 +33,8 @@ import org.springframework.stereotype.Component;
 
 import com.tub.p9_monitorizacao_iot.repository.LotacaoViaturaRepository;
 import com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura;
-import com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository;
-import com.tub.p11_gestao_alertas.model.AlertaLotacao;
+import com.tub.p11_gestao_alertas.repository.AlertaOperacionalRepository;
+import com.tub.p11_gestao_alertas.model.AlertaOperacional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,7 +52,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
     private final LoteDadosBilheticaRepository loteDadosBilheticaRepository;
     private final RegistoBilheticaRepository registoBilheticaRepository;
     private final LotacaoViaturaRepository lotacaoViaturaRepository;
-    private final AlertaLotacaoRepository alertaLotacaoRepository;
+    private final AlertaOperacionalRepository alertaOperacionalRepository;
     private final ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository;
     private final CatalogoMensagensRapidasRepository catalogoMensagensRapidasRepository;
 
@@ -67,7 +67,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             LoteDadosBilheticaRepository loteDadosBilheticaRepository,
             RegistoBilheticaRepository registoBilheticaRepository,
             LotacaoViaturaRepository lotacaoViaturaRepository,
-            AlertaLotacaoRepository alertaLotacaoRepository,
+            AlertaOperacionalRepository alertaOperacionalRepository,
             ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository,
             CatalogoMensagensRapidasRepository catalogoMensagensRapidasRepository
     ) {
@@ -81,7 +81,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         this.loteDadosBilheticaRepository = loteDadosBilheticaRepository;
         this.registoBilheticaRepository = registoBilheticaRepository;
         this.lotacaoViaturaRepository = lotacaoViaturaRepository;
-        this.alertaLotacaoRepository = alertaLotacaoRepository;
+        this.alertaOperacionalRepository = alertaOperacionalRepository;
         this.configuracaoIntegracaoRepository = configuracaoIntegracaoRepository;
         this.catalogoMensagensRapidasRepository = catalogoMensagensRapidasRepository;
     }
@@ -443,44 +443,95 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             lotacaoViaturaRepository.save(lotacao);
 
             if (lotacao.getTaxaOcupacao() >= 70.0) {
-                AlertaLotacao alerta = new AlertaLotacao(
+                AlertaOperacional alerta = new AlertaOperacional(
                     v,
                     lotacao.getLinha(),
+                    "Lotação Crítica (IoT)",
+                    "LOTACAO",
                     "CRITICO",
                     "PENDENTE",
-                    "Lotação Crítica - Ocupação atingiu " + String.format("%.1f", lotacao.getTaxaOcupacao()) + "% na " + lotacao.getLinha()
+                    "Ocupação atingiu " + String.format("%.1f", lotacao.getTaxaOcupacao()) + "% na " + lotacao.getLinha() + " (Viatura #" + v.getCodigo() + ")",
+                    "IoT Sensores",
+                    "Sensor ID: SEN-OCC-" + v.getCodigo() + ", Limite: 70%, Passageiros: " + lotacao.getPassageirosAtuais() + "/" + (int)cap
                 );
-                alertaLotacaoRepository.save(alerta);
+                alertaOperacionalRepository.save(alerta);
             }
         }
 
-        // Garantir alertas para os casos de uso específicos (Lotação, Painel DMS, Perda de Sinal GPS)
-        // 1. Falha de painel DMS (associado à viatura 0 por conveniência de domínio)
-        alertaLotacaoRepository.save(new AlertaLotacao(
-            viaturas.get(0),
+        // Seeding de Alertas Operacionais de Alta Fidelidade (6 cenários realistas de CCO para Braga)
+        
+        // 1. Falha de painel DMS (Hospital de Braga)
+        AlertaOperacional dmsAlerta = new AlertaOperacional(
+            null, // Não associado a nenhuma viatura específica
             "N/A",
+            "Falha de Painel DMS",
+            "DMS",
             "CRITICO",
             "PENDENTE",
-            "Falha de painel DMS - Painel #3 (Hospital de Braga) está offline e sem sinal de rede"
-        ));
+            "Painel PMD-003 (Hospital de Braga) offline. Sem reporte de sinal celular ou resposta a ping remoto há mais de 30 minutos.",
+            "DMS Matriz",
+            "Painel ID: PMD-003, Localização: Hospital de Braga, IP: 10.12.188.103, Sinal celular: 0%"
+        );
+        alertaOperacionalRepository.save(dmsAlerta);
 
-        // 2. Perda de sinal GPS (viatura 106, que está com sinal inativo no demo)
-        alertaLotacaoRepository.save(new AlertaLotacao(
-            viaturas.get(viaturas.size() - 1),
+        // 2. Perda de sinal GPS / Rastreamento (Viatura #106)
+        AlertaOperacional gpsAlerta = new AlertaOperacional(
+            viaturas.get(viaturas.size() - 1), // Viatura #106
             "Linha 2",
+            "Perda de Sinal GPS",
+            "GPS",
             "CRITICO",
             "PENDENTE",
-            "Perda de sinal GPS - Viatura #106 (" + viaturas.get(viaturas.size() - 1).getMatricula() + ") sem reporte de telemetria há mais de 15 minutos"
-        ));
+            "Perda de sinal de telemetria da Viatura #106 sem reporte de telemetria há mais de 15 minutos.",
+            "GPS Telemetria",
+            "Viatura ID: 106, Matrícula: " + viaturas.get(viaturas.size() - 1).getMatricula() + ", Última Telemetria: 15 minutos atrás no Hospital de Braga"
+        );
+        alertaOperacionalRepository.save(gpsAlerta);
 
-        // 3. Outro alerta histórico/em análise
-        alertaLotacaoRepository.save(new AlertaLotacao(
-            viaturas.get(1),
-            "Linha 24",
+        // 3. Anomalia de Bilhética (Validador #12 na Viatura #101)
+        AlertaOperacional bilheticaAlerta = new AlertaOperacional(
+            viaturas.get(0), // Viatura #101
+            "Linha 43",
+            "Falha de Comunicação Validador",
+            "BILHETICA",
+            "MEDIA",
+            "PENDENTE",
+            "Validador #12 na viatura #101 está impedido de sincronizar as transações da tarde. Erro interno: GATEWAY_TIMEOUT.",
+            "Bilhética API",
+            "Validador ID: VAL-12, Viatura: #101, Transações em cache: 187, Firmware: v3.2.1-prod"
+        );
+        alertaOperacionalRepository.save(bilheticaAlerta);
+
+        // 4. Mecânico / Temperatura IoT (Viatura elétrica #105)
+        AlertaOperacional iotAlerta = new AlertaOperacional(
+            viaturas.get(4), // Viatura #105
+            "Linha 15",
+            "Temperatura Elevada Baterias",
+            "VEHICLE_IOT",
+            "CRITICO",
+            "PENDENTE",
+            "Alerta Crítico de Temperatura do Pack de Baterias. Viatura elétrica #105 com temperatura do bloco 3 acima de 98°C. Procedimento preventivo aconselhado.",
+            "Wavecom IoT",
+            "Viatura: #105 (eCitaro), Sensor: TEMP_BAT_B3, Leitura: 98.4°C, Limite Máx: 80.0°C"
+        );
+        alertaOperacionalRepository.save(iotAlerta);
+
+        // 5. Atraso Severo e Bloqueio de Via (Linha 7 - Arcada)
+        AlertaOperacional delayAlerta = new AlertaOperacional(
+            viaturas.get(1), // Viatura #102
+            "Linha 24", // Linha 24
+            "Atraso Severo Operacional",
+            "OPERATIONS",
             "MEDIA",
             "EM_TRATAMENTO",
-            "Atraso reportado de 8 minutos devido a tráfego intenso na Avenida Central."
-        ));
+            "Atraso grave acumulado de 18 minutos na Linha 24. Tráfego de intensidade extrema registado na Avenida Central e Arcada devido a acidente rodoviário de terceiros.",
+            "GPS Telemetria",
+            "Atraso acumulado: 18 min, Velocidade média do troço: 3.8 km/h, Tempo estimado de desimpedimento: 25 min"
+        );
+        // Seed some history logs to show actions taken for this "EM_TRATAMENTO" alert
+        delayAlerta.adicionarLogHistorico("Operador CCO (admin@tub.pt) alterou o estado para Em Análise.");
+        delayAlerta.adicionarLogHistorico("Nota CCO: Confirmado engarrafamento massivo na Arcada devido a colisão rodoviária. Polícia de Braga já no local.");
+        alertaOperacionalRepository.save(delayAlerta);
     }
 
     private void criarConfiguracaoIntegracao() {

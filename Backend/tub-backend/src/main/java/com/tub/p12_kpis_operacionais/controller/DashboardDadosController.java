@@ -6,8 +6,8 @@ import com.tub.p5_lotacao.repository.ViaturasRepository;
 import com.tub.p8_gestao_bilhetica.model.RegistoBilhetica;
 import com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository;
 
-import com.tub.p11_gestao_alertas.model.AlertaLotacao;
-import com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository;
+import com.tub.p11_gestao_alertas.model.AlertaOperacional;
+import com.tub.p11_gestao_alertas.repository.AlertaOperacionalRepository;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -23,23 +23,23 @@ public class DashboardDadosController {
 
     private final ViaturasRepository viaturasRepository;
     private final RegistoBilheticaRepository registoBilheticaRepository;
-    private final AlertaLotacaoRepository alertaLotacaoRepository;
+    private final AlertaOperacionalRepository alertaOperacionalRepository;
 
     public DashboardDadosController(
             ViaturasRepository viaturasRepository,
             RegistoBilheticaRepository registoBilheticaRepository,
-            AlertaLotacaoRepository alertaLotacaoRepository
+            AlertaOperacionalRepository alertaOperacionalRepository
     ) {
         this.viaturasRepository = viaturasRepository;
         this.registoBilheticaRepository = registoBilheticaRepository;
-        this.alertaLotacaoRepository = alertaLotacaoRepository;
+        this.alertaOperacionalRepository = alertaOperacionalRepository;
     }
 
     @GetMapping("/dashboard/kpis")
     public Map<String, Object> obterKpisDashboard() {
         List<Viatura> viaturas = viaturasRepository.findAll();
         List<RegistoBilhetica> registos = registoBilheticaRepository.findAll();
-        List<AlertaLotacao> alertas = alertaLotacaoRepository.findAll();
+        List<AlertaOperacional> alertas = alertaOperacionalRepository.findAll();
 
         long totalViaturas = viaturas.size();
         long viaturasAtivas = viaturas.stream()
@@ -75,26 +75,23 @@ public class DashboardDadosController {
 
     @GetMapping({"/alertas", "/alerts"})
     public List<Map<String, Object>> obterAlertasDashboard() {
-        List<AlertaLotacao> alertas = alertaLotacaoRepository.findAll();
+        List<AlertaOperacional> alertas = alertaOperacionalRepository.findAll();
         List<Map<String, Object>> resposta = new ArrayList<>();
 
-        for (AlertaLotacao alerta : alertas) {
+        for (AlertaOperacional alerta : alertas) {
             Map<String, Object> item = new HashMap<>();
 
             item.put("id", alerta.getId());
-            String desc = alerta.getDescricao() != null ? alerta.getDescricao().toLowerCase() : "";
-            String titulo = "Alerta Operacional";
-            if (desc.contains("lotação") || desc.contains("lotacao")) {
-                titulo = "Lotação Crítica (IoT)";
-            } else if (desc.contains("painel") || desc.contains("dms")) {
-                titulo = "Falha de Painel DMS";
-            } else if (desc.contains("gps") || desc.contains("sinal")) {
-                titulo = "Perda de Sinal GPS";
-            }
-            item.put("titulo", titulo);
+            item.put("titulo", alerta.getTitulo());
+            item.put("tema", alerta.getTema());
             item.put("estado", formatarEstado(alerta.getEstado()));
             item.put("descricao", alerta.getDescricao());
             item.put("prioridade", calcularPrioridade(alerta.getSeveridade()));
+            item.put("origem", alerta.getOrigem());
+            item.put("linha", alerta.getLinha());
+            item.put("timestamp", alerta.getTimestamp().toString());
+            item.put("viaturaId", alerta.getViatura() != null ? alerta.getViatura().getCodigo() : null);
+            item.put("matricula", alerta.getViatura() != null ? alerta.getViatura().getMatricula() : null);
 
             resposta.add(item);
         }
