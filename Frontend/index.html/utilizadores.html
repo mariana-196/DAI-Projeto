@@ -613,7 +613,7 @@
                     if (!password) { alert("Defina uma palavra-passe para o novo utilizador."); return; }
                     payload.password = password;
 
-                    const resp = await fetch("https://localhost:8443/api/utilizadores/guardar", {
+                    const resp = await fetch("http://localhost:8081/api/utilizadores/guardar", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -652,7 +652,7 @@
             if (!isAdmin) return;
             if (!confirm("Tem a certeza que deseja eliminar permanentemente este utilizador?")) return;
             try {
-                const resp = await fetch(`https://localhost:8443/api/utilizadores/${uId}`, {
+                const resp = await fetch(`http://localhost:8081/api/utilizadores/${uId}`, {
                     method: "DELETE",
                     headers: { "Authorization": "Bearer " + userToken }
                 });

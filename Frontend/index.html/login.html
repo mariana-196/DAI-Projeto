@@ -135,7 +135,7 @@
             document.getElementById("login-error-banner").style.display = "none";
 
             try {
-                const resp = await fetch("https://localhost:8443/api/auth/login", {
+                const resp = await fetch("http://localhost:8081/api/auth/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password })
@@ -176,7 +176,7 @@
             }
 
             try {
-                const resp = await fetch("https://localhost:8443/api/auth/login-gov", {
+                const resp = await fetch("http://localhost:8081/api/auth/login-gov", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, codigoGov })

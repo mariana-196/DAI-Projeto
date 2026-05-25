@@ -283,7 +283,7 @@
             const nivel = document.getElementById("filter-nivel").value;
             const modulo = document.getElementById("filter-modulo").value;
 
-            let url = "https://localhost:8443/api/auditoria/exportar";
+            let url = "http://localhost:8081/api/auditoria/exportar";
             const params = [];
             if (nivel) params.push(`nivel=${nivel}`);
             if (modulo) params.push(`modulo=${modulo}`);
