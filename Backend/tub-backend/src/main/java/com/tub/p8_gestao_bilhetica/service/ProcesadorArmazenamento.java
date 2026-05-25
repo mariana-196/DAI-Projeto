@@ -212,8 +212,8 @@ public class ProcesadorArmazenamento {
             estado.setUltimaAtualizacao(LocalDateTime.now());
             lotacaoViaturaRepository.save(estado);
 
-            // Handle alert generation on exceeding pre-defined limits (>= 70%)
-            if (taxa >= 70.0) {
+            // Handle alert generation on exceeding pre-defined limits (>= 90%)
+            if (taxa >= 90.0) {
                 boolean alertaExiste = alertaLotacaoRepository.findAll().stream()
                         .anyMatch(a -> a.getViatura() != null && 
                                        a.getViatura().getId().equals(v.getId()) && 
