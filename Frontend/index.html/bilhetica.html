@@ -458,9 +458,6 @@
             try {
                 const response = await fetch("http://localhost:8081/api/bilhetica/importar", {
                     method: "POST",
-                    headers: {
-                        "Authorization": "Bearer " + userToken
-                    },
                     body: formData
                 });
 

@@ -6,12 +6,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import com.tub.p1_autenticacao.annotation.RequerCargo;
-
 @RestController
 @RequestMapping("/api/regras-auditoria")
+// Esta anotação permite que o teu ecrã HTML consiga falar com o Java sem erros de bloqueio (CORS)
 @CrossOrigin(origins = "*") 
-@RequerCargo("ADMINISTRADOR")
 public class RegrasAuditoriaController {
 
     private final RegraNotificacaoRepository regraRepo;

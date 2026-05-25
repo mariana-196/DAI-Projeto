@@ -40,33 +40,22 @@ public class ControloConsultaAuditoria {
 
     public RegistoAuditoria guardarLog(RegistoAuditoria registo) {
         Objects.requireNonNull(registo, "O registo de auditoria não pode ser null");
-        try {
-            RegistoAuditoria logGuardado = registoAuditoriaRepository.save(registo);
-            
-            // Verifica se este log precisa de disparar algum alerta configurado
-            verificarEDispararAlertas(logGuardado);
-            
-            return logGuardado;
-        } catch (Exception e) {
-            System.err.println("Erro ao guardar log de auditoria: " + e.getMessage());
-            e.printStackTrace();
-            return registo;
-        }
+        RegistoAuditoria logGuardado = registoAuditoriaRepository.save(registo);
+        
+        // Verifica se este log precisa de disparar algum alerta configurado
+        verificarEDispararAlertas(logGuardado);
+        
+        return logGuardado;
     }
 
     public void registar(String utilizador, String acao, String modulo, String ipOrigem, String nivel, String detalhe) {
-        try {
-            RegistoAuditoria registo = new RegistoAuditoria(
-                    utilizador, acao, modulo, ipOrigem, nivel, detalhe
-            );
-            RegistoAuditoria logGuardado = registoAuditoriaRepository.save(registo);
-            
-            // Verifica se este log precisa de disparar algum alerta configurado
-            verificarEDispararAlertas(logGuardado);
-        } catch (Exception e) {
-            System.err.println("Erro ao registar log de auditoria: " + e.getMessage());
-            e.printStackTrace();
-        }
+        RegistoAuditoria registo = new RegistoAuditoria(
+                utilizador, acao, modulo, ipOrigem, nivel, detalhe
+        );
+        RegistoAuditoria logGuardado = registoAuditoriaRepository.save(registo);
+        
+        // Verifica se este log precisa de disparar algum alerta configurado
+        verificarEDispararAlertas(logGuardado);
     }
 
     /**

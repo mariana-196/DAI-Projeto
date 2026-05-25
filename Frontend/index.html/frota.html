@@ -401,10 +401,7 @@
                 const url = `/api/geofencing/registar?viaturaId=${viaturaId}&nomeZona=${encodeURIComponent(nomeZona)}&tipoMovimento=${tipoMovimento}`;
                 
                 // Fetch directly
-                const response = await fetch(`http://localhost:8081${url}`, {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + userToken }
-                });
+                const response = await fetch(`http://localhost:8081${url}`, { method: 'POST' });
                 if (response.ok) {
                     // Success
                     loadGeofenceHistory();

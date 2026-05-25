@@ -39,11 +39,11 @@ public class ControloSegurancaAutenticacao {
         if (op.isEmpty()) {
             auditService.registar(
                     email,
-                    "LOGIN_FALHADO",
+                    "Falha de Autenticação",
                     "Autenticação",
                     "127.0.0.1",
                     "AVISO",
-                    "Utilizador não encontrado: " + email
+                    "Utilizador não encontrado"
             );
             return new ResultadoAutenticacao(false, "Credenciais inválidas ou conta desativada.", null, null);
         }
@@ -53,13 +53,13 @@ public class ControloSegurancaAutenticacao {
         if (!utilizador.isAtivo()) {
             auditService.registar(
                     email,
-                    "LOGIN_FALHADO",
+                    "Falha de Autenticação",
                     "Autenticação",
                     "127.0.0.1",
                     "AVISO",
-                    "Conta inativa ou bloqueada"
+                    "Utilizador inativo"
             );
-            return new ResultadoAutenticacao(false, "Conta bloqueada. Contacte o administrador.", null, null);
+            return new ResultadoAutenticacao(false, "Conta bloqueada por excesso de tentativas falhadas. Contacte o administrador.", null, null);
         }
 
         if (!utilizador.getPassword().equals(password)) {
@@ -72,25 +72,25 @@ public class ControloSegurancaAutenticacao {
 
                 auditService.registar(
                         email,
-                        "BLOQUEAR_UTILIZADOR",
+                        "Conta Bloqueada",
                         "Autenticação",
                         "127.0.0.1",
                         "AVISO",
-                        "Conta bloqueada automaticamente por excesso de tentativas falhadas"
+                        "Conta bloqueada por excesso de tentativas falhadas"
                 );
 
-                return new ResultadoAutenticacao(false, "Conta bloqueada. Contacte o administrador.", null, null);
+                return new ResultadoAutenticacao(false, "Conta bloqueada por excesso de tentativas falhadas. Contacte o administrador.", null, null);
             }
 
             utilizadorRepository.save(utilizador);
 
             auditService.registar(
                     email,
-                    "LOGIN_FALHADO",
+                    "Falha de Autenticação",
                     "Autenticação",
                     "127.0.0.1",
                     "AVISO",
-                    "Palavra-passe incorreta. Tentativa " + tentativas + " de 5"
+                    "Password incorreta. Tentativa " + tentativas + " de 5"
             );
 
             return new ResultadoAutenticacao(false, "Credenciais inválidas ou conta desativada.", null, null);
@@ -101,11 +101,11 @@ public class ControloSegurancaAutenticacao {
 
         auditService.registar(
                 email,
-                "LOGIN_SUCESSO",
+                "Início de Sessão",
                 "Autenticação",
                 "127.0.0.1",
                 "INFO",
-                "Login com sucesso por email e palavra-passe"
+                "Login com sucesso"
         );
 
         return criarSessao(utilizador, "Login com sucesso.");
@@ -117,11 +117,11 @@ public class ControloSegurancaAutenticacao {
         if (!autenticadoGov) {
             auditService.registar(
                     email,
-                    "LOGIN_FALHADO",
+                    "Falha de Autenticação Gov",
                     "Autenticação",
                     "127.0.0.1",
                     "AVISO",
-                    "Falha na autenticação via Autenticação.gov"
+                    "Falha na autenticação mockada via Autenticação.gov"
             );
             return new ResultadoAutenticacao(false, "Falha na autenticação via Autenticação.gov.", null, null);
         }
@@ -131,7 +131,7 @@ public class ControloSegurancaAutenticacao {
         if (op.isEmpty()) {
             auditService.registar(
                     email,
-                    "LOGIN_FALHADO",
+                    "Falha de Autenticação Gov",
                     "Autenticação",
                     "127.0.0.1",
                     "AVISO",
@@ -145,13 +145,13 @@ public class ControloSegurancaAutenticacao {
         if (!utilizador.isAtivo()) {
             auditService.registar(
                     email,
-                    "LOGIN_FALHADO",
+                    "Falha de Autenticação Gov",
                     "Autenticação",
                     "127.0.0.1",
                     "AVISO",
-                    "Conta inativa ou bloqueada"
+                    "Utilizador inativo"
             );
-            return new ResultadoAutenticacao(false, "Conta bloqueada. Contacte o administrador.", null, null);
+            return new ResultadoAutenticacao(false, "Conta bloqueada por excesso de tentativas falhadas. Contacte o administrador.", null, null);
         }
 
         utilizador.setTentativasFalhadas(0);
@@ -159,24 +159,18 @@ public class ControloSegurancaAutenticacao {
 
         auditService.registar(
                 email,
-                "LOGIN_SUCESSO",
+                "Início de Sessão Gov",
                 "Autenticação",
                 "127.0.0.1",
                 "INFO",
-                "Login com sucesso via Autenticação.gov"
+                "Login mockado com Autenticação.gov"
         );
 
         return criarSessao(utilizador, "Login com Autenticação.gov realizado com sucesso.");
     }
 
     private ResultadoAutenticacao criarSessao(RegistoUtilizador utilizador, String mensagem) {
-        long expMillis = 8 * 3600 * 1000L; // 8 hours
-        String token = com.tub.p1_autenticacao.util.JwtUtil.generateToken(
-                utilizador.getId(),
-                utilizador.getEmail(),
-                utilizador.getCargo(),
-                expMillis
-        );
+        String token = UUID.randomUUID().toString();
 
         SessaoAutenticada sessao = new SessaoAutenticada();
         sessao.setToken(token);
