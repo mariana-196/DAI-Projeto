@@ -6,8 +6,8 @@ import com.tub.p5_lotacao.repository.ViaturasRepository;
 import com.tub.p8_gestao_bilhetica.model.RegistoBilhetica;
 import com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository;
 
-import com.tub.p11_gestao_alertas.model.AlertaOperacional;
-import com.tub.p11_gestao_alertas.repository.AlertaOperacionalRepository;
+import com.tub.p11_gestao_alertas.model.AlertaLotacao;
+import com.tub.p11_gestao_alertas.repository.AlertaLotacaoRepository;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -23,16 +23,16 @@ public class DashboardDadosController {
 
     private final ViaturasRepository viaturasRepository;
     private final RegistoBilheticaRepository registoBilheticaRepository;
-    private final AlertaOperacionalRepository alertaOperacionalRepository;
+    private final AlertaLotacaoRepository alertaLotacaoRepository;
 
     public DashboardDadosController(
             ViaturasRepository viaturasRepository,
             RegistoBilheticaRepository registoBilheticaRepository,
-            AlertaOperacionalRepository alertaOperacionalRepository
+            AlertaLotacaoRepository alertaLotacaoRepository
     ) {
         this.viaturasRepository = viaturasRepository;
         this.registoBilheticaRepository = registoBilheticaRepository;
-        this.alertaOperacionalRepository = alertaOperacionalRepository;
+        this.alertaLotacaoRepository = alertaLotacaoRepository;
     }
 
     @GetMapping("/dashboard/kpis")
@@ -75,23 +75,26 @@ public class DashboardDadosController {
 
     @GetMapping({"/alertas", "/alerts"})
     public List<Map<String, Object>> obterAlertasDashboard() {
-        List<AlertaOperacional> alertas = alertaOperacionalRepository.findAll();
+        List<AlertaLotacao> alertas = alertaLotacaoRepository.findAll();
         List<Map<String, Object>> resposta = new ArrayList<>();
 
-        for (AlertaOperacional alerta : alertas) {
+        for (AlertaLotacao alerta : alertas) {
             Map<String, Object> item = new HashMap<>();
 
             item.put("id", alerta.getId());
-            item.put("titulo", alerta.getTitulo());
-            item.put("tema", alerta.getTema());
+            String desc = alerta.getDescricao() != null ? alerta.getDescricao().toLowerCase() : "";
+            String titulo = "Alerta Operacional";
+            if (desc.contains("lotação") || desc.contains("lotacao")) {
+                titulo = "Lotação Crítica (IoT)";
+            } else if (desc.contains("painel") || desc.contains("dms")) {
+                titulo = "Falha de Painel DMS";
+            } else if (desc.contains("gps") || desc.contains("sinal")) {
+                titulo = "Perda de Sinal GPS";
+            }
+            item.put("titulo", titulo);
             item.put("estado", formatarEstado(alerta.getEstado()));
             item.put("descricao", alerta.getDescricao());
             item.put("prioridade", calcularPrioridade(alerta.getSeveridade()));
-            item.put("origem", alerta.getOrigem());
-            item.put("linha", alerta.getLinha());
-            item.put("timestamp", alerta.getTimestamp().toString());
-            item.put("viaturaId", alerta.getViatura() != null ? alerta.getViatura().getCodigo() : null);
-            item.put("matricula", alerta.getViatura() != null ? alerta.getViatura().getMatricula() : null);
 
             resposta.add(item);
         }
