@@ -10,6 +10,8 @@ import com.tub.p11_gestao_alertas.model.AlertaOperacional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
+import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,9 +39,24 @@ public class ControladorMonitorizacaoLotacao {
     @Autowired
     private com.tub.p11_gestao_alertas.repository.AlertaOperacionalRepository alertaOperacionalRepository;
 
+    @Autowired
+    private HttpServletRequest request;
+
+    @Autowired
+    private ControloConsultaAuditoria auditService;
+
     private int passageirosAtual = 10;
     private boolean sinalAtivo = true;
     private final int CAPACIDADE_MAXIMA = 50;
+
+    private String getExecutorEmail() {
+        String email = (String) request.getAttribute("utilizador_email");
+        return email != null ? email : "Dispositivo/Sistema";
+    }
+
+    private String getExecutorIp() {
+        return request.getRemoteAddr();
+    }
 
     @GetMapping("/sincronizar")
     public ResponseEntity<List<PassengerCount>> sincronizarSensores() {
@@ -60,6 +77,19 @@ public class ControladorMonitorizacaoLotacao {
 
         if (this.passageirosAtual < 0) {
             this.passageirosAtual = 0;
+        }
+
+        try {
+            auditService.registar(
+                    getExecutorEmail(),
+                    "SINCRONIZAR_SENSORES",
+                    "Lotação",
+                    getExecutorIp(),
+                    "INFO",
+                    "Sincronização manual dos sensores de lotação acionada."
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao registar auditoria: " + e.getMessage());
         }
 
         return ResponseEntity.ok(contagens);
@@ -145,9 +175,35 @@ public class ControladorMonitorizacaoLotacao {
             resposta.put("viaturaId", viaturaCodigo);
             resposta.put("passageiros", passageiros);
             resposta.put("taxaOcupacao", taxa);
+
+            try {
+                auditService.registar(
+                        getExecutorEmail(),
+                        "ATUALIZAR_SENSOR_MOVEL",
+                        "Lotação",
+                        getExecutorIp(),
+                        "INFO",
+                        "Leitura de sensor móvel atualizada para viatura #" + viaturaCodigo + " (passageiros: " + passageiros + ", taxa: " + String.format("%.1f", taxa) + "%)."
+                );
+            } catch (Exception e) {
+                System.err.println("Erro ao registar auditoria: " + e.getMessage());
+            }
+
             return ResponseEntity.ok(resposta);
 
         } catch (Exception e) {
+            try {
+                auditService.registar(
+                        getExecutorEmail(),
+                        "ATUALIZAR_SENSOR_MOVEL",
+                        "Lotação",
+                        getExecutorIp(),
+                        "ERRO",
+                        "Falha ao processar dados de telemetria móvel: " + e.getMessage()
+                );
+            } catch (Exception ex) {
+                System.err.println("Erro ao registar auditoria: " + ex.getMessage());
+            }
             return ResponseEntity.internalServerError().body("Erro ao processar dados de telemetria móvel: " + e.getMessage());
         }
     }

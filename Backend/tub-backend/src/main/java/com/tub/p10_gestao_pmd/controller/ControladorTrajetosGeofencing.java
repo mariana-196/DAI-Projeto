@@ -5,6 +5,8 @@ import com.tub.p10_gestao_pmd.repository.EventoGeograficoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
+import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +22,21 @@ public class ControladorTrajetosGeofencing {
 
     @Autowired
     private EventoGeograficoRepository eventoRepository;
+
+    @Autowired
+    private HttpServletRequest request;
+
+    @Autowired
+    private ControloConsultaAuditoria auditService;
+
+    private String getExecutorEmail() {
+        String email = (String) request.getAttribute("utilizador_email");
+        return email != null ? email : "Dispositivo/Sistema";
+    }
+
+    private String getExecutorIp() {
+        return request.getRemoteAddr();
+    }
 
     /**
      * Regista quando um autocarro entra ou sai de uma zona no mapa
@@ -39,6 +56,20 @@ public class ControladorTrajetosGeofencing {
         novoEvento.setTimestamp(LocalDateTime.now());
 
         EventoGeografico eventoGuardado = eventoRepository.save(novoEvento);
+
+        try {
+            auditService.registar(
+                    getExecutorEmail(),
+                    "EVENTO_GEOFENCING",
+                    "Frota",
+                    getExecutorIp(),
+                    "INFO",
+                    "Movimento geográfico registado para viatura #" + viaturaId + ": " + tipoMovimento + " na zona " + nomeZona
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao registar auditoria: " + e.getMessage());
+        }
+
         return ResponseEntity.ok(eventoGuardado);
     }
 

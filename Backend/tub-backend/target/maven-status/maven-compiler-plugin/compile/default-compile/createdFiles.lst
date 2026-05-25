@@ -2,15 +2,16 @@ com\tub\p7_relatorios\service\MotorGrafico.class
 com\tub\p6_auditoria\controller\RegrasAuditoriaController.class
 com\tub\p10_gestao_pmd\model\DisplayPanel.class
 com\tub\p10_gestao_pmd\repository\AgendamentoPMDRepository.class
+com\tub\p1_autenticacao\annotation\RequerCargo.class
 com\tub\p5_lotacao\service\VerificacaoLotacaoWorker.class
 com\tub\p8_gestao_bilhetica\service\ConnectionService.class
 com\tub\p11_gestao_alertas\model\AlertaUnificado.class
 com\tub\p7_relatorios\model\TarefaAgendada.class
 com\tub\p10_gestao_pmd\repository\EventoGeograficoRepository.class
 com\tub\p8_gestao_bilhetica\repository\LoteDadosBilheticaRepository.class
-com\tub\p11_gestao_alertas\repository\AlertaLotacaoRepository.class
 com\tub\p10_gestao_pmd\repository\DisplayPanelRepository.class
 com\tub\p10_gestao_pmd\model\PainelPMD.class
+com\tub\p1_autenticacao\config\WebConfig.class
 com\tub\p8_gestao_bilhetica\service\SincronizacaoAgendadorService.class
 com\tub\p8_gestao_bilhetica\model\RelatorioExportacao.class
 com\tub\p7_relatorios\service\ControloAnonimizacao.class
@@ -36,7 +37,6 @@ com\tub\p6_auditoria\repository\PoliticasAuditoriaRepository.class
 com\tub\p1_autenticacao\controller\ControladorAcessos.class
 com\tub\p6_auditoria\model\RegistoAuditoria.class
 com\tub\p10_gestao_pmd\model\CatalogoMensagensRapidas.class
-com\tub\p11_gestao_alertas\model\AlertaLotacao.class
 com\tub\p12_kpis_operacionais\controller\DashboardDadosController.class
 com\tub\p8_gestao_bilhetica\model\MetricaIngestao.class
 com\tub\p10_gestao_pmd\service\PrevisoesWorker.class
@@ -84,8 +84,11 @@ com\tub\p8_gestao_bilhetica\controller\ControladorDashboard.class
 com\tub\p8_gestao_bilhetica\service\ImportadorCSV.class
 com\tub\p2_dados_utilizador\repository\RegistoUtilizadorRepository.class
 com\tub\p8_gestao_bilhetica\service\MotorInferenciaEspacial.class
+com\tub\p11_gestao_alertas\model\AlertaOperacional.class
+com\tub\p11_gestao_alertas\repository\AlertaOperacionalRepository.class
 com\tub\p10_gestao_pmd\controller\ControladorPublicacaoMensagem.class
 com\tub\p1_autenticacao\controller\ControladorAcessos$LoginResponse.class
+com\tub\p1_autenticacao\util\JwtUtil.class
 com\tub\p11_gestao_alertas\model\ContextoAlerta.class
 com\tub\p10_gestao_pmd\model\EventoGeografico.class
 com\tub\p4_gestao_utilizadores\controller\ControladorAdministracaoContas.class
@@ -123,6 +126,7 @@ com\tub\p10_gestao_pmd\repository\MensagemPMDRepository.class
 com\tub\p10_gestao_pmd\repository\PrevisaoChegadaRepository.class
 com\tub\p7_relatorios\dto\DadosRelatorio.class
 com\tub\p10_gestao_pmd\model\Linha.class
+com\tub\p1_autenticacao\interceptor\SecurityInterceptor.class
 com\tub\p10_gestao_pmd\controller\ControladorTrajetosGeofencing.class
 com\tub\p8_gestao_bilhetica\service\DataLoader.class
 com\tub\p7_relatorios\dto\FicheiroPDF.class

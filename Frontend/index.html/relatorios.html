@@ -272,6 +272,20 @@
             }
         }
 
+        if (userRole !== "ADMINISTRADOR") {
+            const cards = document.querySelectorAll(".col-7-5 > .card");
+            if (cards.length >= 3) {
+                cards[1].style.display = "none";
+                cards[2].style.display = "none";
+            }
+
+            const selectTipo = document.getElementById("rep-tipo-select");
+            if (selectTipo) {
+                const optAuditoria = selectTipo.querySelector('option[value="auditoria"]');
+                if (optAuditoria) optAuditoria.remove();
+            }
+        }
+
         document.getElementById("btn-logout").addEventListener("click", () => {
             sessionStorage.clear();
             window.location.href = "login.html";
@@ -320,7 +334,9 @@
         }
 
         // Carrega inicialmente os agendamentos ao abrir a página
-        carregarAgendamentos();
+        if (userRole === "ADMINISTRADOR") {
+            carregarAgendamentos();
+        }
 
         // Submeter novo agendamento
         document.getElementById("btn-salvar-agendamento").addEventListener("click", async () => {

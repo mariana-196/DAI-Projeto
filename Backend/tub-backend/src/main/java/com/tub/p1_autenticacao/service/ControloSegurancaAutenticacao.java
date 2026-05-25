@@ -170,7 +170,13 @@ public class ControloSegurancaAutenticacao {
     }
 
     private ResultadoAutenticacao criarSessao(RegistoUtilizador utilizador, String mensagem) {
-        String token = UUID.randomUUID().toString();
+        long expMillis = 8 * 3600 * 1000L; // 8 hours
+        String token = com.tub.p1_autenticacao.util.JwtUtil.generateToken(
+                utilizador.getId(),
+                utilizador.getEmail(),
+                utilizador.getCargo(),
+                expMillis
+        );
 
         SessaoAutenticada sessao = new SessaoAutenticada();
         sessao.setToken(token);

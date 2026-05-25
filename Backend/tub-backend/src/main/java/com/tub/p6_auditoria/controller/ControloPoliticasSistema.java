@@ -4,9 +4,12 @@ import com.tub.p6_auditoria.model.EntidadeConfiguracoesAuditoria;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.tub.p1_autenticacao.annotation.RequerCargo;
+
 @RestController("controladorPoliticasSistema")
 @RequestMapping("/api/auditoria/politicas")
 @CrossOrigin(origins = "*")
+@RequerCargo("ADMINISTRADOR")
 public class ControloPoliticasSistema {
 
     private final com.tub.p6_auditoria.service.ControloPoliticasSistema auditPolicyService;

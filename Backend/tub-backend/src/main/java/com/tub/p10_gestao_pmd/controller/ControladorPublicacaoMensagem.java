@@ -11,6 +11,8 @@ import com.tub.p10_gestao_pmd.service.PainelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
+import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 
 import java.time.LocalDateTime;
 import java.time.Duration;
@@ -33,6 +35,21 @@ public class ControladorPublicacaoMensagem {
     @Autowired
     private CatalogoMensagensRapidasRepository modelosRepository;
 
+    @Autowired
+    private HttpServletRequest request;
+
+    @Autowired
+    private ControloConsultaAuditoria auditService;
+
+    private String getExecutorEmail() {
+        String email = (String) request.getAttribute("utilizador_email");
+        return email != null ? email : "Sistema";
+    }
+
+    private String getExecutorIp() {
+        return request.getRemoteAddr();
+    }
+
     /**
      * Publica uma mensagem em tempo real.
      */
@@ -52,11 +69,48 @@ public class ControladorPublicacaoMensagem {
                 painelService.publicarMensagemNumPainel(panelId, message);
             }
 
+            try {
+                auditService.registar(
+                        getExecutorEmail(),
+                        "ATUALIZAR_PAINEL",
+                        "Painéis PMD/DMS",
+                        getExecutorIp(),
+                        "INFO",
+                        "Mensagem publicada em tempo real no painel " + panelId + ": \"" + message + "\""
+                );
+            } catch (Exception e) {
+                System.err.println("Erro ao registar auditoria: " + e.getMessage());
+            }
+
             return ResponseEntity.ok("{\"resultado\": \"Mensagem publicada e guardada na BD com sucesso!\"}");
 
         } catch (IllegalStateException | IllegalArgumentException e) {
+            try {
+                auditService.registar(
+                        getExecutorEmail(),
+                        "ATUALIZAR_PAINEL",
+                        "Painéis PMD/DMS",
+                        getExecutorIp(),
+                        "ERRO",
+                        "Falha ao publicar mensagem em tempo real: " + e.getMessage()
+                );
+            } catch (Exception ex) {
+                System.err.println("Erro ao registar auditoria: " + ex.getMessage());
+            }
             return ResponseEntity.badRequest().body("{\"erro\": \"" + e.getMessage() + "\"}");
         } catch (Exception e) {
+            try {
+                auditService.registar(
+                        getExecutorEmail(),
+                        "ATUALIZAR_PAINEL",
+                        "Painéis PMD/DMS",
+                        getExecutorIp(),
+                        "ERRO",
+                        "Erro interno ao publicar mensagem em tempo real"
+                );
+            } catch (Exception ex) {
+                System.err.println("Erro ao registar auditoria: " + ex.getMessage());
+            }
             return ResponseEntity.internalServerError().body("{\"erro\": \"Erro ao processar o pedido no servidor.\"}");
         }
     }
@@ -115,9 +169,34 @@ public class ControladorPublicacaoMensagem {
             tarefa.setConcluida(false);
             tarefasRepository.save(tarefa);
 
+            try {
+                auditService.registar(
+                        getExecutorEmail(),
+                        "ATUALIZAR_PAINEL",
+                        "Painéis PMD/DMS",
+                        getExecutorIp(),
+                        "INFO",
+                        "Mensagem agendada para o painel " + panelId + " na data/hora " + dataHora + ": \"" + conteudo + "\""
+                );
+            } catch (Exception e) {
+                System.err.println("Erro ao registar auditoria: " + e.getMessage());
+            }
+
             return ResponseEntity.ok("{\"status\": \"Sucesso\", \"mensagem\": \"Mensagem agendada com sucesso!\"}");
 
         } catch (Exception e) {
+            try {
+                auditService.registar(
+                        getExecutorEmail(),
+                        "ATUALIZAR_PAINEL",
+                        "Painéis PMD/DMS",
+                        getExecutorIp(),
+                        "ERRO",
+                        "Falha ao agendar mensagem para painel: " + e.getMessage()
+                );
+            } catch (Exception ex) {
+                System.err.println("Erro ao registar auditoria: " + ex.getMessage());
+            }
             return ResponseEntity.badRequest().body("{\"erro\": \"Erro ao processar agendamento: " + e.getMessage() + "\"}");
         }
     }
@@ -174,8 +253,34 @@ public class ControladorPublicacaoMensagem {
                 mensagemRepository.save(msg);
             }
             tarefasRepository.delete(tarefa);
+
+            try {
+                auditService.registar(
+                        getExecutorEmail(),
+                        "ATUALIZAR_PAINEL",
+                        "Painéis PMD/DMS",
+                        getExecutorIp(),
+                        "INFO",
+                        "Agendamento de mensagem cancelado (Tarefa ID: " + id + ")"
+                );
+            } catch (Exception e) {
+                System.err.println("Erro ao registar auditoria: " + e.getMessage());
+            }
+
             return ResponseEntity.ok("{\"mensagem\": \"Agendamento cancelado com sucesso!\"}");
         } else {
+            try {
+                auditService.registar(
+                        getExecutorEmail(),
+                        "ATUALIZAR_PAINEL",
+                        "Painéis PMD/DMS",
+                        getExecutorIp(),
+                        "AVISO",
+                        "Tentativa de cancelar agendamento inexistente (Tarefa ID: " + id + ")"
+                );
+            } catch (Exception e) {
+                System.err.println("Erro ao registar auditoria: " + e.getMessage());
+            }
             return ResponseEntity.badRequest().body("{\"erro\": \"Agendamento não encontrado.\"}");
         }
     }

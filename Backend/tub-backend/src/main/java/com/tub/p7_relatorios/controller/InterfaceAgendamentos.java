@@ -6,12 +6,16 @@ import com.tub.p7_relatorios.service.ControloTarefasAutomaticas;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.tub.p1_autenticacao.annotation.RequerCargo;
+import jakarta.servlet.http.HttpServletRequest;
+import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/relatorios/agendamentos")
 @CrossOrigin(origins = "*")
+@RequerCargo("ADMINISTRADOR")
 public class InterfaceAgendamentos {
 
     @Autowired
@@ -19,6 +23,21 @@ public class InterfaceAgendamentos {
 
     @Autowired
     private TarefaAgendadaRepository tarefaRepository;
+
+    @Autowired
+    private HttpServletRequest request;
+
+    @Autowired
+    private ControloConsultaAuditoria auditService;
+
+    private String getExecutorEmail() {
+        String email = (String) request.getAttribute("utilizador_email");
+        return email != null ? email : "Sistema";
+    }
+
+    private String getExecutorIp() {
+        return request.getRemoteAddr();
+    }
 
     // Listar todos os agendamentos configurados
     @GetMapping
@@ -35,6 +54,20 @@ public class InterfaceAgendamentos {
         novoAgendamento.setDataHoraExecucao(java.time.LocalDateTime.now());
         novoAgendamento.setEstado("CONFIGURADO");
         TarefaAgendada salvo = tarefaRepository.save(novoAgendamento);
+
+        try {
+            auditService.registar(
+                    getExecutorEmail(),
+                    "ALTERAR_CONFIGURACAO",
+                    "Relatórios",
+                    getExecutorIp(),
+                    "INFO",
+                    "Agendamento de relatório configurado: " + salvo.getNomeTarefa() + " (Tipo: " + salvo.getTipoRelatorio() + ")"
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao registar auditoria: " + e.getMessage());
+        }
+
         return ResponseEntity.ok(salvo);
     }
 
@@ -43,6 +76,20 @@ public class InterfaceAgendamentos {
     @PostMapping("/executar-agora")
     public ResponseEntity<String> dispararTarefaManualmente() {
         controloTarefas.executarAgendamentoAutomatico();
+
+        try {
+            auditService.registar(
+                    getExecutorEmail(),
+                    "EXPORTAR_RELATORIO",
+                    "Relatórios",
+                    getExecutorIp(),
+                    "INFO",
+                    "Tarefa automática de geração de relatórios disparada manualmente."
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao registar auditoria: " + e.getMessage());
+        }
+
         return ResponseEntity.ok("Tarefa automática de relatórios disparada manualmente com sucesso!");
     }
 }

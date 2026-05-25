@@ -8,6 +8,8 @@ import com.tub.p10_gestao_pmd.service.PrevisaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
+import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 
 import java.util.List;
 
@@ -19,6 +21,21 @@ public class ControloPrevisao {
     @Autowired
     private PrevisaoService previsaoService;
 
+    @Autowired
+    private HttpServletRequest request;
+
+    @Autowired
+    private ControloConsultaAuditoria auditService;
+
+    private String getExecutorEmail() {
+        String email = (String) request.getAttribute("utilizador_email");
+        return email != null ? email : "Dispositivo/Sistema";
+    }
+
+    private String getExecutorIp() {
+        return request.getRemoteAddr();
+    }
+
     @PostMapping("/calcular")
     public ResponseEntity<PrevisaoChegada> processarNovaPrevisao(
             @RequestParam Long viaturaId, 
@@ -28,6 +45,20 @@ public class ControloPrevisao {
             @RequestParam int paragensRestantes) {
         
         PrevisaoChegada previsao = previsaoService.calcularEGuardarPrevisao(viaturaId, painelId, linhaId, destino, paragensRestantes);
+
+        try {
+            auditService.registar(
+                    getExecutorEmail(),
+                    "ATUALIZAR_PAINEL",
+                    "Painéis PMD/DMS",
+                    getExecutorIp(),
+                    "INFO",
+                    "Previsão de chegada atualizada para viatura #" + viaturaId + " no painel #" + painelId + " (Linha: " + linhaId + ", Destino: " + destino + ", Paragens restantes: " + paragensRestantes + ")."
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao registar auditoria: " + e.getMessage());
+        }
+
         return ResponseEntity.ok(previsao);
     }
 

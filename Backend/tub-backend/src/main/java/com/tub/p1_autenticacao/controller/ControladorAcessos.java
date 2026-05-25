@@ -4,6 +4,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.tub.p1_autenticacao.service.ControloSegurancaAutenticacao;
+import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
+import com.tub.p1_autenticacao.util.JwtUtil;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -11,8 +15,38 @@ import com.tub.p1_autenticacao.service.ControloSegurancaAutenticacao;
 public class ControladorAcessos {
 
     private final ControloSegurancaAutenticacao authService;
-    public ControladorAcessos(ControloSegurancaAutenticacao authService) {
+    private final ControloConsultaAuditoria auditService;
+
+    public ControladorAcessos(
+            ControloSegurancaAutenticacao authService,
+            ControloConsultaAuditoria auditService
+    ) {
         this.authService = authService;
+        this.auditService = auditService;
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7).trim();
+            Map<String, Object> claims = JwtUtil.parseToken(token);
+            if (claims != null) {
+                String email = (String) claims.get("email");
+                try {
+                    auditService.registar(
+                            email,
+                            "LOGOUT",
+                            "Autenticação",
+                            "127.0.0.1",
+                            "INFO",
+                            "Sessão encerrada com sucesso"
+                    );
+                } catch (Exception e) {
+                    System.err.println("Erro ao registar auditoria: " + e.getMessage());
+                }
+            }
+        }
+        return ResponseEntity.ok(Map.of("status", "Sucesso", "mensagem", "Sessão encerrada com sucesso"));
     }
 
     @PostMapping("/login")
@@ -28,10 +62,19 @@ public class ControladorAcessos {
             ));
         }
 
+        Map<String, Object> utilizadorSafe = null;
+        if (resultado.getUtilizador() != null) {
+            utilizadorSafe = new HashMap<>();
+            utilizadorSafe.put("id", resultado.getUtilizador().getId());
+            utilizadorSafe.put("nome", resultado.getUtilizador().getNome());
+            utilizadorSafe.put("email", resultado.getUtilizador().getEmail());
+            utilizadorSafe.put("cargo", resultado.getUtilizador().getCargo());
+        }
+
         return ResponseEntity.ok(new LoginResponse(
                 resultado.getMensagem(),
                 resultado.getToken(),
-                resultado.getUtilizador()
+                utilizadorSafe
         ));
     }
 
@@ -48,10 +91,19 @@ public class ControladorAcessos {
             ));
         }
 
+        Map<String, Object> utilizadorSafe = null;
+        if (resultado.getUtilizador() != null) {
+            utilizadorSafe = new HashMap<>();
+            utilizadorSafe.put("id", resultado.getUtilizador().getId());
+            utilizadorSafe.put("nome", resultado.getUtilizador().getNome());
+            utilizadorSafe.put("email", resultado.getUtilizador().getEmail());
+            utilizadorSafe.put("cargo", resultado.getUtilizador().getCargo());
+        }
+
         return ResponseEntity.ok(new LoginResponse(
                 resultado.getMensagem(),
                 resultado.getToken(),
-                resultado.getUtilizador()
+                utilizadorSafe
         ));
     }
 

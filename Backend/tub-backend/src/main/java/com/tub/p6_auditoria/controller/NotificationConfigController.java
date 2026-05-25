@@ -4,9 +4,12 @@ import com.tub.p6_auditoria.model.ConfiguracaoNotificacoes;
 import com.tub.p6_auditoria.service.NotificationConfigService;
 import org.springframework.web.bind.annotation.*;
 
+import com.tub.p1_autenticacao.annotation.RequerCargo;
+
 @RestController
 @RequestMapping("/api/auditoria/config-notificacoes")
 @CrossOrigin(origins = "*")
+@RequerCargo("ADMINISTRADOR")
 public class NotificationConfigController {
 
     private final NotificationConfigService notificationConfigService;
