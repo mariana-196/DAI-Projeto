@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8081";
+const API_BASE_URL = window.TUB_API_BASE_URL || "https://localhost:8443";
 
 function getHeaders() {
     const headers = {
