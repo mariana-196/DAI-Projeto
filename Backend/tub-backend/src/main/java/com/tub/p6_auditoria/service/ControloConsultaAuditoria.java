@@ -38,9 +38,90 @@ public class ControloConsultaAuditoria {
         );
     }
 
+    private String normalizarIp(String ip) {
+        if (ip == null) return "127.0.0.1";
+        if (ip.equals("0:0:0:0:0:0:0:1") || ip.equals("::1")) {
+            return "127.0.0.1";
+        }
+        return ip;
+    }
+
+    private String normalizarAcao(String acao) {
+        if (acao == null) return "Ação Desconhecida";
+        
+        String acaoUpper = acao.toUpperCase();
+        switch (acaoUpper) {
+            case "LOGIN_SUCESSO":
+            case "INÍCIO DE SESSÃO":
+                return "Início de Sessão";
+            case "LOGOUT":
+                return "Fim de Sessão";
+            case "FALHA DE AUTENTICAÇÃO":
+            case "FALHA_AUTENTICACAO":
+                return "Falha de Autenticação";
+            case "CONTA_BLOQUEADA":
+            case "CONTA BLOQUEADA":
+                return "Conta Bloqueada";
+            case "ACESSO_NEGADO":
+                return "Acesso Negado";
+            case "CRIAR_UTILIZADOR":
+                return "Criar Utilizador";
+            case "EDITAR_UTILIZADOR":
+                return "Editar Utilizador";
+            case "DESATIVAR_UTILIZADOR":
+                return "Desativar Utilizador";
+            case "ATIVAR_UTILIZADOR":
+                return "Ativar Utilizador";
+            case "ELIMINAR_UTILIZADOR":
+                return "Eliminar Utilizador";
+            case "SINCRONIZAR_BILHETICA":
+                return "Sincronização Bilhética";
+            case "IMPORTACAO_BILHETICA":
+                return "Importação Bilhética";
+            case "EXPORTAR_CSV":
+                return "Exportação(CSV)";
+            case "EXPORTAR_PDF":
+                return "Exportação(PDF)";
+            default:
+                if (acao.contains("_")) {
+                    String[] parts = acao.split("_");
+                    StringBuilder sb = new StringBuilder();
+                    for (String part : parts) {
+                        if (!part.isEmpty()) {
+                            sb.append(Character.toUpperCase(part.charAt(0)));
+                            if (part.length() > 1) {
+                                sb.append(part.substring(1).toLowerCase());
+                            }
+                            sb.append(" ");
+                        }
+                    }
+                    return sb.toString().trim();
+                }
+                
+                if (acao.equals(acaoUpper)) {
+                    StringBuilder sb = new StringBuilder();
+                    String[] parts = acao.split("\\s+");
+                    for (String part : parts) {
+                        if (!part.isEmpty()) {
+                            sb.append(Character.toUpperCase(part.charAt(0)));
+                            if (part.length() > 1) {
+                                sb.append(part.substring(1).toLowerCase());
+                            }
+                            sb.append(" ");
+                        }
+                    }
+                    return sb.toString().trim();
+                }
+                
+                return acao;
+        }
+    }
+
     public RegistoAuditoria guardarLog(RegistoAuditoria registo) {
         Objects.requireNonNull(registo, "O registo de auditoria não pode ser null");
         try {
+            registo.setAcao(normalizarAcao(registo.getAcao()));
+            registo.setIpOrigem(normalizarIp(registo.getIpOrigem()));
             RegistoAuditoria logGuardado = registoAuditoriaRepository.save(registo);
             
             // Verifica se este log precisa de disparar algum alerta configurado
@@ -57,7 +138,7 @@ public class ControloConsultaAuditoria {
     public void registar(String utilizador, String acao, String modulo, String ipOrigem, String nivel, String detalhe) {
         try {
             RegistoAuditoria registo = new RegistoAuditoria(
-                    utilizador, acao, modulo, ipOrigem, nivel, detalhe
+                    utilizador, normalizarAcao(acao), modulo, normalizarIp(ipOrigem), nivel, detalhe
             );
             RegistoAuditoria logGuardado = registoAuditoriaRepository.save(registo);
             
