@@ -7,10 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.beans.factory.annotation.Autowired;
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +23,6 @@ import com.tub.p8_gestao_bilhetica.service.GestorExtracao;
 import com.tub.p8_gestao_bilhetica.service.ProcessadorValidacao;
 import com.tub.p8_gestao_bilhetica.service.ProcesadorArmazenamento;
 import com.tub.p8_gestao_bilhetica.service.ImportadorCSV;
-import com.tub.p1_autenticacao.annotation.RequerCargo;
-import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 
 @RestController
 @RequestMapping("/api/bilhetica")
@@ -40,11 +35,6 @@ public class ControladorSincronizacaoGlobal {
     private final LoteDadosBilheticaRepository loteDadosBilheticaRepository;
     private final ProcesadorArmazenamento procesadorArmazenamento;
     private final ImportadorCSV importadorCSV;
-    private final ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository;
-    private final ControloConsultaAuditoria auditService;
-
-    @Autowired
-    private HttpServletRequest request;
 
     public ControladorSincronizacaoGlobal(
             ConnectionService connectionService,
@@ -52,9 +42,7 @@ public class ControladorSincronizacaoGlobal {
             ProcessadorValidacao processadorValidacao,
             LoteDadosBilheticaRepository loteDadosBilheticaRepository,
             ProcesadorArmazenamento procesadorArmazenamento,
-            ImportadorCSV importadorCSV,
-            ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository,
-            ControloConsultaAuditoria auditService
+            ImportadorCSV importadorCSV
     ) {
         this.connectionService = connectionService;
         this.gestorExtracao = gestorExtracao;
@@ -62,93 +50,13 @@ public class ControladorSincronizacaoGlobal {
         this.loteDadosBilheticaRepository = loteDadosBilheticaRepository;
         this.procesadorArmazenamento = procesadorArmazenamento;
         this.importadorCSV = importadorCSV;
-        this.configuracaoIntegracaoRepository = configuracaoIntegracaoRepository;
-        this.auditService = auditService;
-    }
-
-    private String getExecutorEmail() {
-        String email = (String) request.getAttribute("utilizador_email");
-        return email != null ? email : "Sistema";
-    }
-
-    private String getExecutorIp() {
-        return request.getRemoteAddr();
-    }
-
-    @GetMapping("/configuracao")
-    public ResponseEntity<?> obterConfiguracao() {
-        ConfiguracaoIntegracao config = configuracaoIntegracaoRepository.findAll().stream()
-                .findFirst()
-                .orElse(null);
-        if (config == null) {
-            config = new ConfiguracaoIntegracao();
-            config.setNome("Sincronização Padrão");
-            config.setEndpoint("http://localhost:8081/api/bilhetica/dados");
-            config.setAtiva(true);
-            config.setIntervaloMinutos(2);
-            configuracaoIntegracaoRepository.save(config);
-        }
-        return ResponseEntity.ok(config);
-    }
-
-    @PostMapping("/configuracao")
-    @RequerCargo("ADMINISTRADOR")
-    public ResponseEntity<?> atualizarConfiguracao(@RequestBody ConfiguracaoIntegracao novaConfig) {
-        ConfiguracaoIntegracao config = configuracaoIntegracaoRepository.findAll().stream()
-                .findFirst()
-                .orElse(null);
-        if (config == null) {
-            config = new ConfiguracaoIntegracao();
-            config.setNome("Sincronização Padrão");
-            config.setEndpoint("http://localhost:8081/api/bilhetica/dados");
-        }
-        config.setAtiva(novaConfig.getAtiva());
-        config.setIntervaloMinutos(novaConfig.getIntervaloMinutos());
-        config.setSimulacaoMaxEntradasSaidas(novaConfig.getSimulacaoMaxEntradasSaidas());
-        config.setSimulacaoMaxOcupacaoPercentual(novaConfig.getSimulacaoMaxOcupacaoPercentual());
-        configuracaoIntegracaoRepository.save(config);
-
-        auditService.registar(
-                getExecutorEmail(),
-                "ALTERAR_CONFIGURACAO",
-                "Bilhética",
-                getExecutorIp(),
-                "INFO",
-                "Configuração de sincronização e simulação de lotação alterada: ativa=" + config.getAtiva() +
-                ", intervalo=" + config.getIntervaloMinutos() + "m, maxDelta=" + config.getSimulacaoMaxEntradasSaidas() +
-                ", maxOcupacao=" + config.getSimulacaoMaxOcupacaoPercentual() + "%"
-        );
-
-        return ResponseEntity.ok(config);
     }
 
     @GetMapping("/sincronizar")
     public ResponseEntity<?> sincronizar() {
-        try {
-            List<Validation> dados = connectionService.obterDadosBilhetica();
-            LoteDadosBilhetica lote = procesadorArmazenamento.processarEGuardarSincronizacao(dados);
-            
-            auditService.registar(
-                    getExecutorEmail(),
-                    "SINCRONIZAR_BILHETICA",
-                    "Bilhética",
-                    getExecutorIp(),
-                    "INFO",
-                    "Sincronização manual de bilhética executada com sucesso. Lote ID: " + (lote != null ? lote.getId() : "N/A")
-            );
-            
-            return ResponseEntity.ok(lote != null ? List.of(lote) : List.of());
-        } catch (Exception e) {
-            auditService.registar(
-                    getExecutorEmail(),
-                    "SINCRONIZAR_BILHETICA",
-                    "Bilhética",
-                    getExecutorIp(),
-                    "ERRO",
-                    "Falha na sincronização manual de bilhética: " + e.getMessage()
-            );
-            return ResponseEntity.internalServerError().body(Map.of("erro", e.getMessage()));
-        }
+        List<Validation> dados = connectionService.obterDadosBilhetica();
+        LoteDadosBilhetica lote = procesadorArmazenamento.processarEGuardarSincronizacao(dados);
+        return ResponseEntity.ok(lote != null ? List.of(lote) : List.of());
     }
 
     @PostMapping(value = "/importar", consumes = {"multipart/form-data"})
@@ -164,26 +72,8 @@ public class ControladorSincronizacaoGlobal {
             Map<String, Object> resposta = new HashMap<>();
             resposta.put("registosImportados", total);
             resposta.put("mensagem", "Importação concluída com sucesso!");
-            
-            auditService.registar(
-                    getExecutorEmail(),
-                    "SINCRONIZAR_BILHETICA",
-                    "Bilhética",
-                    getExecutorIp(),
-                    "INFO",
-                    "Importação de ficheiro CSV de bilhética realizada com sucesso. Registos importados: " + total
-            );
-            
             return ResponseEntity.ok(resposta);
         } catch (Exception e) {
-            auditService.registar(
-                    getExecutorEmail(),
-                    "SINCRONIZAR_BILHETICA",
-                    "Bilhética",
-                    getExecutorIp(),
-                    "ERRO",
-                    "Falha na importação de ficheiro CSV de bilhética: " + e.getMessage()
-            );
             Map<String, String> erro = new HashMap<>();
             erro.put("erro", "Erro ao processar ficheiro: " + e.getMessage());
             return ResponseEntity.internalServerError().body(erro);

@@ -4,9 +4,6 @@ import com.tub.p7_relatorios.dto.DadosRelatorio;
 import com.tub.p7_relatorios.service.MotorGrafico;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import jakarta.servlet.http.HttpServletRequest;
-import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,24 +18,9 @@ public class ControloRelatorioOperacional {
 
     private final MotorGrafico motorGrafico;
 
-    @Autowired
-    private HttpServletRequest request;
-
-    @Autowired
-    private ControloConsultaAuditoria auditService;
-
     public ControloRelatorioOperacional(MotorGrafico motorGrafico) {
         this.motorGrafico = motorGrafico;
-    }
-
-    private String getExecutorEmail() {
-        String email = (String) request.getAttribute("utilizador_email");
-        return email != null ? email : "Sistema";
-    }
-
-    private String getExecutorIp() {
-        return request.getRemoteAddr();
-    }
+    }   
 
     @PostMapping
     public ResponseEntity<DadosRelatorio> gerarRelatorioOperacional(
@@ -78,15 +60,6 @@ public class ControloRelatorioOperacional {
                 LocalDateTime.now(),
                 "Operador TUB",
                 dados
-        );
-
-        auditService.registar(
-                getExecutorEmail(),
-                "CONSULTAR_RELATORIO",
-                "Relatórios",
-                getExecutorIp(),
-                "INFO",
-                "Relatório operacional consultado. Linha: " + linha + ", Veículo: " + veiculo + ", Paragem: " + paragem
         );
 
         return ResponseEntity.ok(relatorio);

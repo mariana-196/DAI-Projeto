@@ -279,7 +279,7 @@
         }
 
         // Export Logs to CSV
-        async function exportLogsCsv() {
+        function exportLogsCsv() {
             const nivel = document.getElementById("filter-nivel").value;
             const modulo = document.getElementById("filter-modulo").value;
 
@@ -292,39 +292,8 @@
                 url += "?" + params.join("&");
             }
 
-            try {
-                const response = await fetch(url, {
-                    method: "GET",
-                    headers: {
-                        "Authorization": "Bearer " + userToken
-                    }
-                });
-
-                if (response.status === 401) {
-                    sessionStorage.clear();
-                    window.location.href = "login.html";
-                    return;
-                }
-                if (response.status === 403) {
-                    alert("Acesso Negado: O seu perfil de acesso não tem permissão para realizar esta operação.");
-                    return;
-                }
-                if (!response.ok) {
-                    throw new Error("Erro ao gerar/descarregar ficheiro CSV.");
-                }
-
-                const blob = await response.blob();
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = downloadUrl;
-                a.download = "relatorio_auditoria_tub.csv";
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(downloadUrl);
-            } catch (err) {
-                alert("Erro ao exportar logs: " + err.message);
-            }
+            // Simple direct download link
+            window.open(url, "_blank");
         }
 
         // Load Policies

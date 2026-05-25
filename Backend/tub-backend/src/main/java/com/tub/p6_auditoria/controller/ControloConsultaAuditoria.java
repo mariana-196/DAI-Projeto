@@ -6,15 +6,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.tub.p1_autenticacao.annotation.RequerCargo;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController("controladorConsultaAuditoria")
 @RequestMapping("/api/auditoria")
 @CrossOrigin(origins = "*")
-@RequerCargo("ADMINISTRADOR")
 public class ControloConsultaAuditoria {
 
     private final com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService;
