@@ -103,37 +103,67 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
     }
 
     private void criarUtilizadores() {
-        if (utilizadorRepository.findByEmail("admin@tub.pt").isEmpty()) {
-            RegistoUtilizador admin = new RegistoUtilizador(
-                    "Administrador TUB",
-                    "admin@tub.pt",
-                    "1234",
-                    "ADMINISTRADOR"
-            );
-            utilizadorRepository.save(admin);
-        }
+        utilizadorRepository.findByEmail("admin@tub.pt").ifPresentOrElse(
+                admin -> {
+                    admin.setNome("Administrador TUB");
+                    admin.setPassword("1234");
+                    admin.setCargo("ADMINISTRADOR");
+                    admin.setAtivo(true);
+                    admin.setTentativasFalhadas(0);
+                    utilizadorRepository.save(admin);
+                },
+                () -> {
+                    RegistoUtilizador admin = new RegistoUtilizador(
+                            "Administrador TUB",
+                            "admin@tub.pt",
+                            "1234",
+                            "ADMINISTRADOR"
+                    );
+                    utilizadorRepository.save(admin);
+                }
+        );
 
-        if (utilizadorRepository.findByEmail("operador@tub.pt").isEmpty()) {
-            RegistoUtilizador operador = new RegistoUtilizador(
-                    "Operador TUB",
-                    "operador@tub.pt",
-                    "1234",
-                    "OPERADOR"
-            );
-            utilizadorRepository.save(operador);
-        }
+        utilizadorRepository.findByEmail("operador@tub.pt").ifPresentOrElse(
+                operador -> {
+                    operador.setNome("Operador TUB");
+                    operador.setPassword("1234");
+                    operador.setCargo("OPERADOR");
+                    operador.setAtivo(true);
+                    operador.setTentativasFalhadas(0);
+                    utilizadorRepository.save(operador);
+                },
+                () -> {
+                    RegistoUtilizador operador = new RegistoUtilizador(
+                            "Operador TUB",
+                            "operador@tub.pt",
+                            "1234",
+                            "OPERADOR"
+                    );
+                    utilizadorRepository.save(operador);
+                }
+        );
 
-        if (utilizadorRepository.findByEmail("bloqueado@tub.pt").isEmpty()) {
-            RegistoUtilizador bloqueado = new RegistoUtilizador(
-                    "Utilizador Bloqueado",
-                    "bloqueado@tub.pt",
-                    "1234",
-                    "OPERADOR"
-            );
-            bloqueado.setAtivo(false);
-            bloqueado.setTentativasFalhadas(5);
-            utilizadorRepository.save(bloqueado);
-        }
+        utilizadorRepository.findByEmail("bloqueado@tub.pt").ifPresentOrElse(
+                bloqueado -> {
+                    bloqueado.setNome("Utilizador Bloqueado");
+                    bloqueado.setPassword("1234");
+                    bloqueado.setCargo("OPERADOR");
+                    bloqueado.setAtivo(false);
+                    bloqueado.setTentativasFalhadas(5);
+                    utilizadorRepository.save(bloqueado);
+                },
+                () -> {
+                    RegistoUtilizador bloqueado = new RegistoUtilizador(
+                            "Utilizador Bloqueado",
+                            "bloqueado@tub.pt",
+                            "1234",
+                            "OPERADOR"
+                    );
+                    bloqueado.setAtivo(false);
+                    bloqueado.setTentativasFalhadas(5);
+                    utilizadorRepository.save(bloqueado);
+                }
+        );
     }
 
     private void criarPoliticasAuditoria() {
