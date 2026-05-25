@@ -11,8 +11,34 @@ import com.tub.p1_autenticacao.service.ControloSegurancaAutenticacao;
 public class ControladorAcessos {
 
     private final ControloSegurancaAutenticacao authService;
-    public ControladorAcessos(ControloSegurancaAutenticacao authService) {
+    private final com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService;
+
+    public ControladorAcessos(
+            ControloSegurancaAutenticacao authService,
+            com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService
+    ) {
         this.authService = authService;
+        this.auditService = auditService;
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7).trim();
+            java.util.Map<String, Object> claims = com.tub.p1_autenticacao.util.JwtUtil.parseToken(token);
+            if (claims != null) {
+                String email = (String) claims.get("email");
+                auditService.registar(
+                        email,
+                        "LOGOUT",
+                        "Autenticação",
+                        "127.0.0.1",
+                        "INFO",
+                        "Sessão encerrada com sucesso"
+                );
+            }
+        }
+        return ResponseEntity.ok(java.util.Map.of("status", "Sucesso", "mensagem", "Sessão encerrada com sucesso"));
     }
 
     @PostMapping("/login")

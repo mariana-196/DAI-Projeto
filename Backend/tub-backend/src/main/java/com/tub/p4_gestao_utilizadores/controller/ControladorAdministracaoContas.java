@@ -4,9 +4,12 @@ import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
 import com.tub.p2_dados_utilizador.repository.RegistoUtilizadorRepository;
 import com.tub.p1_autenticacao.model.SessaoAutenticada;
 import com.tub.p1_autenticacao.repository.SessaoAutenticadaRepository;
+import com.tub.p1_autenticacao.annotation.RequerCargo;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,46 +21,43 @@ public class ControladorAdministracaoContas {
 
     private final RegistoUtilizadorRepository utilizadorRepository;
     private final SessaoAutenticadaRepository sessaoAutenticadaRepository;
+    private final com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService;
+
+    @Autowired
+    private HttpServletRequest request;
 
     public ControladorAdministracaoContas(
             RegistoUtilizadorRepository utilizadorRepository,
-            SessaoAutenticadaRepository sessaoAutenticadaRepository) {
+            SessaoAutenticadaRepository sessaoAutenticadaRepository,
+            com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService) {
         this.utilizadorRepository = utilizadorRepository;
         this.sessaoAutenticadaRepository = sessaoAutenticadaRepository;
+        this.auditService = auditService;
     }
-
-    private RegistoUtilizador obterUtilizadorAutenticado(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return null;
-        }
-        String token = authHeader.substring(7).trim();
-        Optional<SessaoAutenticada> opSessao = sessaoAutenticadaRepository.findByToken(token);
-        if (opSessao.isEmpty()) {
-            return null;
-        }
-        SessaoAutenticada sessao = opSessao.get();
-        if (!sessao.isAtiva()) {
-            return null;
-        }
-        if (sessao.getDataExpiracao() != null && sessao.getDataExpiracao().isBefore(java.time.LocalDateTime.now())) {
-            return null;
-        }
-        RegistoUtilizador utilizador = sessao.getUtilizador();
-        if (utilizador == null || !utilizador.isAtivo()) {
-            return null;
-        }
-        return utilizador;
-    }
-
     private boolean eAdmin(RegistoUtilizador utilizador) {
         if (utilizador == null) return false;
         String cargo = utilizador.getCargo();
-        return "ADMINISTRADOR".equalsIgnoreCase(cargo) || "ADMIN".equalsIgnoreCase(cargo);
+        return "ADMINISTRADOR".equalsIgnoreCase(cargo);
+    }
+
+    private String getExecutorEmail() {
+        String email = (String) request.getAttribute("utilizador_email");
+        return email != null ? email : "Sistema";
+    }
+
+    private String getExecutorIp() {
+        return request.getRemoteAddr();
+    }
+
+    private RegistoUtilizador obterUtilizadorAutenticado() {
+        Long userId = (Long) request.getAttribute("utilizador_id");
+        if (userId == null) return null;
+        return utilizadorRepository.findById(userId).orElse(null);
     }
 
     @GetMapping
-    public ResponseEntity<?> listar(@RequestHeader(value = "Authorization", required = false) String authHeader) {
-        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
+    public ResponseEntity<?> listar() {
+        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado();
         if (usuarioAutenticado == null) {
             return ResponseEntity.status(401).body("Não autorizado");
         }
@@ -70,39 +70,37 @@ public class ControladorAdministracaoContas {
     }
 
     @PostMapping("/guardar")
-    public ResponseEntity<?> guardar(
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestBody RegistoUtilizador novoUser) {
-        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
+    @RequerCargo("ADMINISTRADOR")
+    public ResponseEntity<?> guardar(@RequestBody RegistoUtilizador novoUser) {
+        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado();
         if (usuarioAutenticado == null) {
             return ResponseEntity.status(401).body("Não autorizado");
         }
-        if (!eAdmin(usuarioAutenticado)) {
-            return ResponseEntity.status(403).body("Apenas administradores podem criar novos utilizadores.");
-        }
 
-        // --- Validação de Formato de Email ---
         if (emailInvalido(novoUser.getEmail())) {
             return ResponseEntity.badRequest().body("Erro: O formato do email é inválido!");
         }
-        // -------------------------------------------
 
         Optional<RegistoUtilizador> existente = utilizadorRepository.findByEmail(novoUser.getEmail());
-
         if (existente.isPresent()) {
             return ResponseEntity.badRequest().body("Este email já existe!");
         }
 
         utilizadorRepository.save(novoUser);
+        auditService.registar(
+                getExecutorEmail(),
+                "CRIAR_UTILIZADOR",
+                "Utilizadores",
+                getExecutorIp(),
+                "INFO",
+                "Utilizador criado com sucesso: " + novoUser.getEmail() + " com cargo " + novoUser.getCargo()
+        );
         return ResponseEntity.ok(novoUser);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> editar(
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @PathVariable Long id,
-            @RequestBody RegistoUtilizador dadosAtualizados) {
-        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
+    public ResponseEntity<?> editar(@PathVariable Long id, @RequestBody RegistoUtilizador dadosAtualizados) {
+        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado();
         if (usuarioAutenticado == null) {
             return ResponseEntity.status(401).body("Não autorizado");
         }
@@ -113,7 +111,6 @@ public class ControladorAdministracaoContas {
         }
 
         Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
-
         if (op.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -121,7 +118,6 @@ public class ControladorAdministracaoContas {
         RegistoUtilizador utilizador = op.get();
         if (!admin) {
             utilizador.setNome(dadosAtualizados.getNome());
-            // Email, cargo, active status are ignored for non-admins to prevent spoofing
         } else {
             utilizador.setNome(dadosAtualizados.getNome());
             utilizador.setEmail(dadosAtualizados.getEmail());
@@ -133,29 +129,26 @@ public class ControladorAdministracaoContas {
             utilizador.setPassword(dadosAtualizados.getPassword());
         }
 
-        // --- Validação de Formato de Email ---
         if (admin && emailInvalido(utilizador.getEmail())) {
             return ResponseEntity.badRequest().body("Erro: O formato do email é inválido!");
         }
 
         utilizadorRepository.save(utilizador);
+        auditService.registar(
+                getExecutorEmail(),
+                "EDITAR_UTILIZADOR",
+                "Utilizadores",
+                getExecutorIp(),
+                "INFO",
+                "Utilizador editado com sucesso: " + utilizador.getEmail() + " (ID: " + id + ")"
+        );
         return ResponseEntity.ok(utilizador);
     }
 
     @PutMapping("/{id}/desativar")
-    public ResponseEntity<?> desativar(
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @PathVariable Long id) {
-        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
-        if (usuarioAutenticado == null) {
-            return ResponseEntity.status(401).body("Não autorizado");
-        }
-        if (!eAdmin(usuarioAutenticado)) {
-            return ResponseEntity.status(403).body("Apenas administradores podem desativar utilizadores.");
-        }
-
+    @RequerCargo("ADMINISTRADOR")
+    public ResponseEntity<?> desativar(@PathVariable Long id) {
         Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
-
         if (op.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -164,23 +157,21 @@ public class ControladorAdministracaoContas {
         utilizador.setAtivo(false);
         utilizadorRepository.save(utilizador);
 
+        auditService.registar(
+                getExecutorEmail(),
+                "DESATIVAR_UTILIZADOR",
+                "Utilizadores",
+                getExecutorIp(),
+                "INFO",
+                "Utilizador desativado: " + utilizador.getEmail() + " (ID: " + id + ")"
+        );
         return ResponseEntity.ok("Utilizador desativado com sucesso.");
     }
 
     @PutMapping("/{id}/ativar")
-    public ResponseEntity<?> ativar(
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @PathVariable Long id) {
-        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
-        if (usuarioAutenticado == null) {
-            return ResponseEntity.status(401).body("Não autorizado");
-        }
-        if (!eAdmin(usuarioAutenticado)) {
-            return ResponseEntity.status(403).body("Apenas administradores podem ativar utilizadores.");
-        }
-
+    @RequerCargo("ADMINISTRADOR")
+    public ResponseEntity<?> ativar(@PathVariable Long id) {
         Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
-
         if (op.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -189,39 +180,44 @@ public class ControladorAdministracaoContas {
         utilizador.setAtivo(true);
         utilizadorRepository.save(utilizador);
 
+        auditService.registar(
+                getExecutorEmail(),
+                "ATIVAR_UTILIZADOR",
+                "Utilizadores",
+                getExecutorIp(),
+                "INFO",
+                "Utilizador ativado: " + utilizador.getEmail() + " (ID: " + id + ")"
+        );
         return ResponseEntity.ok("Utilizador ativado com sucesso.");
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @PathVariable Long id) {
-        RegistoUtilizador usuarioAutenticado = obterUtilizadorAutenticado(authHeader);
-        if (usuarioAutenticado == null) {
-            return ResponseEntity.status(401).body("Não autorizado");
-        }
-        if (!eAdmin(usuarioAutenticado)) {
-            return ResponseEntity.status(403).body("Apenas administradores podem eliminar utilizadores.");
-        }
-
+    @RequerCargo("ADMINISTRADOR")
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
         Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
-
         if (op.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
+        RegistoUtilizador utilizador = op.get();
         try {
             utilizadorRepository.deleteById(id);
+            auditService.registar(
+                    getExecutorEmail(),
+                    "ELIMINAR_UTILIZADOR",
+                    "Utilizadores",
+                    getExecutorIp(),
+                    "INFO",
+                    "Utilizador eliminado permanentemente: " + utilizador.getEmail() + " (ID: " + id + ")"
+            );
             return ResponseEntity.ok("Utilizador eliminado permanentemente.");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Erro: Não é possível eliminar este utilizador pois ele possui registos históricos associados.");
         }
     }
 
-    // --- NOVO: Função Auxiliar de Validação ---
     private boolean emailInvalido(String email) {
         if (email == null) return true;
-        // Verifica se tem texto + @ + texto + . + extensão (mínimo 2 letras)
         String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         return !email.matches(regex);
     }

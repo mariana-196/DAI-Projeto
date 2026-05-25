@@ -4,6 +4,9 @@ import com.tub.p7_relatorios.dto.DadosRelatorio;
 import com.tub.p7_relatorios.service.ControloAnonimizacao;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
+import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,15 +14,33 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.tub.p1_autenticacao.annotation.RequerCargo;
+
 @RestController
 @RequestMapping("/api/relatorios/auditoria")
 @CrossOrigin(origins = "*")
+@RequerCargo("ADMINISTRADOR")
 public class ControloRelatorioAuditoria {
 
     private final ControloAnonimizacao controloAnonimizacao;
 
+    @Autowired
+    private HttpServletRequest request;
+
+    @Autowired
+    private ControloConsultaAuditoria auditService;
+
     public ControloRelatorioAuditoria(ControloAnonimizacao controloAnonimizacao) {
         this.controloAnonimizacao = controloAnonimizacao;
+    }
+
+    private String getExecutorEmail() {
+        String email = (String) request.getAttribute("utilizador_email");
+        return email != null ? email : "Sistema";
+    }
+
+    private String getExecutorIp() {
+        return request.getRemoteAddr();
     }
 
     @PostMapping
@@ -55,6 +76,15 @@ public class ControloRelatorioAuditoria {
                 LocalDateTime.now(),
                 "Administrador",
                 dados
+        );
+
+        auditService.registar(
+                getExecutorEmail(),
+                "CONSULTAR_RELATORIO",
+                "Relatórios",
+                getExecutorIp(),
+                "INFO",
+                "Relatório de auditoria consultado. Filtros - Início: " + dataInicio + ", Fim: " + dataFim + ", Utilizador: " + utilizador + ", Severidade: " + severidade + ", Evento: " + evento
         );
 
         return ResponseEntity.ok(relatorio);

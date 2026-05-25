@@ -677,7 +677,10 @@
 
             try {
                 const url = `/api/previsoes/calcular?viaturaId=${viaturaId}&painelId=${painelId}&linhaId=${linhaId}&destino=${encodeURIComponent(destino)}&paragensRestantes=${paragensRestantes}`;
-                const response = await fetch(`http://localhost:8081${url}`, { method: 'POST' });
+                const response = await fetch(`http://localhost:8081${url}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + userToken }
+                });
                 if (response.ok) {
                     const fb = document.getElementById("sim-feedback");
                     fb.style.display = "block";
