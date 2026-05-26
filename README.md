@@ -37,3 +37,5 @@ O nosso grupo foca o desenvolvimento nos seguintes módulos específicos do cade
 ## Equipa de Desenvolvimento
 * Chefe de Programadores:** Mariana Sousa
 * Programadores:** João Monteiro; Gonçalo Marques; Marta Oliveira; Renato Sousa
+
+
