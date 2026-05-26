@@ -146,8 +146,8 @@ public class ControladorMonitorizacaoLotacao {
             estado.setUltimaAtualizacao(java.time.LocalDateTime.now());
             lotacaoViaturaRepository.save(estado);
 
-            // Handle AlertaLotacao for critical occupancies (>= 70%)
-            if (taxa >= 70.0) {
+            // Handle AlertaLotacao for critical occupancies (>= 90%)
+            if (taxa >= 90.0) {
                 boolean alertaExiste = alertaOperacionalRepository.findAll().stream()
                         .anyMatch(a -> a.getViatura() != null && 
                                        a.getViatura().getId().equals(v.getId()) && 
@@ -230,7 +230,17 @@ public class ControladorMonitorizacaoLotacao {
 
             item.put("id", v != null ? v.getCodigo() : estado.getId());
             item.put("linha", estado.getLinha());
-            item.put("passageiros", estado.getPassageirosAtuais());
+            int passageiros = estado.isSinalAtivo()
+                    ? (estado.getPassageirosAtuais() != null ? estado.getPassageirosAtuais() : 0)
+                    : 0;
+            if (!estado.isSinalAtivo() && (estado.getPassageirosAtuais() == null || estado.getPassageirosAtuais() != 0
+                    || estado.getTaxaOcupacao() == null || estado.getTaxaOcupacao() != 0.0)) {
+                estado.setPassageirosAtuais(0);
+                estado.setTaxaOcupacao(0.0);
+                lotacaoViaturaRepository.save(estado);
+            }
+
+            item.put("passageiros", passageiros);
             item.put("capacidade", v != null ? v.getCapacidadeMaxima() : CAPACIDADE_MAXIMA);
             item.put("sinal", estado.isSinalAtivo());
 

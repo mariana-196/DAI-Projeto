@@ -317,6 +317,14 @@ public class ProcesadorArmazenamento {
             if (v == null) continue;
 
             int capMax = v.getCapacidadeMaxima() != null ? v.getCapacidadeMaxima() : 80;
+            if (!estado.isSinalAtivo()) {
+                estado.setPassageirosAtuais(0);
+                estado.setTaxaOcupacao(0.0);
+                estado.setUltimaAtualizacao(LocalDateTime.now());
+                lotacaoViaturaRepository.save(estado);
+                continue;
+            }
+
             int maxOcupacaoAbsoluta = (int) Math.floor(capMax * (maxPct / 100.0));
 
             // Generate random entries/exits within [-maxDelta, maxDelta]

@@ -237,12 +237,13 @@
             const sigFilter = document.getElementById("filter-signal").value;
 
             const filtered = allVehicles.filter(v => {
-                const tax = v.capacidade > 0 ? (v.passageiros / v.capacidade * 100) : 0;
+                const passageiros = v.sinal ? (v.passageiros || 0) : 0;
+                const tax = v.capacidade > 0 ? (passageiros / v.capacidade * 100) : 0;
                 
                 // Occupancy filter
                 const matchesOcc = occFilter === 'ALL' || 
-                                  (occFilter === 'CRITICAL' && tax >= 80) || 
-                                  (occFilter === 'NORMAL' && tax < 80);
+                                  (occFilter === 'CRITICAL' && tax >= 90) ||
+                                  (occFilter === 'NORMAL' && tax < 90);
 
                 // Signal filter
                 const matchesSig = sigFilter === 'ALL' || 
@@ -258,10 +259,11 @@
             }
 
             filtered.forEach(v => {
-                const tax = v.capacidade > 0 ? (v.passageiros / v.capacidade * 100) : 0;
+                const passageiros = v.sinal ? (v.passageiros || 0) : 0;
+                const tax = v.capacidade > 0 ? (passageiros / v.capacidade * 100) : 0;
                 const roundedTax = Math.round(tax);
-                const isCritical = roundedTax >= 70;
-                const isMedium = roundedTax >= 40 && roundedTax < 70;
+                const isCritical = roundedTax >= 90;
+                const isMedium = roundedTax >= 50 && roundedTax < 90;
 
                 const colorClass = isCritical ? 'red' : (isMedium ? 'orange' : 'green');
                 const badgeColor = v.sinal ? 'badge-green' : 'badge-red';
@@ -299,7 +301,7 @@
 
                     <div class="lot-info-row" style="font-size:12px; margin-top:10px;">
                         <span>Passageiros a bordo</span>
-                        <strong>${v.passageiros} / ${v.capacidade}</strong>
+                        <strong>${passageiros} / ${v.capacidade}</strong>
                     </div>
                 `;
                 container.appendChild(card);
