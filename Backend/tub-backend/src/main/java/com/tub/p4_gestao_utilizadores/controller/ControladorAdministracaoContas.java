@@ -189,7 +189,7 @@ public class ControladorAdministracaoContas {
             System.err.println("Erro ao registar auditoria: " + e.getMessage());
         }
 
-        return ResponseEntity.ok("Utilizador desativado com sucesso.");
+        return ResponseEntity.ok(utilizador);
     }
 
     @PutMapping("/{id}/ativar")
@@ -222,7 +222,7 @@ public class ControladorAdministracaoContas {
             System.err.println("Erro ao registar auditoria: " + e.getMessage());
         }
 
-        return ResponseEntity.ok("Utilizador ativado com sucesso.");
+        return ResponseEntity.ok(utilizador);
     }
 
     @DeleteMapping("/{id}")

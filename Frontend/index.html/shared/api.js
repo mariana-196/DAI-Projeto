@@ -26,7 +26,16 @@ async function handleResponse(response, endpoint) {
         throw new Error(`Erro no pedido para ${endpoint}: ${response.statusText}`);
     }
     const text = await response.text();
-    return text ? JSON.parse(text) : {};
+    if (!text) {
+        return {};
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+        return JSON.parse(text);
+    }
+
+    return text;
 }
 
 async function apiGet(endpoint) {

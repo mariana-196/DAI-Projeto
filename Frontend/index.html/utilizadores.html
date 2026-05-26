@@ -640,8 +640,13 @@
             if (!isAdmin) return;
             const action = currentAtivo ? "desativar" : "ativar";
             try {
-                await apiPut(`/api/utilizadores/${uId}/${action}`);
-                loadAllUsers();
+                const updatedUser = await apiPut(`/api/utilizadores/${uId}/${action}`);
+                if (updatedUser && typeof updatedUser === "object" && updatedUser.id) {
+                    allUsers = allUsers.map(u => String(u.id) === String(updatedUser.id) ? updatedUser : u);
+                    renderUsersTable(allUsers);
+                } else {
+                    await loadAllUsers();
+                }
             } catch (err) {
                 alert("Erro ao alterar estado: " + err);
             }
