@@ -1,8 +1,8 @@
 package com.tub.p6_auditoria.controller;
 
 import com.tub.p6_auditoria.model.RegistoAuditoria;
+import com.tub.p7_relatorios.service.ControloAnonimizacao;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders; 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,10 +18,13 @@ import com.tub.p1_autenticacao.annotation.RequerCargo;
 public class ControloConsultaAuditoria {
 
     private final com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService;
+    private final ControloAnonimizacao controloAnonimizacao;
 
     public ControloConsultaAuditoria(
-            com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService) {
+            com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService,
+            ControloAnonimizacao controloAnonimizacao) {
         this.auditService = auditService;
+        this.controloAnonimizacao = controloAnonimizacao;
     }
 
     @GetMapping("/logs")
@@ -60,19 +63,49 @@ public class ControloConsultaAuditoria {
         csv.append("Data;Utilizador;Acao;Modulo;IP;Nivel;Detalhe\n"); // Cabeçalho (usamos ';' para o Excel em PT abrir bem)
     
         for (RegistoAuditoria log : logs) {
-            csv.append(log.getTimestamp()).append(";")
-                .append(log.getUtilizador()).append(";")
-                .append(log.getAcao()).append(";")
-                .append(log.getModulo()).append(";")
-                .append(log.getIpOrigem()).append(";")
-                .append(log.getNivel()).append(";")
-                .append(log.getDetalhe()).append("\n");
+            csv.append(campoCsv(log.getTimestamp())).append(";")
+                .append(campoCsv(controloAnonimizacao.anonimizarEmail(log.getUtilizador()))).append(";")
+                .append(campoCsv(log.getAcao())).append(";")
+                .append(campoCsv(log.getModulo())).append(";")
+                .append(campoCsv(anonimizarIp(log.getIpOrigem()))).append(";")
+                .append(campoCsv(log.getNivel())).append(";")
+                .append(campoCsv(log.getDetalhe())).append("\n");
         }
 
     // 3. Devolve o ficheiro para o browser fazer download
         return ResponseEntity.ok()
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=relatorio_auditoria_tub.csv")
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=relatorio_auditoria_tub_anonimizado.csv")
                 .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
                 .body(csv.toString());
+    }
+
+    private String anonimizarIp(String ip) {
+        if (ip == null || ip.isBlank()) {
+            return "";
+        }
+
+        if (ip.contains(".")) {
+            return ip.replaceFirst("\\d+$", "0");
+        }
+
+        int ultimoSeparador = ip.lastIndexOf(":");
+        if (ultimoSeparador > 0) {
+            return ip.substring(0, ultimoSeparador + 1) + "0000";
+        }
+
+        return "ip_anonimizado";
+    }
+
+    private String campoCsv(Object valor) {
+        if (valor == null) {
+            return "";
+        }
+
+        String texto = valor.toString().replace("\"", "\"\"");
+        if (texto.contains(";") || texto.contains("\n") || texto.contains("\r") || texto.contains("\"")) {
+            return "\"" + texto + "\"";
+        }
+
+        return texto;
     }
 }

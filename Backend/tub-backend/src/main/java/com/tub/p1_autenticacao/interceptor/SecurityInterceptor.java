@@ -88,14 +88,12 @@ public class SecurityInterceptor implements HandlerInterceptor {
         request.setAttribute("utilizador_email", email);
         request.setAttribute("utilizador_cargo", cargo);
 
-        if (requerCargo != null) {
-            boolean autorizado = false;
-            for (String val : requerCargo.value()) {
-                if (val.equalsIgnoreCase(cargo)) {
-                    autorizado = true;
-                    break;
-                }
-            }
+        String[] cargosPermitidos = requerCargo != null
+                ? requerCargo.value()
+                : cargosPermitidosPorRota(uri);
+
+        if (cargosPermitidos != null) {
+            boolean autorizado = cargoAutorizado(cargo, cargosPermitidos);
 
             if (!autorizado) {
                 try {
@@ -111,5 +109,29 @@ public class SecurityInterceptor implements HandlerInterceptor {
         }
 
         return true;
+    }
+
+    private boolean cargoAutorizado(String cargo, String[] cargosPermitidos) {
+        if (cargo == null) {
+            return false;
+        }
+
+        for (String val : cargosPermitidos) {
+            if (val.equalsIgnoreCase(cargo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String[] cargosPermitidosPorRota(String uri) {
+        if (uri.startsWith("/api/auditoria")
+                || uri.startsWith("/api/regras-auditoria")
+                || uri.startsWith("/api/relatorios/auditoria")
+                || uri.startsWith("/api/relatorios/agendamentos")) {
+            return new String[] {"ADMINISTRADOR"};
+        }
+
+        return null;
     }
 }

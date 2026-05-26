@@ -38,6 +38,22 @@ public class ControloConsultaAuditoria {
         );
     }
 
+    private String removerAcentos(String str) {
+        if (str == null) return null;
+        return str.replace("á", "a").replace("Á", "A")
+                  .replace("à", "a").replace("À", "A")
+                  .replace("ã", "a").replace("Ã", "A")
+                  .replace("â", "a").replace("Â", "A")
+                  .replace("é", "e").replace("É", "E")
+                  .replace("ê", "e").replace("Ê", "E")
+                  .replace("í", "i").replace("Í", "I")
+                  .replace("ó", "o").replace("Ó", "O")
+                  .replace("õ", "o").replace("Õ", "O")
+                  .replace("ô", "o").replace("Ô", "O")
+                  .replace("ú", "u").replace("Ú", "U")
+                  .replace("ç", "c").replace("Ç", "C");
+    }
+
     private String normalizarIp(String ip) {
         if (ip == null) return "127.0.0.1";
         if (ip.equals("0:0:0:0:0:0:0:1") || ip.equals("::1")) {
@@ -47,18 +63,21 @@ public class ControloConsultaAuditoria {
     }
 
     private String normalizarAcao(String acao) {
-        if (acao == null) return "Ação Desconhecida";
+        if (acao == null) return "Acao Desconhecida";
         
-        String acaoUpper = acao.toUpperCase();
+        String acaoSemAcentos = removerAcentos(acao);
+        String acaoUpper = acaoSemAcentos.toUpperCase();
+        
         switch (acaoUpper) {
             case "LOGIN_SUCESSO":
-            case "INÍCIO DE SESSÃO":
-                return "Início de Sessão";
+            case "INICIO DE SESSO":
+            case "INICIO DE SESSAO":
+                return "Inicio de Sessao";
             case "LOGOUT":
-                return "Fim de Sessão";
-            case "FALHA DE AUTENTICAÇÃO":
+                return "Fim de Sessao";
+            case "FALHA DE AUTENTICACAO":
             case "FALHA_AUTENTICACAO":
-                return "Falha de Autenticação";
+                return "Falha de Autenticacao";
             case "CONTA_BLOQUEADA":
             case "CONTA BLOQUEADA":
                 return "Conta Bloqueada";
@@ -75,16 +94,17 @@ public class ControloConsultaAuditoria {
             case "ELIMINAR_UTILIZADOR":
                 return "Eliminar Utilizador";
             case "SINCRONIZAR_BILHETICA":
-                return "Sincronização Bilhética";
+                return "Sincronizacao Bilhetica";
             case "IMPORTACAO_BILHETICA":
-                return "Importação Bilhética";
+                return "Importacao Bilhetica";
             case "EXPORTAR_CSV":
-                return "Exportação(CSV)";
+                return "Exportacao(CSV)";
             case "EXPORTAR_PDF":
-                return "Exportação(PDF)";
+                return "Exportacao(PDF)";
             default:
-                if (acao.contains("_")) {
-                    String[] parts = acao.split("_");
+                String acaoProcessada = acaoSemAcentos;
+                if (acaoProcessada.contains("_")) {
+                    String[] parts = acaoProcessada.split("_");
                     StringBuilder sb = new StringBuilder();
                     for (String part : parts) {
                         if (!part.isEmpty()) {
@@ -98,9 +118,9 @@ public class ControloConsultaAuditoria {
                     return sb.toString().trim();
                 }
                 
-                if (acao.equals(acaoUpper)) {
+                if (acaoProcessada.equals(acaoUpper)) {
                     StringBuilder sb = new StringBuilder();
-                    String[] parts = acao.split("\\s+");
+                    String[] parts = acaoProcessada.split("\\s+");
                     for (String part : parts) {
                         if (!part.isEmpty()) {
                             sb.append(Character.toUpperCase(part.charAt(0)));
@@ -113,7 +133,7 @@ public class ControloConsultaAuditoria {
                     return sb.toString().trim();
                 }
                 
-                return acao;
+                return acaoProcessada;
         }
     }
 

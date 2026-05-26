@@ -279,21 +279,47 @@
         }
 
         // Export Logs to CSV
-        function exportLogsCsv() {
+        async function exportLogsCsv() {
             const nivel = document.getElementById("filter-nivel").value;
             const modulo = document.getElementById("filter-modulo").value;
 
-            let url = "http://localhost:8081/api/auditoria/exportar";
+            let endpoint = "/api/auditoria/exportar";
             const params = [];
-            if (nivel) params.push(`nivel=${nivel}`);
-            if (modulo) params.push(`modulo=${modulo}`);
+            if (nivel) params.push(`nivel=${encodeURIComponent(nivel)}`);
+            if (modulo) params.push(`modulo=${encodeURIComponent(modulo)}`);
 
             if (params.length > 0) {
-                url += "?" + params.join("&");
+                endpoint += "?" + params.join("&");
             }
 
-            // Simple direct download link
-            window.open(url, "_blank");
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: "GET",
+                    headers: getHeaders()
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    await handleResponse(response, endpoint);
+                    return;
+                }
+
+                if (!response.ok) {
+                    const erro = await response.text();
+                    throw new Error(erro || response.statusText);
+                }
+
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = downloadUrl;
+                link.download = "relatorio_auditoria_tub_anonimizado.csv";
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(downloadUrl);
+            } catch (err) {
+                alert("Erro ao exportar CSV da auditoria: " + err.message);
+            }
         }
 
         // Load Policies
