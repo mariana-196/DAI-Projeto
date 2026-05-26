@@ -21,13 +21,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
-public class DashboardDadosController {
+public class ControladorIndicadoresFrota {
 
     private final ViaturasRepository viaturasRepository;
     private final RegistoBilheticaRepository registoBilheticaRepository;
     private final AlertaOperacionalRepository alertaOperacionalRepository;
 
-    public DashboardDadosController(
+    public ControladorIndicadoresFrota(
             ViaturasRepository viaturasRepository,
             RegistoBilheticaRepository registoBilheticaRepository,
             AlertaOperacionalRepository alertaOperacionalRepository
