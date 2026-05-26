@@ -201,7 +201,8 @@ public List<Map<String, Object>> getPosicoes() {
         viatura.put("linha", estado.getLinha());
         viatura.put("status", estado.isSinalAtivo() ? "Em Horário" : "Sem Sinal");
         viatura.put("velocidade", estado.isSinalAtivo() ? 42 : 0);
-        viatura.put("lotacao", Math.round(estado.getTaxaOcupacao()));
+        double lotacao = estado.isSinalAtivo() && estado.getTaxaOcupacao() != null ? estado.getTaxaOcupacao() : 0.0;
+        viatura.put("lotacao", Math.round(lotacao));
         viatura.put("sinal", estado.isSinalAtivo());
 
         frota.add(viatura);
