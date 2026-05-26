@@ -67,6 +67,7 @@ public class ControladorMonitorizacaoLotacao {
         // Run the dynamic database-backed sensor simulation
         try {
             procesadorArmazenamento.simularSensoresLotacao();
+            procesadorArmazenamento.simularFluxosBilheticaAleatorios("SINCRONIZACAO_LOTACAO_IOT");
         } catch (Exception e) {
             System.err.println("Erro ao executar simulação de sensores de lotação: " + e.getMessage());
         }

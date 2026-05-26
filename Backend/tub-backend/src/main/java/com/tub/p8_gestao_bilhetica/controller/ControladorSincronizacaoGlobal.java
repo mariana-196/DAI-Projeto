@@ -121,10 +121,12 @@ public class ControladorSincronizacaoGlobal {
     }
 
     @GetMapping("/sincronizar")
+    @RequerCargo({"OPERADOR", "ADMINISTRADOR"})
     public ResponseEntity<?> sincronizar() {
         try {
             List<Validation> dados = connectionService.obterDadosBilhetica();
             LoteDadosBilhetica lote = procesadorArmazenamento.processarEGuardarSincronizacao(dados);
+            LoteDadosBilhetica loteSimulado = procesadorArmazenamento.simularFluxosBilheticaAleatorios("SINCRONIZACAO_MANUAL");
             
             try {
                 auditService.registar(
@@ -139,7 +141,13 @@ public class ControladorSincronizacaoGlobal {
                 System.err.println("Erro ao registar auditoria: " + e.getMessage());
             }
             
-            return ResponseEntity.ok(lote != null ? List.of(lote) : List.of());
+            if (lote != null && loteSimulado != null) {
+                return ResponseEntity.ok(List.of(lote, loteSimulado));
+            }
+            if (lote != null) {
+                return ResponseEntity.ok(List.of(lote));
+            }
+            return ResponseEntity.ok(loteSimulado != null ? List.of(loteSimulado) : List.of());
         } catch (Exception e) {
             try {
                 auditService.registar(
@@ -158,6 +166,7 @@ public class ControladorSincronizacaoGlobal {
     }
 
     @PostMapping(value = "/importar", consumes = {"multipart/form-data"})
+    @RequerCargo("ADMINISTRADOR")
     public ResponseEntity<?> importarCSV(@RequestParam("ficheiro") MultipartFile ficheiro) {
         if (ficheiro == null || ficheiro.isEmpty()) {
             Map<String, String> erro = new HashMap<>();

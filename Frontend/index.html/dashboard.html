@@ -847,7 +847,7 @@
                     Sincronizando...
                 `;
                 
-                await apiPost("/api/bilhetica/importar");
+                await apiGet("/api/bilhetica/sincronizar");
                 
                 // Immediately refresh all elements
                 await Promise.all([

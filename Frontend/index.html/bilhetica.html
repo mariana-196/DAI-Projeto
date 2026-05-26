@@ -59,6 +59,60 @@
             margin-top: 8px;
             flex: 1;
         }
+        .map-controls {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(120px, 1fr));
+            gap: 10px;
+            align-items: end;
+        }
+        .map-controls label {
+            display: block;
+            font-size: 11.5px;
+            color: var(--t2);
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .map-controls select,
+        .map-controls input {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1.5px solid var(--border);
+            font-family: 'Outfit';
+            font-size: 12px;
+        }
+        .field-error {
+            border-color: var(--danger) !important;
+            background: #FFF5F5;
+        }
+        .map-legend {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--t2);
+            margin-top: 10px;
+            align-items: center;
+        }
+        .legend-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: -1px;
+        }
+        @media (max-width: 1100px) {
+            .map-controls { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+        }
+        .card-body div:has(#file-uploader),
+        #btn-import-sync {
+            display: none !important;
+        }
+        #btn-import-sync + #btn-sincronizar-api {
+            grid-column: 1 / -1;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -285,7 +339,54 @@
                         <h3>Mapa de Densidade de Bilhética</h3>
                     </div>
                     <div class="card-body" style="padding:16px;">
-                        <div id="map-bilhetica" style="height: 400px; width: 100%; border-radius: 12px; border: 1px solid var(--border); z-index: 1;"></div>
+                        <div class="map-controls">
+                            <div>
+                                <label>Representacao</label>
+                                <select id="map-tipo">
+                                    <option value="heatmap">Mapa de Calor</option>
+                                    <option value="od">Fluxos O/D</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Linha</label>
+                                <select id="map-linha">
+                                    <option value="ALL">Todas as Linhas</option>
+                                    <option value="43">Linha 43</option>
+                                    <option value="2">Linha 2</option>
+                                    <option value="7">Linha 7</option>
+                                    <option value="24">Linha 24</option>
+                                    <option value="15">Linha 15</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Data Inicio</label>
+                                <input type="date" id="map-data-inicio">
+                            </div>
+                            <div>
+                                <label>Data Fim</label>
+                                <input type="date" id="map-data-fim">
+                            </div>
+                            <div>
+                                <label>Hora Inicio</label>
+                                <select id="map-hora-inicio">
+                                    <option value="0">00h</option>
+                                    <option value="6">06h</option>
+                                    <option value="8">08h</option>
+                                    <option value="10">10h</option>
+                                    <option value="12">12h</option>
+                                    <option value="16">16h</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-blue" id="btn-gerar-mapa" style="height:36px; justify-content:center;">Gerar Mapa</button>
+                        </div>
+                        <div id="map-warning" class="annotation-box" style="margin-top:12px; display:none; background:#FFF7E6; border-color:#B76E00; color:#7A4A00;"></div>
+                        <div id="map-bilhetica" style="height: 460px; width: 100%; border-radius: 8px; border: 1px solid var(--border); z-index: 1; margin-top:14px;"></div>
+                        <div class="map-legend" id="map-legend">
+                            <span><i class="legend-swatch" style="background:#2FB344;"></i>Baixa</span>
+                            <span><i class="legend-swatch" style="background:#F59F00;"></i>Media</span>
+                            <span><i class="legend-swatch" style="background:#E03131;"></i>Alta</span>
+                            <span>Dados de baixa amostra ficam ocultados em zoom profundo.</span>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -329,6 +430,11 @@
         });
 
         // Load Bilhética metrics & chart
+        const importButton = document.getElementById("btn-import-sync");
+        const fileUploader = document.getElementById("file-uploader");
+        if (importButton) importButton.style.display = "none";
+        if (fileUploader && fileUploader.closest("div")) fileUploader.closest("div").style.display = "none";
+
         async function obterAnalise(linhaId) {
             try {
                 let url = "/api/bilhetica/analise";
@@ -421,6 +527,7 @@
         });
 
         // Trigger Sync via API
+        document.getElementById("btn-sincronizar-api").textContent = "Sincronizar Validadores";
         document.getElementById("btn-sincronizar-api").addEventListener("click", async () => {
             try {
                 const res = await apiGet("/api/bilhetica/sincronizar");
@@ -428,6 +535,7 @@
                 feedback.textContent = `✓ Sincronizados ${res.length} lotes de validações com sucesso!`;
                 feedback.style.display = "flex";
                 obterAnalise(document.getElementById("linha-analise-select").value);
+                loadMapData();
                 setTimeout(() => feedback.style.display = "none", 5000);
             } catch (err) {
                 alert("Erro ao sincronizar via API: " + err);
@@ -492,6 +600,7 @@
         // --- MAPA DE BILHÉTICA ---
         let map;
         let mapLayerGroup;
+        let privacyLayers = [];
 
         function initMap() {
             // Centro de Braga
@@ -503,6 +612,8 @@
             }).addTo(map);
 
             mapLayerGroup = L.layerGroup().addTo(map);
+            map.on("zoomend", aplicarPrivacidadeEspacial);
+            configurarFiltrosMapa();
             loadMapData();
         }
 
@@ -549,6 +660,125 @@
                 });
             } catch (err) {
                 console.error("Erro ao carregar dados do mapa GIS:", err);
+            }
+        }
+
+        function configurarFiltrosMapa() {
+            const hoje = new Date().toISOString().slice(0, 10);
+            document.getElementById("map-data-inicio").value = hoje;
+            document.getElementById("map-data-fim").value = hoje;
+            document.getElementById("btn-gerar-mapa").addEventListener("click", loadMapData);
+        }
+
+        function validarParametrosMapa() {
+            const inicio = document.getElementById("map-data-inicio");
+            const fim = document.getElementById("map-data-fim");
+            [inicio, fim].forEach(el => el.classList.remove("field-error"));
+            if (!inicio.value || !fim.value || inicio.value > fim.value) {
+                inicio.classList.add("field-error");
+                fim.classList.add("field-error");
+                mostrarAvisoMapa("Defina um intervalo temporal valido antes de gerar o mapa.");
+                return false;
+            }
+            mostrarAvisoMapa("");
+            return true;
+        }
+
+        function mostrarAvisoMapa(texto) {
+            const box = document.getElementById("map-warning");
+            if (!texto) {
+                box.style.display = "none";
+                box.textContent = "";
+                return;
+            }
+            box.textContent = texto;
+            box.style.display = "flex";
+        }
+
+        async function loadMapData() {
+            if (!validarParametrosMapa()) return;
+            try {
+                const params = new URLSearchParams({
+                    tipoMapa: document.getElementById("map-tipo").value,
+                    linha: document.getElementById("map-linha").value,
+                    dataInicio: document.getElementById("map-data-inicio").value,
+                    dataFim: document.getElementById("map-data-fim").value,
+                    horaInicio: document.getElementById("map-hora-inicio").value,
+                    horaFim: "23"
+                });
+                const geojson = await apiGet(`/api/gis/render/dados-mapa?${params.toString()}`);
+                mapLayerGroup.clearLayers();
+                privacyLayers = [];
+
+                if (!geojson || !geojson.features || geojson.features.length === 0) {
+                    mostrarAvisoMapa("Nao existem dados para os filtros selecionados.");
+                    return;
+                }
+
+                geojson.features.forEach(feature => {
+                    const props = feature.properties || {};
+                    if (props.tipo === "aviso") {
+                        mostrarAvisoMapa(props.mensagem);
+                        return;
+                    }
+                    if (feature.geometry.type === "LineString") {
+                        desenharFluxoOd(feature);
+                    } else {
+                        desenharPontoCalor(feature);
+                    }
+                });
+                aplicarPrivacidadeEspacial();
+            } catch (err) {
+                console.error("Erro ao carregar dados do mapa GIS:", err);
+            }
+        }
+
+        function desenharPontoCalor(feature) {
+            const coords = feature.geometry.coordinates;
+            const props = feature.properties;
+            const validacoes = props.totalValidacoes || 0;
+            const paragem = props.nome || "Desconhecida";
+            const raio = Math.max(7, Math.min(validacoes / 4, 42));
+            const cor = validacoes >= 80 ? "#E03131" : (validacoes >= 35 ? "#F59F00" : "#2FB344");
+            const circle = L.circleMarker([coords[1], coords[0]], {
+                radius: raio,
+                fillColor: cor,
+                color: cor,
+                weight: 2,
+                opacity: 0.95,
+                fillOpacity: 0.58
+            });
+            circle.bindPopup(`<div style="font-family:'Outfit'; text-align:center; padding:4px;"><strong style="display:block; margin-bottom:4px; color:#1e293b; font-size:14px;">${paragem}</strong><span style="color:#64748b; font-size:12px;">Validacoes: </span><strong style="color:${cor}; font-size:14px;">${validacoes}</strong></div>`);
+            circle.addTo(mapLayerGroup);
+            if (props.privacidadeProtegida) privacyLayers.push(circle);
+        }
+
+        function desenharFluxoOd(feature) {
+            const coords = feature.geometry.coordinates;
+            const props = feature.properties;
+            const volume = props.volume || 0;
+            const cor = volume >= 80 ? "#E03131" : (volume >= 35 ? "#F59F00" : "#2D62ED");
+            const line = L.polyline(coords.map(c => [c[1], c[0]]), {
+                color: cor,
+                weight: Math.max(3, Math.min(volume / 8, 12)),
+                opacity: 0.72
+            });
+            line.bindPopup(`<div style="font-family:'Outfit'; padding:4px;"><strong>${props.origem} -> ${props.destino}</strong><br><span style="color:#64748b; font-size:12px;">Passageiros inferidos: </span><strong style="color:${cor};">${volume}</strong></div>`);
+            line.addTo(mapLayerGroup);
+            if (props.privacidadeProtegida) privacyLayers.push(line);
+        }
+
+        function aplicarPrivacidadeEspacial() {
+            const ocultar = map && map.getZoom() >= 17;
+            privacyLayers.forEach(layer => {
+                if (ocultar && mapLayerGroup.hasLayer(layer)) {
+                    mapLayerGroup.removeLayer(layer);
+                } else if (!ocultar && !mapLayerGroup.hasLayer(layer)) {
+                    mapLayerGroup.addLayer(layer);
+                }
+            });
+            if (ocultar && privacyLayers.length > 0) {
+                mostrarAvisoMapa("Dados ocultados por motivos de privacidade. Faca zoom-out para visualizar dados agregados.");
             }
         }
 

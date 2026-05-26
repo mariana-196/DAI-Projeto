@@ -3,6 +3,9 @@ package com.tub.p8_gestao_bilhetica.service;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.time.LocalDateTime;
 
 import com.tub.p3_integracao_externa.model.Validation;
@@ -27,6 +30,28 @@ import com.tub.p8_gestao_bilhetica.repository.ConfiguracaoIntegracaoRepository;
 
 @Service
 public class ProcesadorArmazenamento {
+
+    private static final Map<String, double[]> COORDENADAS_PARAGENS = new HashMap<>();
+    private static final String[] PARAGENS_DEMO = {
+            "Universidade do Minho", "Estacao CP", "Hospital de Braga",
+            "Avenida Central", "Bom Jesus", "Arcada", "Gualtar",
+            "Braga Parque", "Lamacaes"
+    };
+
+    static {
+        COORDENADAS_PARAGENS.put("Universidade do Minho", new double[]{41.5612, -8.3978});
+        COORDENADAS_PARAGENS.put("Gualtar - Universidade do Minho", new double[]{41.5612, -8.3978});
+        COORDENADAS_PARAGENS.put("Estacao CP", new double[]{41.5492, -8.4344});
+        COORDENADAS_PARAGENS.put("EstaÃ§Ã£o CP", new double[]{41.5492, -8.4344});
+        COORDENADAS_PARAGENS.put("Hospital de Braga", new double[]{41.5683, -8.3995});
+        COORDENADAS_PARAGENS.put("Avenida Central", new double[]{41.5518, -8.4229});
+        COORDENADAS_PARAGENS.put("Bom Jesus", new double[]{41.5546, -8.3775});
+        COORDENADAS_PARAGENS.put("Arcada", new double[]{41.5509, -8.4260});
+        COORDENADAS_PARAGENS.put("Gualtar", new double[]{41.5600, -8.3947});
+        COORDENADAS_PARAGENS.put("Braga Parque", new double[]{41.5586, -8.4059});
+        COORDENADAS_PARAGENS.put("Lamacaes", new double[]{41.5414, -8.3954});
+        COORDENADAS_PARAGENS.put("LamaÃ§Ã£es", new double[]{41.5414, -8.3954});
+    }
 
     private final LoteDadosBilheticaRepository loteRepository;
     private final RegistoBilheticaRepository registoRepository;
@@ -119,9 +144,13 @@ public class ProcesadorArmazenamento {
             registo.setLinha(linha);
             registo.setViatura(viatura);
             registo.setDataHora(val.getTimestamp() != null ? val.getTimestamp() : LocalDateTime.now());
-            registo.setParagemOrigem(val.getStopId());
+            String origem = normalizarParagem(val.getStopId());
+            String destino = inferirDestino(origem, linha != null ? linha.getDestino() : null, new Random());
+            registo.setParagemOrigem(origem);
+            registo.setParagemDestino(destino);
             registo.setTipoTitulo(val.getTicketType() != null ? val.getTicketType() : "Bilhete Normal");
             registo.setValidacoes(1); // 1 validation per transaction
+            aplicarCoordenadas(registo, origem, destino);
 
             // Infer Zone
             String stop = val.getStopId() != null ? val.getStopId().toLowerCase() : "";
@@ -169,6 +198,79 @@ public class ProcesadorArmazenamento {
             simularSensoresLotacao();
         } catch (Exception e) {
             System.err.println("Erro ao simular sensores de lotação: " + e.getMessage());
+        }
+
+        return lote;
+    }
+
+    public synchronized LoteDadosBilhetica simularFluxosBilheticaAleatorios(String origemSincronizacao) {
+        List<Linha> linhas = linhaRepository.findAll();
+        List<Viatura> viaturas = viaturasRepository.findAll();
+
+        if (linhas.isEmpty() || viaturas.isEmpty()) {
+            return null;
+        }
+
+        ConfiguracaoIntegracao config = configuracaoIntegracaoRepository.findAll().stream()
+                .findFirst()
+                .orElse(null);
+
+        int maxDelta = (config != null && config.getSimulacaoMaxEntradasSaidas() != null)
+                ? Math.max(1, config.getSimulacaoMaxEntradasSaidas()) : 10;
+
+        Random random = new Random();
+        int totalRegistos = Math.max(12, maxDelta * 3 + random.nextInt(maxDelta * 4 + 1));
+
+        LoteDadosBilhetica lote = new LoteDadosBilhetica();
+        lote.setCodigoLote("LOTE_SYNC_" + System.currentTimeMillis());
+        lote.setOrigem(origemSincronizacao != null ? origemSincronizacao : "SINCRONIZACAO_PARTILHADA");
+        lote.setEstado(EstadoSincronizacao.RECEBIDO);
+        lote.setDataImportacao(LocalDateTime.now());
+        lote = loteRepository.save(lote);
+
+        List<RegistoBilhetica> registos = new ArrayList<>();
+        String[] titulos = {"Passe Estudante", "Bilhete Normal", "Passe Senior", "Passe Turistico"};
+
+        for (int i = 0; i < totalRegistos; i++) {
+            Linha linha = linhas.get(random.nextInt(linhas.size()));
+            Viatura viatura = viaturas.get(random.nextInt(viaturas.size()));
+            String origem = PARAGENS_DEMO[random.nextInt(PARAGENS_DEMO.length)];
+            String destino = inferirDestino(origem, linha.getDestino(), random);
+
+            RegistoBilhetica registo = new RegistoBilhetica();
+            registo.setLote(lote);
+            registo.setLinha(linha);
+            registo.setViatura(viatura);
+            registo.setDataHora(LocalDateTime.now().minusMinutes(random.nextInt(180)));
+            registo.setParagemOrigem(origem);
+            registo.setParagemDestino(destino);
+            registo.setTipoTitulo(titulos[random.nextInt(titulos.length)]);
+            registo.setValidacoes(1 + random.nextInt(Math.max(1, maxDelta)));
+            registo.setZona(inferirZona(origem));
+            aplicarCoordenadas(registo, origem, destino);
+            registos.add(registo);
+        }
+
+        registoRepository.saveAll(registos);
+        lote.setEstado(EstadoSincronizacao.PROCESSADO);
+        lote = loteRepository.save(lote);
+
+        try {
+            MetricaIngestao metrica = new MetricaIngestao();
+            metrica.setLote(lote);
+            metrica.setRegistosRecebidos(totalRegistos);
+            metrica.setRegistosValidos(totalRegistos);
+            metrica.setRegistosInvalidos(0);
+            metrica.setEstado(lote.getEstado().name());
+            metricaRepository.save(metrica);
+        } catch (Exception e) {
+            // Ignore metric save errors
+        }
+
+        try {
+            simularSensoresLotacao();
+        } catch (Exception e) {
+            System.err.println("Erro ao simular sensores de lotaÃ§Ã£o: " + e.getMessage());
         }
 
         return lote;
@@ -237,5 +339,48 @@ public class ProcesadorArmazenamento {
                 }
             }
         }
+    }
+
+    private void aplicarCoordenadas(RegistoBilhetica registo, String origem, String destino) {
+        double[] coordOrigem = coordenadasParagem(origem);
+        double[] coordDestino = coordenadasParagem(destino);
+        registo.setLatitude(coordOrigem[0]);
+        registo.setLongitude(coordOrigem[1]);
+        registo.setLatitudeDestino(coordDestino[0]);
+        registo.setLongitudeDestino(coordDestino[1]);
+    }
+
+    private double[] coordenadasParagem(String paragem) {
+        if (paragem != null && COORDENADAS_PARAGENS.containsKey(paragem)) {
+            return COORDENADAS_PARAGENS.get(paragem);
+        }
+        return new double[]{41.5510, -8.4230};
+    }
+
+    private String normalizarParagem(String paragem) {
+        if (paragem == null || paragem.isBlank()) {
+            return "Avenida Central";
+        }
+        return paragem.replace("EstaÃ§Ã£o", "Estacao").replace("LamaÃ§Ã£es", "Lamacaes");
+    }
+
+    private String inferirDestino(String origem, String destinoLinha, Random random) {
+        String destino = normalizarParagem(destinoLinha);
+        if (destino.equals(origem) || !COORDENADAS_PARAGENS.containsKey(destino)) {
+            do {
+                destino = PARAGENS_DEMO[random.nextInt(PARAGENS_DEMO.length)];
+            } while (destino.equals(origem));
+        }
+        return destino;
+    }
+
+    private String inferirZona(String paragem) {
+        String stop = paragem != null ? paragem.toLowerCase() : "";
+        if (stop.contains("gualtar") || stop.contains("uminho")) return "Gualtar";
+        if (stop.contains("hospital")) return "Hospital";
+        if (stop.contains("bom jesus")) return "Bom Jesus";
+        if (stop.contains("lamacaes") || stop.contains("lama")) return "Lamacaes";
+        if (stop.contains("parque")) return "Braga Parque";
+        return "Centro";
     }
 }

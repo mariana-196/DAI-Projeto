@@ -31,6 +31,8 @@ public class RegistoBilhetica {
 
     private String paragemOrigem;
 
+    private String paragemDestino;
+
     @Column(nullable = false)
     private String tipoTitulo;
 
@@ -42,6 +44,10 @@ public class RegistoBilhetica {
     private Double latitude;
 
     private Double longitude;
+
+    private Double latitudeDestino;
+
+    private Double longitudeDestino;
 
     public RegistoBilhetica() {}
 
@@ -62,6 +68,9 @@ public class RegistoBilhetica {
     public String getParagemOrigem() { return paragemOrigem; }
     public void setParagemOrigem(String paragemOrigem) { this.paragemOrigem = paragemOrigem; }
 
+    public String getParagemDestino() { return paragemDestino; }
+    public void setParagemDestino(String paragemDestino) { this.paragemDestino = paragemDestino; }
+
     public String getTipoTitulo() { return tipoTitulo; }
     public void setTipoTitulo(String tipoTitulo) { this.tipoTitulo = tipoTitulo; }
 
@@ -76,4 +85,10 @@ public class RegistoBilhetica {
 
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
+
+    public Double getLatitudeDestino() { return latitudeDestino; }
+    public void setLatitudeDestino(Double latitudeDestino) { this.latitudeDestino = latitudeDestino; }
+
+    public Double getLongitudeDestino() { return longitudeDestino; }
+    public void setLongitudeDestino(Double longitudeDestino) { this.longitudeDestino = longitudeDestino; }
 }
