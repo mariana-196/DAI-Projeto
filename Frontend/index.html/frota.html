@@ -397,19 +397,13 @@
             }
 
             try {
-                // Post using search parameters in request body or url search params since controller uses @RequestParam
                 const url = `/api/geofencing/registar?viaturaId=${viaturaId}&nomeZona=${encodeURIComponent(nomeZona)}&tipoMovimento=${tipoMovimento}`;
-                
-                // Fetch directly
-                const response = await fetch(`http://localhost:8081${url}`, { method: 'POST' });
-                if (response.ok) {
-                    // Success
-                    loadGeofenceHistory();
-                } else {
-                    alert("Erro ao disparar telemetria geofence!");
-                }
+                await apiPost(url);
+                await loadGeofenceHistory();
+                await loadFrotaData();
             } catch (err) {
-                alert("Falha na chamada de API: " + err);
+                console.error("Erro ao disparar telemetria geofence:", err);
+                alert("Erro ao disparar telemetria geofence: " + (err.message || err));
             }
         });
 

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
+import com.tub.p1_autenticacao.annotation.RequerCargo;
 import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/geofencing")
 @CrossOrigin(origins = "*")
+@RequerCargo({"OPERADOR", "ADMINISTRADOR"})
 public class ControladorTrajetosGeofencing {
 
     @Autowired
