@@ -11,6 +11,8 @@ import com.tub.p11_gestao_alertas.repository.AlertaOperacionalRepository;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,9 +48,15 @@ public class DashboardDadosController {
                 .filter(Viatura::isAtiva)
                 .count();
 
+        LocalDateTime inicioHoje = LocalDate.now().atStartOfDay();
+        LocalDateTime inicioAmanha = inicioHoje.plusDays(1);
+
         int totalValidacoes = 0;
         for (RegistoBilhetica registo : registos) {
-            if (registo.getValidacoes() != null) {
+            if (registo.getValidacoes() != null
+                    && registo.getDataHora() != null
+                    && !registo.getDataHora().isBefore(inicioHoje)
+                    && registo.getDataHora().isBefore(inicioAmanha)) {
                 totalValidacoes += registo.getValidacoes();
             }
         }
