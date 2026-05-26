@@ -19,6 +19,12 @@ public class GatewayIntegracaoBilheticaImpl implements GatewayIntegracaoBilhetic
     private final LinhaRepository linhaRepository;
     private final ViaturasRepository viaturasRepository;
     private final Random random = new Random();
+    private static final LocalTime[] HORAS_SERVICO_DEMO = {
+            LocalTime.of(6, 35), LocalTime.of(8, 40), LocalTime.of(10, 30),
+            LocalTime.of(12, 25), LocalTime.of(14, 35), LocalTime.of(16, 45),
+            LocalTime.of(18, 30), LocalTime.of(20, 35), LocalTime.of(22, 40),
+            LocalTime.of(0, 45)
+    };
 
     public GatewayIntegracaoBilheticaImpl(LinhaRepository linhaRepository, ViaturasRepository viaturasRepository) {
         this.linhaRepository = linhaRepository;
@@ -43,13 +49,14 @@ public class GatewayIntegracaoBilheticaImpl implements GatewayIntegracaoBilhetic
             "Avenida Central", "Bom Jesus", "Arcada", "Gualtar", "Braga Parque", "Lamaçães"
         };
 
-        int count = Math.min(6, viaturas.size());
+        int autocarrosConsiderados = Math.min(6, viaturas.size());
+        int count = Math.min(HORAS_SERVICO_DEMO.length, autocarrosConsiderados * 2);
         for (int i = 0; i < count; i++) {
-            Linha linha = linhas.get(random.nextInt(linhas.size()));
-            Viatura viatura = viaturas.get(i);
+            Linha linha = linhas.get((i + random.nextInt(linhas.size())) % linhas.size());
+            Viatura viatura = viaturas.get(i % autocarrosConsiderados);
             String ticketType = ticketTypes[random.nextInt(ticketTypes.length)];
             String stop = paragens[random.nextInt(paragens.length)];
-            LocalDateTime timestamp = gerarInstanteServico();
+            LocalDateTime timestamp = gerarInstanteServico(i);
 
             Validation v = new Validation();
             v.setValidatorId("VAL_" + (100 + random.nextInt(900)));
@@ -65,17 +72,13 @@ public class GatewayIntegracaoBilheticaImpl implements GatewayIntegracaoBilhetic
         return list;
     }
 
-    private LocalDateTime gerarInstanteServico() {
+    private LocalDateTime gerarInstanteServico(int indiceIntervalo) {
         LocalDateTime agora = LocalDateTime.now();
-        LocalTime horaAtual = agora.toLocalTime();
-        LocalTime inicioServico = LocalTime.of(6, 20);
-        LocalTime fimServico = LocalTime.of(1, 30);
-
-        if (!horaAtual.isBefore(inicioServico) || horaAtual.isBefore(fimServico)) {
-            return agora;
+        LocalTime horaBase = HORAS_SERVICO_DEMO[indiceIntervalo % HORAS_SERVICO_DEMO.length]
+                .plusMinutes(random.nextInt(35));
+        if (horaBase.isBefore(LocalTime.of(1, 31))) {
+            return agora.plusDays(1).withHour(horaBase.getHour()).withMinute(horaBase.getMinute()).withSecond(0).withNano(0);
         }
-
-        return agora.withHour(6).withMinute(20).withSecond(0).withNano(0)
-                .plusMinutes(random.nextInt(30));
+        return agora.withHour(horaBase.getHour()).withMinute(horaBase.getMinute()).withSecond(0).withNano(0);
     }
 }

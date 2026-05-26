@@ -10,6 +10,8 @@ import com.tub.p8_gestao_bilhetica.model.ParametrosAnalise;
 import com.tub.p8_gestao_bilhetica.model.RegistoBilhetica;
 import com.tub.p8_gestao_bilhetica.model.ResultadoAnalitico;
 import com.tub.p8_gestao_bilhetica.service.MotorCalculoAnalitico;
+import com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura;
+import com.tub.p9_monitorizacao_iot.repository.LotacaoViaturaRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +28,9 @@ public class ControladorDashboard {
 
     private final MotorCalculoAnalitico motorCalculoAnalitico;
     private final com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository registoRepository;
+    private final LotacaoViaturaRepository lotacaoViaturaRepository;
+    private static final int MAX_VALIDACOES_POR_REGISTO_GRAFICO = 8;
+    private static final int MAX_VALIDACOES_POR_INTERVALO_GRAFICO = 160;
     private static final List<IntervaloHorario> INTERVALOS_TUB = List.of(
             new IntervaloHorario("06h20 - 08h00", LocalTime.of(6, 20), LocalTime.of(8, 0)),
             new IntervaloHorario("08h00 - 10h00", LocalTime.of(8, 0), LocalTime.of(10, 0)),
@@ -41,10 +46,12 @@ public class ControladorDashboard {
 
     public ControladorDashboard(
             MotorCalculoAnalitico motorCalculoAnalitico,
-            com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository registoRepository
+            com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository registoRepository,
+            LotacaoViaturaRepository lotacaoViaturaRepository
     ) {
         this.motorCalculoAnalitico = motorCalculoAnalitico;
         this.registoRepository = registoRepository;
+        this.lotacaoViaturaRepository = lotacaoViaturaRepository;
     }
 
     @GetMapping("/dashboard/resultados")
@@ -71,7 +78,7 @@ public class ControladorDashboard {
         }
 
         Map<String, Object> map = new HashMap<>();
-        map.put("taxaOcupacaoMedia", calcularTaxaOcupacaoMedia(todosOsRegistos));
+        map.put("taxaOcupacaoMedia", calcularTaxaOcupacaoMedia(linha));
         map.put("totalPassageiros", todosOsRegistos.stream()
                 .mapToInt(r -> r.getValidacoes() != null ? r.getValidacoes() : 0)
                 .sum());
@@ -92,8 +99,9 @@ public class ControladorDashboard {
                             && r.getDataHora().isBefore(fimServico)
                             && !r.getDataHora().isBefore(inicio)
                             && r.getDataHora().isBefore(fim))
-                    .mapToInt(r -> r.getValidacoes() != null ? r.getValidacoes() : 0)
+                    .mapToInt(this::validacoesRealistasParaGrafico)
                     .sum();
+            totalIntervalo = Math.min(totalIntervalo, MAX_VALIDACOES_POR_INTERVALO_GRAFICO);
             labels.add(intervalo.label());
             procura.add(totalIntervalo);
         }
@@ -106,25 +114,32 @@ public class ControladorDashboard {
         return org.springframework.http.ResponseEntity.ok(map);
     }
 
-    private double calcularTaxaOcupacaoMedia(List<RegistoBilhetica> registos) {
-        double somaTaxas = 0.0;
-        int countComCapacidade = 0;
+    private int validacoesRealistasParaGrafico(RegistoBilhetica registo) {
+        int validacoes = registo.getValidacoes() != null ? registo.getValidacoes() : 0;
+        return Math.max(0, Math.min(validacoes, MAX_VALIDACOES_POR_REGISTO_GRAFICO));
+    }
 
-        for (RegistoBilhetica registo : registos) {
-            if (registo.getValidacoes() == null) {
-                continue;
-            }
-            int capacidade = 80;
-            if (registo.getViatura() != null
-                    && registo.getViatura().getCapacidadeMaxima() != null
-                    && registo.getViatura().getCapacidadeMaxima() > 0) {
-                capacidade = registo.getViatura().getCapacidadeMaxima();
-            }
-            somaTaxas += ((double) registo.getValidacoes() / capacidade) * 100;
-            countComCapacidade++;
+    private double calcularTaxaOcupacaoMedia(String linha) {
+        List<EstadoOcupacaoViatura> estados = lotacaoViaturaRepository.findAll().stream()
+                .filter(EstadoOcupacaoViatura::isSinalAtivo)
+                .filter(e -> linha == null || linha.isBlank() || linha.equals("vazia") || linha.equalsIgnoreCase("ALL")
+                        || normalizarLinha(e.getLinha()).equals(normalizarLinha(linha)))
+                .toList();
+
+        return estados.stream()
+                .filter(e -> e.getTaxaOcupacao() != null)
+                .mapToDouble(EstadoOcupacaoViatura::getTaxaOcupacao)
+                .average()
+                .orElse(0.0);
+    }
+
+    private String normalizarLinha(String linha) {
+        if (linha == null) {
+            return "";
         }
-
-        return countComCapacidade > 0 ? somaTaxas / countComCapacidade : 0.0;
+        return linha.replace("Linha", "")
+                .replace("linha", "")
+                .trim();
     }
 
     private record IntervaloHorario(String label, LocalTime inicio, LocalTime fim) {

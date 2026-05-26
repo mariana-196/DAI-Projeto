@@ -38,6 +38,12 @@ public class ProcesadorArmazenamento {
             "Avenida Central", "Bom Jesus", "Arcada", "Gualtar",
             "Braga Parque", "Lamacaes"
     };
+    private static final LocalTime[] HORAS_SERVICO_DEMO = {
+            LocalTime.of(6, 35), LocalTime.of(8, 40), LocalTime.of(10, 30),
+            LocalTime.of(12, 25), LocalTime.of(14, 35), LocalTime.of(16, 45),
+            LocalTime.of(18, 30), LocalTime.of(20, 35), LocalTime.of(22, 40),
+            LocalTime.of(0, 45)
+    };
 
     static {
         COORDENADAS_PARAGENS.put("Universidade do Minho", new double[]{41.5612, -8.3978});
@@ -220,7 +226,7 @@ public class ProcesadorArmazenamento {
 
         int maxDelta = (config != null && config.getSimulacaoMaxEntradasSaidas() != null)
                 ? Math.max(1, config.getSimulacaoMaxEntradasSaidas()) : 10;
-        int maxValidacoesPorAutocarro = Math.min(maxDelta, 8);
+        int maxValidacoesPorLeitura = Math.min(maxDelta, 6);
 
         Random random = new Random();
         int totalAutocarrosConsiderados = Math.min(6, viaturas.size());
@@ -235,28 +241,27 @@ public class ProcesadorArmazenamento {
         List<RegistoBilhetica> registos = new ArrayList<>();
         String[] titulos = {"Passe Estudante", "Bilhete Normal", "Passe Senior", "Passe Turistico"};
 
-        for (int i = 0; i < totalAutocarrosConsiderados; i++) {
-            Linha linha = linhas.get(random.nextInt(linhas.size()));
-            Viatura viatura = viaturas.get(i);
-            String origem = PARAGENS_DEMO[random.nextInt(PARAGENS_DEMO.length)];
-            String destino = inferirDestino(origem, linha.getDestino(), random);
-            int entradas = random.nextInt(maxValidacoesPorAutocarro + 1);
-            if (entradas == 0) {
-                continue;
-            }
+        for (int intervalo = 0; intervalo < HORAS_SERVICO_DEMO.length; intervalo++) {
+            for (int linhaIndex = 0; linhaIndex < linhas.size(); linhaIndex++) {
+                Linha linha = linhas.get(linhaIndex);
+                Viatura viatura = viaturas.get((intervalo + linhaIndex) % totalAutocarrosConsiderados);
+                String origem = PARAGENS_DEMO[random.nextInt(PARAGENS_DEMO.length)];
+                String destino = inferirDestino(origem, linha.getDestino(), random);
+                int entradas = 1 + random.nextInt(Math.max(1, Math.min(maxValidacoesPorLeitura, 3)));
 
-            RegistoBilhetica registo = new RegistoBilhetica();
-            registo.setLote(lote);
-            registo.setLinha(linha);
-            registo.setViatura(viatura);
-            registo.setDataHora(gerarInstanteServico(random));
-            registo.setParagemOrigem(origem);
-            registo.setParagemDestino(destino);
-            registo.setTipoTitulo(titulos[random.nextInt(titulos.length)]);
-            registo.setValidacoes(entradas);
-            registo.setZona(inferirZona(origem));
-            aplicarCoordenadas(registo, origem, destino);
-            registos.add(registo);
+                RegistoBilhetica registo = new RegistoBilhetica();
+                registo.setLote(lote);
+                registo.setLinha(linha);
+                registo.setViatura(viatura);
+                registo.setDataHora(gerarInstanteServico(intervalo, random));
+                registo.setParagemOrigem(origem);
+                registo.setParagemDestino(destino);
+                registo.setTipoTitulo(titulos[random.nextInt(titulos.length)]);
+                registo.setValidacoes(entradas);
+                registo.setZona(inferirZona(origem));
+                aplicarCoordenadas(registo, origem, destino);
+                registos.add(registo);
+            }
         }
 
         registoRepository.saveAll(registos);
@@ -284,18 +289,14 @@ public class ProcesadorArmazenamento {
         return lote;
     }
 
-    private LocalDateTime gerarInstanteServico(Random random) {
+    private LocalDateTime gerarInstanteServico(int indiceIntervalo, Random random) {
         LocalDateTime agora = LocalDateTime.now();
-        LocalTime horaAtual = agora.toLocalTime();
-        LocalTime inicioServico = LocalTime.of(6, 20);
-        LocalTime fimServico = LocalTime.of(1, 30);
-
-        if (!horaAtual.isBefore(inicioServico) || horaAtual.isBefore(fimServico)) {
-            return agora;
+        LocalTime horaBase = HORAS_SERVICO_DEMO[indiceIntervalo % HORAS_SERVICO_DEMO.length]
+                .plusMinutes(random.nextInt(35));
+        if (horaBase.isBefore(LocalTime.of(1, 31))) {
+            return agora.plusDays(1).withHour(horaBase.getHour()).withMinute(horaBase.getMinute()).withSecond(0).withNano(0);
         }
-
-        return agora.withHour(6).withMinute(20).withSecond(0).withNano(0)
-                .plusMinutes(random.nextInt(30));
+        return agora.withHour(horaBase.getHour()).withMinute(horaBase.getMinute()).withSecond(0).withNano(0);
     }
 
     public synchronized void simularSensoresLotacao() {
