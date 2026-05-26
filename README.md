@@ -18,7 +18,7 @@ O nosso grupo foca o desenvolvimento nos seguintes módulos específicos do cade
 
 ##  Como Executar o Projeto Localmente
 
-### 1. Iniciar a Base de Dados (Docker) - Primeiramente abrir o Docker Desktop
+### 1. Iniciar a Base de Dados (Docker)
 1. Aceder à pasta `Backend/tub-backend/database`.
 2. Abrir o terminal integrado no VS Code, clique com o botão direito sobre a pasta e selecione a opção "Open in Integrated Terminal".
 3. Executar o comando: `docker-compose up -d`
