@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import com.tub.p3_integracao_externa.model.Validation;
 import com.tub.p5_lotacao.repository.LinhaRepository;
@@ -205,7 +206,9 @@ public class ProcesadorArmazenamento {
 
     public synchronized LoteDadosBilhetica simularFluxosBilheticaAleatorios(String origemSincronizacao) {
         List<Linha> linhas = linhaRepository.findAll();
-        List<Viatura> viaturas = viaturasRepository.findAll();
+        List<Viatura> viaturas = viaturasRepository.findAll().stream()
+                .filter(Viatura::isAtiva)
+                .toList();
 
         if (linhas.isEmpty() || viaturas.isEmpty()) {
             return null;
@@ -217,9 +220,10 @@ public class ProcesadorArmazenamento {
 
         int maxDelta = (config != null && config.getSimulacaoMaxEntradasSaidas() != null)
                 ? Math.max(1, config.getSimulacaoMaxEntradasSaidas()) : 10;
+        int maxValidacoesPorAutocarro = Math.min(maxDelta, 8);
 
         Random random = new Random();
-        int totalRegistos = Math.max(12, maxDelta * 3 + random.nextInt(maxDelta * 4 + 1));
+        int totalAutocarrosConsiderados = Math.min(6, viaturas.size());
 
         LoteDadosBilhetica lote = new LoteDadosBilhetica();
         lote.setCodigoLote("LOTE_SYNC_" + System.currentTimeMillis());
@@ -231,21 +235,25 @@ public class ProcesadorArmazenamento {
         List<RegistoBilhetica> registos = new ArrayList<>();
         String[] titulos = {"Passe Estudante", "Bilhete Normal", "Passe Senior", "Passe Turistico"};
 
-        for (int i = 0; i < totalRegistos; i++) {
+        for (int i = 0; i < totalAutocarrosConsiderados; i++) {
             Linha linha = linhas.get(random.nextInt(linhas.size()));
-            Viatura viatura = viaturas.get(random.nextInt(viaturas.size()));
+            Viatura viatura = viaturas.get(i);
             String origem = PARAGENS_DEMO[random.nextInt(PARAGENS_DEMO.length)];
             String destino = inferirDestino(origem, linha.getDestino(), random);
+            int entradas = random.nextInt(maxValidacoesPorAutocarro + 1);
+            if (entradas == 0) {
+                continue;
+            }
 
             RegistoBilhetica registo = new RegistoBilhetica();
             registo.setLote(lote);
             registo.setLinha(linha);
             registo.setViatura(viatura);
-            registo.setDataHora(LocalDateTime.now().minusMinutes(random.nextInt(180)));
+            registo.setDataHora(gerarInstanteServico(random));
             registo.setParagemOrigem(origem);
             registo.setParagemDestino(destino);
             registo.setTipoTitulo(titulos[random.nextInt(titulos.length)]);
-            registo.setValidacoes(1 + random.nextInt(Math.max(1, maxDelta)));
+            registo.setValidacoes(entradas);
             registo.setZona(inferirZona(origem));
             aplicarCoordenadas(registo, origem, destino);
             registos.add(registo);
@@ -258,8 +266,8 @@ public class ProcesadorArmazenamento {
         try {
             MetricaIngestao metrica = new MetricaIngestao();
             metrica.setLote(lote);
-            metrica.setRegistosRecebidos(totalRegistos);
-            metrica.setRegistosValidos(totalRegistos);
+            metrica.setRegistosRecebidos(totalAutocarrosConsiderados);
+            metrica.setRegistosValidos(registos.size());
             metrica.setRegistosInvalidos(0);
             metrica.setEstado(lote.getEstado().name());
             metricaRepository.save(metrica);
@@ -274,6 +282,20 @@ public class ProcesadorArmazenamento {
         }
 
         return lote;
+    }
+
+    private LocalDateTime gerarInstanteServico(Random random) {
+        LocalDateTime agora = LocalDateTime.now();
+        LocalTime horaAtual = agora.toLocalTime();
+        LocalTime inicioServico = LocalTime.of(6, 20);
+        LocalTime fimServico = LocalTime.of(1, 30);
+
+        if (!horaAtual.isBefore(inicioServico) || horaAtual.isBefore(fimServico)) {
+            return agora;
+        }
+
+        return agora.withHour(6).withMinute(20).withSecond(0).withNano(0)
+                .plusMinutes(random.nextInt(30));
     }
 
     public synchronized void simularSensoresLotacao() {
