@@ -505,14 +505,22 @@
         // Download Simulated PDF POST
         document.getElementById("btn-descarregar-pdf").addEventListener("click", async () => {
             try {
-                // Post to /api/relatorios/exportar/pdf
                 const res = await apiPost("/api/relatorios/exportar/pdf");
                 if (res && res.conteudoBase64) {
-                    // Create direct download
+                    const byteCharacters = atob(res.conteudoBase64);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const blob = new Blob([new Uint8Array(byteNumbers)], { type: res.tipoConteudo || "application/pdf" });
+                    const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
-                    link.href = 'data:' + res.tipoConteudo + ';base64,' + res.conteudoBase64;
-                    link.download = res.nomeFicheiro;
+                    link.href = url;
+                    link.download = res.nomeFicheiro || "relatorio_sistema.pdf";
+                    document.body.appendChild(link);
                     link.click();
+                    link.remove();
+                    URL.revokeObjectURL(url);
                 }
             } catch (err) {
                 alert("Erro ao exportar PDF: " + err);
