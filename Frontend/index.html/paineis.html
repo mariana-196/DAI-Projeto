@@ -677,18 +677,14 @@
 
             try {
                 const url = `/api/previsoes/calcular?viaturaId=${viaturaId}&painelId=${painelId}&linhaId=${linhaId}&destino=${encodeURIComponent(destino)}&paragensRestantes=${paragensRestantes}`;
-                const response = await fetch(`http://localhost:8081${url}`, { method: 'POST' });
-                if (response.ok) {
-                    const fb = document.getElementById("sim-feedback");
-                    fb.style.display = "block";
-                    setTimeout(() => fb.style.display = "none", 5000);
-                } else {
-                    const erroTexto = await response.text();
-                    alert("Erro ao simular previsão: " + erroTexto);
-                    console.error("Erro previsão:", response.status, erroTexto);
-                }
+                const res = await apiPost(url);
+                
+                const fb = document.getElementById("sim-feedback");
+                fb.style.display = "block";
+                setTimeout(() => fb.style.display = "none", 5000);
             } catch (err) {
-                alert("Falha na chamada: " + err);
+                alert("Erro ao simular previsão: " + (err.message || err));
+                console.error("Erro previsão:", err);
             }
         });
 
