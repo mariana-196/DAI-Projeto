@@ -51,22 +51,29 @@ public class ControloRelatorioAuditoria {
     ) {
         List<Map<String, Object>> dados = new ArrayList<>();
 
-        Map<String, Object> registo1 = new LinkedHashMap<>();
-        registo1.put("data", "2026-04-20 10:30");
-        registo1.put("utilizador", controloAnonimizacao.anonimizarEmail("admin@tub.pt"));
-        registo1.put("evento", "LOGIN");
-        registo1.put("severidade", "INFO");
-        registo1.put("resultado", "Sucesso");
+        LocalDateTime inicio = null;
+        LocalDateTime fim = null;
+        if (dataInicio != null && !dataInicio.isEmpty()) {
+            inicio = java.time.LocalDate.parse(dataInicio).atStartOfDay();
+        }
+        if (dataFim != null && !dataFim.isEmpty()) {
+            fim = java.time.LocalDate.parse(dataFim).atTime(23, 59, 59);
+        }
 
-        Map<String, Object> registo2 = new LinkedHashMap<>();
-        registo2.put("data", "2026-04-20 11:05");
-        registo2.put("utilizador", controloAnonimizacao.anonimizarEmail("operador@tub.pt"));
-        registo2.put("evento", "TENTATIVA_FALHADA");
-        registo2.put("severidade", "AVISO");
-        registo2.put("resultado", "Falha");
+        List<com.tub.p6_auditoria.model.RegistoAuditoria> logs = auditService.pesquisarLogs(
+                utilizador, evento, null, severidade, inicio, fim
+        );
 
-        dados.add(registo1);
-        dados.add(registo2);
+        for (com.tub.p6_auditoria.model.RegistoAuditoria log : logs) {
+            Map<String, Object> registo = new LinkedHashMap<>();
+            registo.put("timestamp", log.getTimestamp() != null ? log.getTimestamp().toString() : "N/A");
+            registo.put("utilizador", log.getUtilizador());
+            registo.put("acao", log.getAcao());
+            registo.put("modulo", log.getModulo());
+            registo.put("nivel", log.getNivel());
+            registo.put("ipOrigem", log.getIpOrigem());
+            dados.add(registo);
+        }
 
         DadosRelatorio relatorio = new DadosRelatorio(
                 "Relatório de Auditoria",

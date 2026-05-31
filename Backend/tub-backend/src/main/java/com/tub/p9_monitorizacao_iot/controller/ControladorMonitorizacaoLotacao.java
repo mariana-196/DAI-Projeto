@@ -28,13 +28,13 @@ public class ControladorMonitorizacaoLotacao {
     private InterfaceTelemetriaLotacao wavecomAdapter;
 
     @Autowired
-    private com.tub.p9_monitorizacao_iot.service.SeviceMonitorizacaoLotacao contagemService;
+    private com.tub.p9_monitorizacao_iot.service.ServiceMonitorizacaoLotacao contagemService;
 
     @Autowired
     private LotacaoViaturaRepository lotacaoViaturaRepository;
 
     @Autowired
-    private com.tub.p8_gestao_bilhetica.service.ProcesadorArmazenamento procesadorArmazenamento;
+    private com.tub.p8_gestao_bilhetica.service.ProcessadorArmazenamento procesadorArmazenamento;
 
     @Autowired
     private com.tub.p11_gestao_alertas.repository.AlertaOperacionalRepository alertaOperacionalRepository;
@@ -219,10 +219,15 @@ public class ControladorMonitorizacaoLotacao {
         return status;
     }
 
+    @Autowired
+    private com.tub.p8_gestao_bilhetica.repository.RegistoBilheticaRepository registoBilheticaRepository;
+
     @GetMapping("/status-geral")
     public ResponseEntity<List<Map<String, Object>>> getStatusGeral() {
         List<EstadoOcupacaoViatura> estados = lotacaoViaturaRepository.findAll();
         List<Map<String, Object>> resposta = new ArrayList<>();
+
+        java.time.LocalDateTime inicioDia = java.time.LocalDate.now().atTime(0, 0);
 
         for (EstadoOcupacaoViatura estado : estados) {
             Map<String, Object> item = new HashMap<>();
@@ -230,9 +235,28 @@ public class ControladorMonitorizacaoLotacao {
 
             item.put("id", v != null ? v.getCodigo() : estado.getId());
             item.put("linha", estado.getLinha());
+            
             int passageiros = estado.isSinalAtivo()
                     ? (estado.getPassageirosAtuais() != null ? estado.getPassageirosAtuais() : 0)
                     : 0;
+
+            // Garantir a coerência matemática: passageiros atuais NUNCA podem ser superiores às validações do dia!
+            if (v != null && estado.isSinalAtivo()) {
+                int validacoesHoje = registoBilheticaRepository.findAll().stream()
+                        .filter(r -> r.getViatura() != null && r.getViatura().getId().equals(v.getId()))
+                        .filter(r -> r.getDataHora() != null && !r.getDataHora().isBefore(inicioDia))
+                        .mapToInt(r -> r.getValidacoes() != null ? r.getValidacoes() : 0)
+                        .sum();
+
+                if (passageiros > validacoesHoje) {
+                    passageiros = (int) (validacoesHoje * 0.6); // Simula que 40% já saiu do autocarro
+                    estado.setPassageirosAtuais(passageiros);
+                    double cap = v.getCapacidadeMaxima() != null ? v.getCapacidadeMaxima() : 80;
+                    estado.setTaxaOcupacao((passageiros / cap) * 100);
+                    lotacaoViaturaRepository.save(estado);
+                }
+            }
+
             if (!estado.isSinalAtivo() && (estado.getPassageirosAtuais() == null || estado.getPassageirosAtuais() != 0
                     || estado.getTaxaOcupacao() == null || estado.getTaxaOcupacao() != 0.0)) {
                 estado.setPassageirosAtuais(0);

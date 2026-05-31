@@ -1,7 +1,7 @@
 package com.tub.p4_gestao_utilizadores.controller;
 
-import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
-import com.tub.p2_dados_utilizador.repository.RegistoUtilizadorRepository;
+import com.tub.p1_autenticacao.model.RegistoUtilizador;
+import com.tub.p1_autenticacao.repository.RegistoUtilizadorRepository;
 import com.tub.p1_autenticacao.annotation.RequerCargo;
 import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 
@@ -63,6 +63,8 @@ public class ControladorAdministracaoContas {
             return ResponseEntity.status(401).body("Não autorizado");
         }
 
+
+
         if (eAdmin(usuarioAutenticado)) {
             return ResponseEntity.ok(utilizadorRepository.findAll());
         } else {
@@ -83,6 +85,12 @@ public class ControladorAdministracaoContas {
             return ResponseEntity.badRequest().body("Erro: O formato do email é inválido!");
         }
 
+        // --- Validação da Password (mínimo 6 caracteres) ---
+        if (novoUser.getPassword() == null || novoUser.getPassword().trim().length() < 6) {
+            return ResponseEntity.badRequest().body("Erro: A password deve ter no mínimo 6 caracteres!");
+        }
+        novoUser.setPassword(novoUser.getPassword().trim());
+
         Optional<RegistoUtilizador> existente = utilizadorRepository.findByEmail(novoUser.getEmail());
         if (existente.isPresent()) {
             return ResponseEntity.badRequest().body("Este email já existe!");
@@ -96,7 +104,7 @@ public class ControladorAdministracaoContas {
                     "CRIAR_UTILIZADOR",
                     "Utilizadores",
                     getExecutorIp(),
-                    "INFO",
+                    "AVISO",
                     "Utilizador criado com sucesso: " + novoUser.getEmail() + " com cargo " + novoUser.getCargo()
             );
         } catch (Exception e) {
@@ -124,6 +132,17 @@ public class ControladorAdministracaoContas {
         }
 
         RegistoUtilizador utilizador = op.get();
+
+        // Impedir que administradores bloqueiem a si próprios ou alterem o seu próprio cargo
+        if (admin && usuarioAutenticado.getId().equals(id)) {
+            if (dadosAtualizados.isAtivo() != utilizador.isAtivo() && !dadosAtualizados.isAtivo()) {
+                return ResponseEntity.badRequest().body("Erro: Um administrador não pode bloquear a sua própria conta!");
+            }
+            if (dadosAtualizados.getCargo() != null && !dadosAtualizados.getCargo().equalsIgnoreCase(utilizador.getCargo())) {
+                return ResponseEntity.badRequest().body("Erro: Não pode alterar o seu próprio perfil de cargo administrativo!");
+            }
+        }
+
         if (!admin) {
             utilizador.setNome(dadosAtualizados.getNome());
         } else {
@@ -134,7 +153,10 @@ public class ControladorAdministracaoContas {
         }
 
         if (dadosAtualizados.getPassword() != null && !dadosAtualizados.getPassword().isBlank()) {
-            utilizador.setPassword(dadosAtualizados.getPassword());
+            if (dadosAtualizados.getPassword().trim().length() < 6) {
+                return ResponseEntity.badRequest().body("Erro: A password deve ter no mínimo 6 caracteres!");
+            }
+            utilizador.setPassword(dadosAtualizados.getPassword().trim());
         }
 
         if (admin && emailInvalido(utilizador.getEmail())) {
@@ -149,7 +171,7 @@ public class ControladorAdministracaoContas {
                     "EDITAR_UTILIZADOR",
                     "Utilizadores",
                     getExecutorIp(),
-                    "INFO",
+                    "AVISO",
                     "Utilizador editado com sucesso: " + utilizador.getEmail() + " (ID: " + id + ")"
             );
         } catch (Exception e) {
@@ -167,6 +189,10 @@ public class ControladorAdministracaoContas {
             return ResponseEntity.status(401).body("Não autorizado");
         }
 
+        if (usuarioAutenticado.getId().equals(id)) {
+            return ResponseEntity.badRequest().body("Erro: Um administrador não pode bloquear a sua própria conta!");
+        }
+
         Optional<RegistoUtilizador> op = utilizadorRepository.findById(id);
         if (op.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -182,7 +208,7 @@ public class ControladorAdministracaoContas {
                     "DESATIVAR_UTILIZADOR",
                     "Utilizadores",
                     getExecutorIp(),
-                    "INFO",
+                    "AVISO",
                     "Utilizador desativado: " + utilizador.getEmail() + " (ID: " + id + ")"
             );
         } catch (Exception e) {
@@ -215,7 +241,7 @@ public class ControladorAdministracaoContas {
                     "ATIVAR_UTILIZADOR",
                     "Utilizadores",
                     getExecutorIp(),
-                    "INFO",
+                    "AVISO",
                     "Utilizador ativado: " + utilizador.getEmail() + " (ID: " + id + ")"
             );
         } catch (Exception e) {
@@ -247,7 +273,7 @@ public class ControladorAdministracaoContas {
                         "ELIMINAR_UTILIZADOR",
                         "Utilizadores",
                         getExecutorIp(),
-                        "INFO",
+                        "CRÍTICO",
                         "Utilizador eliminado permanentemente: " + utilizador.getEmail() + " (ID: " + id + ")"
                 );
             } catch (Exception e) {

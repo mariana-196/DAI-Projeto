@@ -92,4 +92,27 @@ public class InterfaceAgendamentos {
 
         return ResponseEntity.ok("Tarefa automática de relatórios disparada manualmente com sucesso!");
     }
+
+    // Cancelar/Eliminar um agendamento
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarAgendamento(@PathVariable Long id) {
+        TarefaAgendada agendamento = tarefaRepository.findById(id).orElse(null);
+        if (agendamento != null) {
+            tarefaRepository.deleteById(id);
+            try {
+                auditService.registar(
+                        getExecutorEmail(),
+                        "ALTERAR_CONFIGURACAO",
+                        "Relatórios",
+                        getExecutorIp(),
+                        "INFO",
+                        "Agendamento de relatório cancelado: " + agendamento.getNomeTarefa() + " (Tipo: " + agendamento.getTipoRelatorio() + ")"
+                );
+            } catch (Exception e) {
+                System.err.println("Erro ao registar auditoria: " + e.getMessage());
+            }
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

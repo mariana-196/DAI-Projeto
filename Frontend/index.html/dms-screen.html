@@ -163,6 +163,8 @@
 
     <script src="shared/api.js"></script>
     <script>
+
+
         // URL Parameter panelId
         const urlParams = new URLSearchParams(window.location.search);
         const panelId = urlParams.get('panelId') || 'PMD-001';
@@ -215,8 +217,12 @@
                 container.innerHTML = "";
 
                 if (panel.status === 'OFFLINE') {
-                    container.innerHTML = '<div class="offline-message">[ PAINEL SEM SINAL DE REDE ]</div>';
+                    container.innerHTML = '<div class="offline-message">SEM SINAL</div>';
+                    document.getElementById("ticker-marquee-text").textContent = "";
+                    document.querySelector(".ticker-marquee").style.display = "none";
                     return;
+                } else {
+                    document.querySelector(".ticker-marquee").style.display = "block";
                 }
 
                 // Fetch predictions

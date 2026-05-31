@@ -14,6 +14,7 @@ public class DisplayPanel {
     
     private String location;
     private String message;
+    private String priority;
     private String status;
     private LocalDateTime timestamp;
 
@@ -21,10 +22,11 @@ public class DisplayPanel {
     public DisplayPanel() {}
 
     // Construtor completo para facilitar a criação de objetos
-    public DisplayPanel(String panelId, String location, String message, String status, LocalDateTime timestamp) {
+    public DisplayPanel(String panelId, String location, String message, String priority, String status, LocalDateTime timestamp) {
         this.panelId = panelId;
         this.location = location;
         this.message = message;
+        this.priority = priority;
         this.status = status;
         this.timestamp = timestamp;
     }
@@ -68,5 +70,13 @@ public class DisplayPanel {
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 }

@@ -294,8 +294,7 @@
                     <label>Cargo (Permissões)</label>
                     <select id="user-cargo">
                         <option value="ADMINISTRADOR">Administrador</option>
-                        <option value="GESTOR_TRANSPORTES">Gestor de Transportes</option>
-                        <option value="OPERADOR_CCO">Operador CCO</option>
+                        <option value="OPERADOR">Operador</option>
                     </select>
                 </div>
 
@@ -339,9 +338,8 @@
 
         // ── Cargo label helper ──
         function translateCargo(cargo) {
-            if (cargo === "ADMINISTRADOR")      return "Administrador";
-            if (cargo === "GESTOR_TRANSPORTES") return "Gestor de Transportes";
-            if (cargo === "OPERADOR_CCO")       return "Operador CCO";
+            if (cargo === "ADMINISTRADOR") return "Administrador";
+            if (cargo === "OPERADOR" || cargo === "GESTOR_TRANSPORTES") return "Operador";
             return cargo || "Utilizador";
         }
 
@@ -467,6 +465,8 @@
                 const toggleStyle = ativo
                     ? 'color:var(--warn); border-color:var(--warn);'
                     : 'color:var(--success); border-color:var(--success);';
+                const toggleBtnHtml = u.cargo === 'ADMINISTRADOR' ? '' : `<button class="btn btn-outline btn-sm" style="${toggleStyle}" onclick="toggleUserStatus(${u.id}, ${u.ativo})">${toggleLabel}</button>`;
+                const deleteBtnHtml = u.cargo === 'ADMINISTRADOR' ? '' : `<button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="deleteUser(${u.id})">Eliminar</button>`;
 
                 tr.innerHTML = `
                     <td><strong>${u.nome}</strong></td>
@@ -476,8 +476,8 @@
                     <td style="text-align:right;">
                         <div style="display:flex; justify-content:flex-end; gap:8px;">
                             <button class="btn btn-outline btn-sm" onclick="openEditModal(${u.id})">Editar</button>
-                            <button class="btn btn-outline btn-sm" style="${toggleStyle}" onclick="toggleUserStatus(${u.id}, ${u.ativo})">${toggleLabel}</button>
-                            <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="deleteUser(${u.id})">Eliminar</button>
+                            ${toggleBtnHtml}
+                            ${deleteBtnHtml}
                         </div>
                     </td>
                 `;
@@ -491,7 +491,7 @@
             document.getElementById("user-id").value          = userId || "";
             document.getElementById("user-nome").value        = userName || "";
             document.getElementById("user-email").value       = userEmail || "";
-            document.getElementById("user-cargo").value       = userRole || "OPERADOR_CCO";
+            document.getElementById("user-cargo").value       = userRole || "OPERADOR";
             document.getElementById("user-password").value    = "";
             document.getElementById("user-ativo").checked     = true;
             document.getElementById("pwd-label").textContent  = "Nova Palavra-passe (deixe em branco para manter)";
@@ -541,7 +541,7 @@
             document.getElementById("user-id").value          = "";
             document.getElementById("user-nome").value        = "";
             document.getElementById("user-email").value       = "";
-            document.getElementById("user-cargo").value       = "OPERADOR_CCO";
+            document.getElementById("user-cargo").value       = "OPERADOR";
             document.getElementById("user-password").value    = "";
             document.getElementById("user-ativo").checked     = true;
             updateAtivoLabel();
@@ -575,9 +575,20 @@
             const password = document.getElementById("user-password").value;
 
             if (!nome) { alert("Preencha o Nome Completo."); return; }
+            if (!email) { alert("Preencha o Endereço de Email."); return; }
+            const emailRegex = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+            if (!emailRegex.test(email)) {
+                alert("O formato do email é inválido.");
+                return;
+            }
+
+            if (password && password.trim().length < 6) {
+                alert("A palavra-passe deve ter no mínimo 6 caracteres.");
+                return;
+            }
 
             const payload = { nome, email, cargo, ativo };
-            if (password) payload.password = password;
+            if (password) payload.password = password.trim();
 
             try {
                 if (id) {
@@ -611,7 +622,8 @@
                 } else {
                     // POST: create new (admin only)
                     if (!password) { alert("Defina uma palavra-passe para o novo utilizador."); return; }
-                    payload.password = password;
+                    if (password.trim().length < 6) { alert("A palavra-passe deve ter no mínimo 6 caracteres."); return; }
+                    payload.password = password.trim();
 
                     const resp = await fetch("http://localhost:8081/api/utilizadores/guardar", {
                         method: "POST",
@@ -655,7 +667,9 @@
         // ── Delete user ──
         async function deleteUser(uId) {
             if (!isAdmin) return;
-            if (!confirm("Tem a certeza que deseja eliminar permanentemente este utilizador?")) return;
+            const u = allUsers.find(x => x.id === uId);
+            const nomeStr = u ? u.nome : "este utilizador";
+            if (!confirm(`Tem a certeza que deseja eliminar permanentemente o utilizador "${nomeStr}"?`)) return;
             try {
                 const resp = await fetch(`http://localhost:8081/api/utilizadores/${uId}`, {
                     method: "DELETE",

@@ -107,24 +107,26 @@
                                 <select id="filter-nivel" onchange="loadLogsData()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); font-family:'Outfit';">
                                     <option value="">Todos os Níveis</option>
                                     <option value="INFO">INFO</option>
-                                    <option value="WARNING">WARNING</option>
-                                    <option value="ERROR">ERROR</option>
-                                    <option value="CRITICAL">CRITICAL</option>
+                                    <option value="AVISO">AVISO</option>
+                                    <option value="ERRO">ERRO</option>
+                                    <option value="CRÍTICO">CRÍTICO</option>
                                 </select>
 
                                 <select id="filter-modulo" onchange="loadLogsData()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); font-family:'Outfit';">
                                     <option value="">Todos os Módulos</option>
-                                    <option value="Autenticacao">Autenticação</option>
+                                    <option value="Autenticação">Autenticação</option>
+                                    <option value="Autorização">Autorização</option>
+                                    <option value="Utilizadores">Utilizadores</option>
                                     <option value="Frota">Frota & GIS</option>
-                                    <option value="Bilhetica">Bilhética</option>
+                                    <option value="Bilhética">Bilhética</option>
                                     <option value="DMS">Painéis DMS</option>
                                     <option value="IoT">Lotação (IoT)</option>
+                                    <option value="Alertas">Alertas</option>
+                                    <option value="Relatórios">Relatórios</option>
+                                    <option value="Dashboard Operacional">Dashboard</option>
                                     <option value="Auditoria">Auditoria</option>
                                 </select>
 
-                                <button class="btn btn-outline btn-sm" onclick="exportLogsCsv()">
-                                    📥 Exportar CSV
-                                </button>
                             </div>
                         </div>
                         <div class="card-body" style="padding:0;">
@@ -136,11 +138,10 @@
                                         <th>Módulo</th>
                                         <th>Ação</th>
                                         <th>Nível</th>
-                                        <th>IP Origem</th>
                                     </tr>
                                 </thead>
                                 <tbody id="logs-table-body">
-                                    <tr><td colspan="6" style="text-align:center;">Carregando logs do sistema...</td></tr>
+                                    <tr><td colspan="5" style="text-align:center;">Carregando logs do sistema...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -157,8 +158,9 @@
                                     <label>Nível Mínimo para Registo</label>
                                     <select id="pol-nivel-select">
                                         <option value="INFO">INFO (Regista Tudo)</option>
-                                        <option value="WARNING">WARNING (Apenas Avisos/Erros)</option>
-                                        <option value="ERROR">ERROR (Apenas Falhas Graves)</option>
+                                        <option value="AVISO">AVISO (Apenas Avisos/Erros)</option>
+                                        <option value="ERRO">ERRO (Apenas Falhas Graves)</option>
+                                        <option value="CRÍTICO">CRÍTICO (Apenas Ameaças/Violações)</option>
                                     </select>
                                 </div>
                                 <div class="form-field">
@@ -247,7 +249,7 @@
                 tbody.innerHTML = "";
 
                 if (logs.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum registo de auditoria encontrado.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum registo de auditoria encontrado.</td></tr>';
                     return;
                 }
 
@@ -256,11 +258,13 @@
 
                 logs.forEach(log => {
                     const tr = document.createElement("tr");
+                    tr.style.cursor = "pointer";
+                    tr.title = "Clique para ver detalhes do evento";
                     const dateStr = log.timestamp ? log.timestamp.replace('T', ' ').substring(0, 19) : 'N/A';
                     
                     let badgeClass = 'badge-green';
-                    if (log.nivel === 'WARNING') badgeClass = 'badge-orange';
-                    if (log.nivel === 'ERROR' || log.nivel === 'CRITICAL') badgeClass = 'badge-red';
+                    if (log.nivel === 'WARNING' || log.nivel === 'AVISO') badgeClass = 'badge-orange';
+                    if (log.nivel === 'ERROR' || log.nivel === 'CRITICAL' || log.nivel === 'ERRO' || log.nivel === 'CRÍTICO' || log.nivel === 'CRITICO') badgeClass = 'badge-red';
 
                     tr.innerHTML = `
                         <td style="white-space:nowrap;">${dateStr}</td>
@@ -268,9 +272,32 @@
                         <td>${log.modulo}</td>
                         <td>${log.acao}</td>
                         <td><span class="badge ${badgeClass}">${log.nivel}</span></td>
-                        <td><code style="font-size:11px;">${log.ipOrigem}</code></td>
                     `;
+
+                    const detailTr = document.createElement("tr");
+                    detailTr.style.display = "none";
+                    detailTr.style.background = "#FAFBFD";
+                    detailTr.innerHTML = `
+                        <td colspan="5" style="padding: 12px 18px; font-size: 13px; color: var(--t2); border-left: 4px solid var(--orange);">
+                            <div style="display:flex; flex-direction:column; gap:4px;">
+                                <div><strong>Descrição Detalhada:</strong> ${log.detalhe || 'Sem metadados adicionais.'}</div>
+                                <div style="font-size: 11px; color: var(--t3); display:flex; gap:16px;">
+                                    <span><strong>ID Registo:</strong> #${log.id}</span>
+                                    <span><strong>Módulo:</strong> ${log.modulo}</span>
+                                    <span><strong>IP Origem:</strong> ${log.ipOrigem}</span>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+
+                    tr.addEventListener("click", () => {
+                        const isHidden = detailTr.style.display === "none";
+                        detailTr.style.display = isHidden ? "table-row" : "none";
+                        tr.style.background = isHidden ? "var(--bg)" : "";
+                    });
+
                     tbody.appendChild(tr);
+                    tbody.appendChild(detailTr);
                 });
 
             } catch (err) {
@@ -345,6 +372,19 @@
             const diasRetencao = parseInt(document.getElementById("pol-retencao-num").value);
             const notificacoesAtivas = document.getElementById("pol-notif-check").checked;
             const emailNotificacao = document.getElementById("pol-email-input").value;
+
+            if (isNaN(diasRetencao) || diasRetencao < 365) {
+                alert("A retenção mínima dos logs de auditoria é de 365 dias.");
+                return;
+            }
+
+            if (notificacoesAtivas) {
+                const emailRegex = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+                if (!emailNotificacao || !emailRegex.test(emailNotificacao.trim())) {
+                    alert("Por favor, introduza um e-mail de notificação válido.");
+                    return;
+                }
+            }
 
             try {
                 const res = await apiPut("/api/auditoria/politicas", {

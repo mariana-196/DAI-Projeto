@@ -1,7 +1,8 @@
 package com.tub.p1_autenticacao.controller;
 
 import com.tub.p1_autenticacao.service.ControloSegurancaAutenticacao;
-import com.tub.p1_autenticacao.controller.ControladorAcessos.LoginRequest;
+import com.tub.p2_dados_utilizador.controller.ControladorAcessos;
+import com.tub.p2_dados_utilizador.controller.ControladorAcessos.LoginRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

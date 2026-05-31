@@ -24,7 +24,7 @@ public class ProcessadorValidacaoTemporal {
     private MensagemPMDRepository mensagemRepository;
 
     @Autowired
-    private PainelService painelService;
+    private ServicoPaineis painelService;
 
     @Scheduled(fixedRate = 10000) // Rodar a cada 10 segundos para maior responsividade no simulador/testes
     public void validarEProcessarTarefas() {
@@ -49,25 +49,41 @@ public class ProcessadorValidacaoTemporal {
             MensagemPMD msg = mensagemRepository.findById(tarefa.getMensagemId()).orElse(null);
             if (msg != null) {
                 try {
-                    // Publicar mensagem no painel correspondente
-                    if ("TODOS".equals(msg.getPanelId())) {
-                        painelService.publicarMensagemBroadcast(msg.getConteudo());
-                    } else {
-                        painelService.publicarMensagemNumPainel(msg.getPanelId(), msg.getConteudo());
-                    }
+                    // Verificar se existe uma mensagem de prioridade superior ativa no painel
+                    painelService.checkPriority(msg.getPanelId(), msg.getPrioridade());
+
+                    // Publicar mensagem no painel correspondente sem duplicar log
+                    painelService.atualizarMensagemPainelSemNovoLog(msg.getPanelId(), msg.getConteudo(), msg.getPrioridade());
+
+                    // Desativar outras mensagens ativas
+                    painelService.desativarMensagensAnterioresExcluindo(msg.getPanelId(), msg.getId());
 
                     // Atualizar estado da mensagem original para ativa com timestamp atual
                     msg.setEstado("ATIVA");
                     msg.setDataCriacao(LocalDateTime.now());
                     mensagemRepository.save(msg);
 
+                    tarefa.setConcluida(true);
+                    tarefasRepository.save(tarefa);
+
+                } catch (IllegalStateException e) {
+                    if (e.getMessage().contains("prioridade superior")) {
+                        System.out.println("A aguardar. Mensagem de prioridade superior ativa no painel " + msg.getPanelId());
+                        // Não marcar como concluída, manter pendente para o próximo ciclo
+                    } else {
+                        System.err.println("Erro de estado (Painel degradado?) " + msg.getId() + ": " + e.getMessage());
+                        tarefa.setConcluida(true);
+                        tarefasRepository.save(tarefa);
+                    }
                 } catch (Exception e) {
                     System.err.println("Erro ao publicar mensagem agendada " + msg.getId() + ": " + e.getMessage());
+                    tarefa.setConcluida(true);
+                    tarefasRepository.save(tarefa);
                 }
+            } else {
+                tarefa.setConcluida(true);
+                tarefasRepository.save(tarefa);
             }
-
-            tarefa.setConcluida(true);
-            tarefasRepository.save(tarefa);
         }
     }
 }
