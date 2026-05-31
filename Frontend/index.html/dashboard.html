@@ -864,8 +864,8 @@
                 return;
             }
 
-            filtered.forEach(a => {
-                const isCritical = a.prioridade === 'ALTA';
+            filtered.sort((a, b) => b.id - a.id).forEach(a => {
+                const isCritical = a.prioridade === 'ALTA' || a.severidade === 'CRITICO';
                 const div = document.createElement("div");
                 div.className = `alert-item theme-${(a.tema || 'operations').toLowerCase()} ${isCritical ? 'critical' : ''}`;
                 
