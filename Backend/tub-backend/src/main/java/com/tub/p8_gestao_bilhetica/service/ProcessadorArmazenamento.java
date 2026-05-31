@@ -325,6 +325,30 @@ public class ProcessadorArmazenamento {
             estado.setTaxaOcupacao(taxa);
             estado.setUltimaAtualizacao(java.time.LocalDateTime.now());
             lotacaoViaturaRepository.save(estado);
+
+            if (taxa >= 90.0) {
+                boolean alertaExiste = alertaOperacionalRepository.findAll().stream()
+                        .anyMatch(a -> a.getViatura() != null && 
+                                       a.getViatura().getId().equals(estado.getViatura().getId()) && 
+                                       a.getEstado() != null && 
+                                       !a.getEstado().equalsIgnoreCase("RESOLVIDO") &&
+                                       "LOTACAO".equals(a.getTema()));
+
+                if (!alertaExiste) {
+                    com.tub.p11_gestao_alertas.model.AlertaOperacional novoAlerta = new com.tub.p11_gestao_alertas.model.AlertaOperacional(
+                            estado.getViatura(),
+                            estado.getLinha(),
+                            "Lotação Crítica (IoT)",
+                            "LOTACAO",
+                            "CRITICO",
+                            "PENDENTE",
+                            "Ocupação atingiu " + String.format("%.1f", taxa) + "% na " + estado.getLinha() + " (Viatura #" + estado.getViatura().getCodigo() + ")",
+                            "IoT Sensores",
+                            null
+                    );
+                    alertaOperacionalRepository.save(novoAlerta);
+                }
+            }
         }
     }
 
