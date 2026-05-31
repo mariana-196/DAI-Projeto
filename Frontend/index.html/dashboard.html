@@ -615,11 +615,11 @@
                 // Load buses
                 const posicoes = await apiGet("/api/frota/posicoes");
                 posicoes.forEach(v => {
-                    const isCritical = v.lotacao > 90;
+                    const isCritical = v.lotacao >= 90;
                     let markerBgColor = '#7A8B9E';
                     if (v.sinal) {
-                        if (v.lotacao <= 70) markerBgColor = 'var(--success, #10b981)';
-                        else if (v.lotacao <= 90) markerBgColor = 'var(--warning, #f59e0b)';
+                        if (v.lotacao < 60) markerBgColor = 'var(--success, #10b981)';
+                        else if (v.lotacao < 90) markerBgColor = 'var(--warning, #f59e0b)';
                         else markerBgColor = 'var(--danger, #ef4444)';
                     }
                     const viaturaIcon = L.divIcon({

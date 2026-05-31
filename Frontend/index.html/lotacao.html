@@ -269,9 +269,9 @@
                 const passageiros = v.sinal ? (v.passageiros || 0) : 0;
                 const tax = v.capacidade > 0 ? (passageiros / v.capacidade * 100) : 0;
                 const roundedTax = Math.round(tax);
-                const isCritical = v.sinal && roundedTax >= 80;
-                const isMedium = v.sinal && roundedTax >= 50 && roundedTax < 80;
-                const isLow = v.sinal && roundedTax < 50;
+                const isCritical = v.sinal && roundedTax >= 90;
+                const isMedium = v.sinal && roundedTax >= 60 && roundedTax < 90;
+                const isLow = v.sinal && roundedTax < 60;
 
                 const colorClass = v.sinal ? (isCritical ? 'red' : (isMedium ? 'orange' : 'green')) : 'gray';
                 const badgeColor = v.sinal ? 'badge-green' : 'badge-gray';
