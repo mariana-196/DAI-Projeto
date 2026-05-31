@@ -313,6 +313,10 @@
                         <strong>Relatórios</strong>
                     </div>
                     <div class="topbar-actions">
+                        <button class="btn btn-blue btn-sm" id="btn-sincronizar-topbar" style="margin-right: 12px; height: 28px; padding: 0 10px;">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            Sincronizar Dados
+                        </button>
                         <a
                             href="utilizadores.html?tab=perfil"
                             class="user-chip"
@@ -1286,6 +1290,24 @@
                 .addEventListener("click", () => {
                     window.print();
                 });
+
+            // Sincronizar Dados Manuais
+            document.getElementById("btn-sincronizar-topbar").addEventListener("click", async () => {
+                try {
+                    const btn = document.getElementById("btn-sincronizar-topbar");
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Sincronizando...`;
+                    
+                    await apiGet("/api/monitorizacao/sincronizar");
+                    await apiGet("/api/bilhetica/sincronizar");
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                    }, 800);
+                } catch (err) {
+                    console.error("Erro na sincronização:", err);
+                }
+            });
         </script>
     </body>
 </html>

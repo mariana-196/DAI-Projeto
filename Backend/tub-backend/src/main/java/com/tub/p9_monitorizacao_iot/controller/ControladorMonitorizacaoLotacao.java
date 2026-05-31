@@ -227,7 +227,7 @@ public class ControladorMonitorizacaoLotacao {
         List<EstadoOcupacaoViatura> estados = lotacaoViaturaRepository.findAll();
         List<Map<String, Object>> resposta = new ArrayList<>();
 
-        java.time.LocalDateTime inicioDia = java.time.LocalDate.now().atTime(0, 0);
+        java.time.LocalDateTime inicioDia = java.time.LocalDate.now().atTime(6, 20);
 
         for (EstadoOcupacaoViatura estado : estados) {
             Map<String, Object> item = new HashMap<>();
@@ -242,9 +242,10 @@ public class ControladorMonitorizacaoLotacao {
 
             // Garantir a coerência matemática: passageiros atuais NUNCA podem ser superiores às validações do dia!
             if (v != null && estado.isSinalAtivo()) {
+                java.time.LocalDateTime agora = java.time.LocalDateTime.now();
                 int validacoesHoje = registoBilheticaRepository.findAll().stream()
                         .filter(r -> r.getViatura() != null && r.getViatura().getId().equals(v.getId()))
-                        .filter(r -> r.getDataHora() != null && !r.getDataHora().isBefore(inicioDia))
+                        .filter(r -> r.getDataHora() != null && !r.getDataHora().isBefore(inicioDia) && r.getDataHora().isBefore(agora))
                         .mapToInt(r -> r.getValidacoes() != null ? r.getValidacoes() : 0)
                         .sum();
 

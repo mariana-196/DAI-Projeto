@@ -301,8 +301,31 @@ public class ProcessadorArmazenamento {
         return agora.withHour(horaBase.getHour()).withMinute(horaBase.getMinute()).withSecond(0).withNano(0);
     }
 
+
+
     public synchronized void simularSensoresLotacao() {
-        System.out.println("Simulador de Sensores de Lotação desativado. Aguardando telemetria externa (eventos GPS).");
+        java.util.List<com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura> estados = lotacaoViaturaRepository.findAll();
+        java.util.Random random = new java.util.Random();
+
+        for (com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura estado : estados) {
+            if (!estado.isSinalAtivo() || estado.getViatura() == null) continue;
+
+            int capMax = estado.getViatura().getCapacidadeMaxima() != null ? estado.getViatura().getCapacidadeMaxima() : 80;
+            int atuais = estado.getPassageirosAtuais() != null ? estado.getPassageirosAtuais() : 0;
+            
+            // Random variation between -5 and +8 passengers
+            int delta = random.nextInt(14) - 5; 
+            int novosPassageiros = atuais + delta;
+
+            if (novosPassageiros < 0) novosPassageiros = 0;
+            if (novosPassageiros > capMax) novosPassageiros = capMax;
+
+            double taxa = ((double) novosPassageiros / capMax) * 100;
+            estado.setPassageirosAtuais(novosPassageiros);
+            estado.setTaxaOcupacao(taxa);
+            estado.setUltimaAtualizacao(java.time.LocalDateTime.now());
+            lotacaoViaturaRepository.save(estado);
+        }
     }
 
     private void aplicarCoordenadas(RegistoBilhetica registo, String origem, String destino) {
