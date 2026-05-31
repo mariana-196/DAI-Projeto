@@ -67,41 +67,75 @@ public class ControladorDashboard {
     }
 
     @GetMapping("/analise")
-    public org.springframework.http.ResponseEntity<?> obterAnalise(@RequestParam(required = false) String linha) {
+    public org.springframework.http.ResponseEntity<?> obterAnalise(
+            @RequestParam(required = false) String linha,
+            @RequestParam(required = false) String data
+    ) {
         List<RegistoBilhetica> todosOsRegistos = registoRepository.findAll();
         if (linha != null && !linha.isEmpty() && !linha.equals("vazia") && !linha.equalsIgnoreCase("ALL")) {
             todosOsRegistos = todosOsRegistos.stream()
                     .filter(r -> r.getLinha() != null && 
                         (String.valueOf(r.getLinha().getId()).equals(linha) || 
-                         r.getLinha().getCodigo().equals(linha)))
+                         String.valueOf(r.getLinha().getCodigo()).equals(linha)))
                     .toList();
         }
 
-        Map<String, Object> map = new HashMap<>();
-        map.put("taxaOcupacaoMedia", calcularTaxaOcupacaoMedia(linha));
-        map.put("totalPassageiros", todosOsRegistos.stream()
-                .mapToInt(r -> r.getValidacoes() != null ? r.getValidacoes() : 0)
-                .sum());
+        LocalDate hoje;
+        if (data != null && !data.isEmpty()) {
+            try {
+                hoje = LocalDate.parse(data);
+            } catch (Exception e) {
+                hoje = todosOsRegistos.stream()
+                        .filter(r -> r.getDataHora() != null)
+                        .map(r -> r.getDataHora().toLocalDate())
+                        .max(LocalDate::compareTo)
+                        .orElse(LocalDate.now());
+            }
+        } else {
+            hoje = todosOsRegistos.stream()
+                    .filter(r -> r.getDataHora() != null)
+                    .map(r -> r.getDataHora().toLocalDate())
+                    .max(LocalDate::compareTo)
+                    .orElse(LocalDate.now());
+        }
 
-        LocalDate hoje = LocalDate.now();
         LocalDateTime inicioServico = hoje.atTime(6, 20);
         LocalDateTime fimServico = hoje.plusDays(1).atTime(1, 30);
+        LocalDateTime agora = LocalDateTime.now();
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("taxaOcupacaoMedia", calcularTaxaOcupacaoMedia(linha));
+        
+        int validacoesHoje = todosOsRegistos.stream()
+                .filter(r -> r.getDataHora() != null
+                        && !r.getDataHora().isBefore(inicioServico)
+                        && r.getDataHora().isBefore(fimServico)
+                        && r.getDataHora().isBefore(agora))
+                .mapToInt(r -> r.getValidacoes() != null ? r.getValidacoes() : 0)
+                .sum();
+        map.put("totalPassageiros", validacoesHoje);
 
         List<Integer> procura = new ArrayList<>();
         List<String> labels = new ArrayList<>();
-
         for (IntervaloHorario intervalo : INTERVALOS_TUB) {
             LocalDateTime inicio = intervalo.toDateTime(hoje, false);
             LocalDateTime fim = intervalo.toDateTime(hoje, true);
-            int totalIntervalo = todosOsRegistos.stream()
-                    .filter(r -> r.getDataHora() != null
-                            && !r.getDataHora().isBefore(inicioServico)
-                            && r.getDataHora().isBefore(fimServico)
-                            && !r.getDataHora().isBefore(inicio)
-                            && r.getDataHora().isBefore(fim))
-                    .mapToInt(this::validacoesRealistasParaGrafico)
-                    .sum();
-            totalIntervalo = Math.min(totalIntervalo, MAX_VALIDACOES_POR_INTERVALO_GRAFICO);
+            
+            int totalIntervalo = 0;
+            // Apenas contabiliza dados se o intervalo não estiver no futuro
+            if (inicio.isBefore(agora)) {
+                totalIntervalo = todosOsRegistos.stream()
+                        .filter(r -> r.getDataHora() != null
+                                && !r.getDataHora().isBefore(inicioServico)
+                                && r.getDataHora().isBefore(fimServico)
+                                && !r.getDataHora().isBefore(inicio)
+                                && r.getDataHora().isBefore(fim)
+                                // Garantir que não apanha nenhum registo gerado com timestamp no futuro
+                                && r.getDataHora().isBefore(agora)) 
+                        .mapToInt(r -> r.getValidacoes() != null ? r.getValidacoes() : 0)
+                        .sum();
+            }
+            
             labels.add(intervalo.label());
             procura.add(totalIntervalo);
         }
@@ -114,10 +148,7 @@ public class ControladorDashboard {
         return org.springframework.http.ResponseEntity.ok(map);
     }
 
-    private int validacoesRealistasParaGrafico(RegistoBilhetica registo) {
-        int validacoes = registo.getValidacoes() != null ? registo.getValidacoes() : 0;
-        return Math.max(0, Math.min(validacoes, MAX_VALIDACOES_POR_REGISTO_GRAFICO));
-    }
+
 
     private double calcularTaxaOcupacaoMedia(String linha) {
         List<EstadoOcupacaoViatura> estados = lotacaoViaturaRepository.findAll().stream()

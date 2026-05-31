@@ -9,8 +9,8 @@ import com.tub.p10_gestao_pmd.repository.DisplayPanelRepository;
 import com.tub.p10_gestao_pmd.repository.PainelPMDRepository;
 import com.tub.p10_gestao_pmd.repository.CatalogoMensagensRapidasRepository;
 
-import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
-import com.tub.p2_dados_utilizador.repository.RegistoUtilizadorRepository;
+import com.tub.p1_autenticacao.model.RegistoUtilizador;
+import com.tub.p1_autenticacao.repository.RegistoUtilizadorRepository;
 
 import com.tub.p5_lotacao.repository.LinhaRepository;
 import com.tub.p5_lotacao.repository.ViaturasRepository;
@@ -19,6 +19,8 @@ import com.tub.p6_auditoria.model.EntidadeConfiguracoesAuditoria;
 import com.tub.p6_auditoria.model.RegistoAuditoria;
 import com.tub.p6_auditoria.repository.PoliticasAuditoriaRepository;
 import com.tub.p6_auditoria.repository.RegistoAuditoriaRepository;
+import com.tub.p5_lotacao.model.HistoricoLotacao;
+import com.tub.p5_lotacao.repository.HistoricoLotacaoRepository;
 
 import com.tub.p8_gestao_bilhetica.model.ConfiguracaoIntegracao;
 import com.tub.p8_gestao_bilhetica.model.EstadoSincronizacao;
@@ -35,6 +37,8 @@ import com.tub.p9_monitorizacao_iot.repository.LotacaoViaturaRepository;
 import com.tub.p9_monitorizacao_iot.model.EstadoOcupacaoViatura;
 import com.tub.p11_gestao_alertas.repository.AlertaOperacionalRepository;
 import com.tub.p11_gestao_alertas.model.AlertaOperacional;
+import com.tub.p12_kpis_operacionais.repository.RegistoPontualidadeRepository;
+import com.tub.p12_kpis_operacionais.model.RegistoPontualidade;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,6 +59,8 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
     private final AlertaOperacionalRepository alertaOperacionalRepository;
     private final ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository;
     private final CatalogoMensagensRapidasRepository catalogoMensagensRapidasRepository;
+    private final RegistoPontualidadeRepository registoPontualidadeRepository;
+    private final HistoricoLotacaoRepository historicoLotacaoRepository;
 
     public DadosDemonstracaoSeeder(
             RegistoUtilizadorRepository utilizadorRepository,
@@ -69,7 +75,9 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             LotacaoViaturaRepository lotacaoViaturaRepository,
             AlertaOperacionalRepository alertaOperacionalRepository,
             ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository,
-            CatalogoMensagensRapidasRepository catalogoMensagensRapidasRepository
+            CatalogoMensagensRapidasRepository catalogoMensagensRapidasRepository,
+            RegistoPontualidadeRepository registoPontualidadeRepository,
+            HistoricoLotacaoRepository historicoLotacaoRepository
     ) {
         this.utilizadorRepository = utilizadorRepository;
         this.linhaRepository = linhaRepository;
@@ -84,6 +92,8 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         this.alertaOperacionalRepository = alertaOperacionalRepository;
         this.configuracaoIntegracaoRepository = configuracaoIntegracaoRepository;
         this.catalogoMensagensRapidasRepository = catalogoMensagensRapidasRepository;
+        this.registoPontualidadeRepository = registoPontualidadeRepository;
+        this.historicoLotacaoRepository = historicoLotacaoRepository;
     }
 
     @Override
@@ -98,8 +108,24 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         criarConfiguracaoIntegracao();
         criarCatalogoMensagensRapidas();
         criarDadosBilhetica();
+        criarRegistoPontualidade();
 
-        System.out.println("Dados de demonstração M5 carregados com sucesso.");
+        System.out.println("Dados de demonstração carregados com sucesso.");
+    }
+
+    private void criarRegistoPontualidade() {
+        if (registoPontualidadeRepository.count() == 0) {
+            registoPontualidadeRepository.save(new RegistoPontualidade("43", "BUS-101", 86));
+            registoPontualidadeRepository.save(new RegistoPontualidade("43", "BUS-102", 75));
+            registoPontualidadeRepository.save(new RegistoPontualidade("12", "BUS-102", 95));
+            registoPontualidadeRepository.save(new RegistoPontualidade("7", "BUS-103", 60));
+            registoPontualidadeRepository.save(new RegistoPontualidade("7", "BUS-105", 55));
+            registoPontualidadeRepository.save(new RegistoPontualidade("2", "BUS-104", 100));
+            registoPontualidadeRepository.save(new RegistoPontualidade("24", "BUS-102", 82));
+            registoPontualidadeRepository.save(new RegistoPontualidade("24", "BUS-103", 88));
+            registoPontualidadeRepository.save(new RegistoPontualidade("15", "BUS-104", 92));
+            registoPontualidadeRepository.save(new RegistoPontualidade("15", "BUS-105", 96));
+        }
     }
 
     private void criarUtilizadores() {
@@ -265,6 +291,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
                     "PMD-001",
                     "Avenida Central",
                     "Linha 43 - próximo autocarro em 5 min",
+                    "MEDIA",
                     "ONLINE",
                     LocalDateTime.now()
             ));
@@ -273,6 +300,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
                     "PMD-002",
                     "Universidade do Minho",
                     "Linha 24 - serviço normal",
+                    "MEDIA",
                     "ONLINE",
                     LocalDateTime.now()
             ));
@@ -281,6 +309,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
                     "PMD-003",
                     "Hospital de Braga",
                     "Painel temporariamente indisponível",
+                    null,
                     "DEGRADADO",
                     LocalDateTime.now()
             ));
@@ -289,6 +318,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
                     "PMD-004",
                     "Estação CP",
                     "Linha 15 - próxima partida em 8 min",
+                    "MEDIA",
                     "ONLINE",
                     LocalDateTime.now()
             ));
@@ -297,6 +327,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
                     "PMD-005",
                     "Bom Jesus",
                     "Informação operacional em atualização",
+                    null,
                     "OFFLINE",
                     LocalDateTime.now()
             ));
@@ -368,18 +399,18 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
 
         criarRegisto(lote, linha7, v105, "Bom Jesus", "Bilhete Normal", 18, "Bom Jesus", 5);
         criarRegisto(lote, linha7, v105, "Bom Jesus", "Passe Turístico", 20, "Bom Jesus", 4);
-        criarRegisto(lote, linha7, v101, "Arcada", "Bilhete Normal", 30, "Centro", 3);
-        criarRegisto(lote, linha7, v101, "Arcada", "Passe Sénior", 24, "Centro", 2);
+        criarRegisto(lote, linha7, v101, "Arcada", "Bilhete Normal", 45, "Centro", 3);
+        criarRegisto(lote, linha7, v101, "Arcada", "Passe Sénior", 35, "Centro", 2);
 
         criarRegisto(lote, linha24, v102, "Braga Parque", "Passe Estudante", 41, "Braga Parque", 2);
         criarRegisto(lote, linha24, v102, "Braga Parque", "Bilhete Normal", 23, "Braga Parque", 1);
         criarRegisto(lote, linha24, v103, "Gualtar", "Passe Estudante", 19, "Gualtar", 0);
 
-        criarRegisto(lote, linha15, v104, "Lamaçães", "Bilhete Normal", 16, "Lamaçães", 3);
-        criarRegisto(lote, linha15, v104, "Lamaçães", "Passe Estudante", 12, "Lamaçães", 2);
+        criarRegisto(lote, linha15, v104, "Lamaçães", "Bilhete Normal", 45, "Lamaçães", 3);
+        criarRegisto(lote, linha15, v104, "Lamaçães", "Passe Estudante", 32, "Lamaçães", 2);
         criarRegisto(lote, linha15, v105, "Estação CP", "Passe Sénior", 21, "Centro", 1);
 
-        criarRegisto(lote, linha43, v101, "Paragem Desconhecida Norte", "Bilhete Normal", 9, "Norte", 0);
+        criarRegisto(lote, linha43, v101, "Paragem Desconhecida Norte", "Bilhete Normal", 15, "Norte", 0);
         criarRegisto(lote, linha2, v102, "Paragem Desconhecida Sul", "Bilhete Normal", 7, "Sul", 0);
     }
 
@@ -426,7 +457,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
         }
 
         String[] linhasDemo = {"43", "2", "7", "15", "24", "2"};
-        int[] passageirosAtuaisDemo = {28, 58, 12, 53, 4, 0};
+        int[] passageirosAtuaisDemo = {75, 58, 5, 65, 4, 0};
         boolean[] sinalAtivoDemo = {true, true, true, true, true, false};
 
         for (int i = 0; i < viaturas.size(); i++) {
@@ -442,7 +473,7 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             lotacao.setUltimaAtualizacao(LocalDateTime.now());
             lotacaoViaturaRepository.save(lotacao);
 
-            if (lotacao.getTaxaOcupacao() >= 70.0) {
+            if (lotacao.getTaxaOcupacao() >= 80.0) {
                 AlertaOperacional alerta = new AlertaOperacional(
                     v,
                     lotacao.getLinha(),
@@ -452,13 +483,32 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
                     "PENDENTE",
                     "Ocupação atingiu " + String.format("%.1f", lotacao.getTaxaOcupacao()) + "% na " + lotacao.getLinha() + " (Viatura #" + v.getCodigo() + ")",
                     "IoT Sensores",
-                    "Sensor ID: SEN-OCC-" + v.getCodigo() + ", Limite: 70%, Passageiros: " + lotacao.getPassageirosAtuais() + "/" + (int)cap
+                    "Sensor ID: SEN-OCC-" + v.getCodigo() + ", Limite: 80%, Passageiros: " + lotacao.getPassageirosAtuais() + "/" + (int)cap
                 );
                 alertaOperacionalRepository.save(alerta);
             }
+
+            // Seed HistoricoLotacao
+            com.tub.p5_lotacao.model.Viatura p5Viatura = new com.tub.p5_lotacao.model.Viatura();
+            p5Viatura.setId(v.getId());
+            p5Viatura.setCodigo(v.getCodigo());
+
+            HistoricoLotacao h1 = new HistoricoLotacao();
+            h1.setViatura(p5Viatura);
+            h1.setVariacao(10);
+            h1.setPassageirosResultantes(lotacao.getPassageirosAtuais() > 10 ? lotacao.getPassageirosAtuais() - 10 : lotacao.getPassageirosAtuais());
+            h1.setTipoEvento("ENTRADA");
+            historicoLotacaoRepository.save(h1);
+
+            HistoricoLotacao h2 = new HistoricoLotacao();
+            h2.setViatura(p5Viatura);
+            h2.setVariacao(5);
+            h2.setPassageirosResultantes(lotacao.getPassageirosAtuais());
+            h2.setTipoEvento("ENTRADA");
+            historicoLotacaoRepository.save(h2);
         }
 
-        // Seeding de Alertas Operacionais de Alta Fidelidade (6 cenários realistas de CCO para Braga)
+        // Seeding de Alertas Operacionais de Alta Fidelidade (6 cenários realistas para Braga)
         
         // 1. Falha de painel DMS (Hospital de Braga)
         AlertaOperacional dmsAlerta = new AlertaOperacional(
@@ -529,8 +579,8 @@ public class DadosDemonstracaoSeeder implements CommandLineRunner {
             "Atraso acumulado: 18 min, Velocidade média do troço: 3.8 km/h, Tempo estimado de desimpedimento: 25 min"
         );
         // Seed some history logs to show actions taken for this "EM_TRATAMENTO" alert
-        delayAlerta.adicionarLogHistorico("Operador CCO (admin@tub.pt) alterou o estado para Em Análise.");
-        delayAlerta.adicionarLogHistorico("Nota CCO: Confirmado engarrafamento massivo na Arcada devido a colisão rodoviária. Polícia de Braga já no local.");
+        delayAlerta.adicionarLogHistorico("Operador (admin@tub.pt) alterou o estado para Em Análise.");
+        delayAlerta.adicionarLogHistorico("Nota: Confirmado engarrafamento massivo na Arcada devido a colisão rodoviária. Polícia de Braga já no local.");
         alertaOperacionalRepository.save(delayAlerta);
     }
 

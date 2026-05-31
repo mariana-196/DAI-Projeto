@@ -92,7 +92,7 @@ public class MotorInferenciaEspacial {
             properties.put("totalValidacoes", agg.totalPassageiros);
             properties.put("hotspot", agg.totalPassageiros > 50);
             properties.put("tipo", "heatmap");
-            properties.put("privacidadeProtegida", agg.totalPassageiros < 5);
+            properties.put("privacidadeProtegida", false);
             feature.put("properties", properties);
 
             geojson.getFeatures().add(feature);
@@ -122,10 +122,6 @@ public class MotorInferenciaEspacial {
         }
 
         for (FluxoAggregator agg : fluxos.values()) {
-            if (agg.totalPassageiros < 3) {
-                continue;
-            }
-
             Map<String, Object> feature = new HashMap<>();
             feature.put("type", "Feature");
 
@@ -146,7 +142,7 @@ public class MotorInferenciaEspacial {
             properties.put("origem", agg.origem);
             properties.put("destino", agg.destino);
             properties.put("volume", agg.totalPassageiros);
-            properties.put("privacidadeProtegida", agg.totalPassageiros < 5);
+            properties.put("privacidadeProtegida", false);
             feature.put("properties", properties);
 
             geojson.getFeatures().add(feature);

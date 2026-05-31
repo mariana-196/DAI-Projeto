@@ -2,8 +2,8 @@ package com.tub.p1_autenticacao.service;
 
 import com.tub.p1_autenticacao.model.SessaoAutenticada;
 import com.tub.p1_autenticacao.repository.SessaoAutenticadaRepository;
-import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
-import com.tub.p2_dados_utilizador.repository.RegistoUtilizadorRepository;
+import com.tub.p1_autenticacao.model.RegistoUtilizador;
+import com.tub.p1_autenticacao.repository.RegistoUtilizadorRepository;
 import com.tub.p3_integracao_externa.adapter.AdaptadorAutenticacaoGov;
 import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 
@@ -75,7 +75,7 @@ public class ControloSegurancaAutenticacao {
                         "Conta Bloqueada",
                         "Autenticação",
                         "127.0.0.1",
-                        "AVISO",
+                        "CRÍTICO",
                         "Conta bloqueada por excesso de tentativas falhadas"
                 );
 

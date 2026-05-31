@@ -23,7 +23,18 @@ async function handleResponse(response, endpoint) {
         throw new Error("Acesso negado (403).");
     }
     if (!response.ok) {
-        throw new Error(`Erro no pedido para ${endpoint}: ${response.statusText}`);
+        let errorMsg = `Erro no pedido para ${endpoint}: ${response.statusText}`;
+        try {
+            const errData = await response.json();
+            if (errData && errData.erro) {
+                errorMsg = errData.erro;
+            } else if (errData && errData.message) {
+                errorMsg = errData.message;
+            }
+        } catch (e) {
+            // Ignore JSON parse errors for non-JSON error responses
+        }
+        throw new Error(errorMsg);
     }
     const text = await response.text();
     if (!text) {
@@ -124,6 +135,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // If operator tries to directly access auditoria page, redirect
             if (pathName.endsWith("auditoria.html")) {
                 window.location.href = "dashboard.html";
+            }
+            // If operator tries to directly access utilizadores page, force profile tab
+            if (pathName.endsWith("utilizadores.html")) {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get("tab") !== "perfil") {
+                    window.location.href = "utilizadores.html?tab=perfil";
+                }
             }
         }
     }
