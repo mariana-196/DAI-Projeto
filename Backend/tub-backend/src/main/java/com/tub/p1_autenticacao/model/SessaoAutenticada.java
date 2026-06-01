@@ -3,7 +3,7 @@ package com.tub.p1_autenticacao.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.tub.p1_autenticacao.model.RegistoUtilizador;
+import com.tub.p2_dados_utilizador.model.RegistoUtilizador;
 
 @Entity
 @Table(name = "sessoes_autenticadas")

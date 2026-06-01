@@ -15,12 +15,6 @@
             border: 1px solid var(--border);
             box-shadow: var(--shadow);
             z-index: 1;
-        /* Fix map label overflow */
-        .custom-bus-icon {
-            background: none !important;
-            border: none !important;
-            width: auto !important;
-            height: auto !important;
         }
     </style>
 </head>
@@ -96,10 +90,6 @@
                     <strong>Frota & GIS</strong>
                 </div>
                 <div class="topbar-actions">
-                    <button class="btn btn-blue btn-sm" id="btn-sincronizar-topbar" style="margin-right: 12px; height: 28px; padding: 0 10px;">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                        Sincronizar Dados
-                    </button>
                     <a href="utilizadores.html?tab=perfil" class="user-chip" title="O Meu Perfil" style="text-decoration:none;">
                         <div class="user-avatar" id="topbar-user-avatar" style="width:28px;height:28px;font-size:11px;">??</div>
                         <span id="topbar-user-name">...</span>
@@ -132,6 +122,39 @@
 
                     <!-- Sidebar control panel -->
                     <div style="display:flex; flex-direction:column; gap:20px;">
+                        <!-- Simulator -->
+                        <div class="card">
+                            <div class="card-header">
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="card-title-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                <h3>Simulador de Telemetria Geofence</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-field" style="margin-bottom:12px;">
+                                    <label>Selecionar Viatura</label>
+                                    <select id="sim-viatura-select">
+                                        <!-- Will populate dynamically -->
+                                    </select>
+                                </div>
+                                <div class="form-field" style="margin-bottom:12px;">
+                                    <label>Selecionar Zona de Controlo</label>
+                                    <select id="sim-zona-select">
+                                        <option value="Zona A - Centro Histórico">Zona A - Centro Histórico</option>
+                                        <option value="Zona B - Campus Universitário">Zona B - Campus Universitário</option>
+                                        <option value="Zona C - Hospital">Zona C - Hospital</option>
+                                    </select>
+                                </div>
+                                <div class="form-field" style="margin-bottom:16px;">
+                                    <label>Tipo de Movimento</label>
+                                    <select id="sim-movimento-select">
+                                        <option value="ENTRADA">Entrada na Zona</option>
+                                        <option value="SAIDA">Saída da Zona</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-blue" id="btn-registar-evento" style="width:100%; justify-content:center;">
+                                    Disparar Evento GPS
+                                </button>
+                            </div>
+                        </div>
 
                         <!-- Geofence History -->
                         <div class="card">
@@ -246,8 +269,8 @@
                 
                 // Populate simulator dropdown
                 const simSelect = document.getElementById("sim-viatura-select");
-                const currentVal = simSelect ? simSelect.value : null;
-                if (simSelect) simSelect.innerHTML = "";
+                const currentVal = simSelect.value;
+                simSelect.innerHTML = "";
                 
                 // Populate table
                 const tableBody = document.getElementById("frota-table-body");
@@ -255,12 +278,10 @@
 
                 frota.forEach(v => {
                     // Dropdown
-                    if (simSelect) {
-                        const option = document.createElement("option");
-                        option.value = v.id;
-                        option.textContent = `Viatura #${v.id} (${v.linha})`;
-                        simSelect.appendChild(option);
-                    }
+                    const option = document.createElement("option");
+                    option.value = v.id;
+                    option.textContent = `Viatura #${v.id} (${v.linha})`;
+                    simSelect.appendChild(option);
 
                     // Table row
                     const tr = document.createElement("tr");
@@ -288,7 +309,7 @@
                     tableBody.appendChild(tr);
                 });
 
-                if (simSelect && currentVal) {
+                if (currentVal) {
                     simSelect.value = currentVal;
                 }
 
@@ -306,7 +327,19 @@
                     circle.bindPopup(`<b>Paragem DMS:</b> ${p.nome}<br><b>Estado:</b> ${p.estado}`);
                 });
 
-                // Positions removed as per user request (only shown on dashboard)
+                // Load positions
+                const posicoes = await apiGet("/api/frota/posicoes");
+                posicoes.forEach(v => {
+                    const viaturaIcon = L.divIcon({
+                        html: `<div style="background-color: var(--orange); color: white; padding: 4px 8px; border-radius: 12px; border: 2px solid white; font-weight: bold; font-size: 11px; white-space: nowrap;">L${v.linha.replace('Linha ', '')} - #${v.id}</div>`,
+                        className: 'custom-bus-icon',
+                        iconSize: [60, 24],
+                        iconAnchor: [30, 12]
+                    });
+                    
+                    const marker = L.marker([v.lat, v.lng], { icon: viaturaIcon }).addTo(markersLayer);
+                    marker.bindPopup(`<b>Viatura #${v.id}</b><br><b>Linha:</b> ${v.linha}<br><b>Lotação:</b> ${v.lotacao}%<br><b>Estado:</b> ${v.status}`);
+                });
 
             } catch (err) {
                 console.error("Erro ao carregar dados da frota:", err);
@@ -334,13 +367,9 @@
                     const item = document.createElement("div");
                     item.className = "timeline-item";
 
-                    const svgIcon = isEntrada 
-                        ? `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>`
-                        : `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>`;
-
                     item.innerHTML = `
-                        <div class="timeline-dot ${isEntrada ? 'green' : 'red'}" style="display:flex;align-items:center;justify-content:center;color:white;">
-                            ${svgIcon}
+                        <div class="timeline-dot ${isEntrada ? 'green' : 'red'}">
+                            ${isEntrada ? '📥' : '📤'}
                         </div>
                         <div class="timeline-content">
                             <h4>Viatura #${ev.viaturaId}</h4>
@@ -356,25 +385,25 @@
             }
         }
 
+        // Submit geofence event
+        document.getElementById("btn-registar-evento").addEventListener("click", async () => {
+            const viaturaId = document.getElementById("sim-viatura-select").value;
+            const nomeZona = document.getElementById("sim-zona-select").value;
+            const tipoMovimento = document.getElementById("sim-movimento-select").value;
 
+            if (!viaturaId) {
+                alert("Por favor, selecione uma viatura.");
+                return;
+            }
 
-        // Sincronizar Dados Manuais
-        document.getElementById("btn-sincronizar-topbar").addEventListener("click", async () => {
             try {
-                const btn = document.getElementById("btn-sincronizar-topbar");
-                const originalText = btn.innerHTML;
-                btn.innerHTML = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Sincronizando...`;
-                
-                await apiGet("/api/monitorizacao/sincronizar");
-                
-                loadFrotaData();
-                loadGeofenceHistory();
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                }, 800);
+                const url = `/api/geofencing/registar?viaturaId=${viaturaId}&nomeZona=${encodeURIComponent(nomeZona)}&tipoMovimento=${tipoMovimento}`;
+                await apiPost(url);
+                await loadGeofenceHistory();
+                await loadFrotaData();
             } catch (err) {
-                console.error("Erro na sincronização:", err);
+                console.error("Erro ao disparar telemetria geofence:", err);
+                alert("Erro ao disparar telemetria geofence: " + (err.message || err));
             }
         });
 
@@ -386,7 +415,7 @@
         setInterval(() => {
             loadFrotaData();
             loadGeofenceHistory();
-        }, 5000);
+        }, 15000);
     </script>
 </body>
 </html>

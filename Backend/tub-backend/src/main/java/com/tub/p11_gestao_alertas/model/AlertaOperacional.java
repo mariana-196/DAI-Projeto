@@ -64,7 +64,7 @@ public class AlertaOperacional {
         this.origem = origem;
         this.infoAdicional = infoAdicional;
         this.timestamp = LocalDateTime.now();
-        this.historico.add(LocalDateTime.now().toString().replace("T", " ").substring(0, 16) + " - Alerta inicializado no sistema.");
+        this.historico.add(LocalDateTime.now().toString().replace("T", " ").substring(0, 16) + " - Alerta inicializado no sistema pelo CCO.");
     }
 
     public Long getId() {

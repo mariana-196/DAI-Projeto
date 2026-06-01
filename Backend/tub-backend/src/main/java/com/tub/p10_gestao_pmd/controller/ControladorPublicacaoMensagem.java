@@ -6,7 +6,7 @@ import com.tub.p10_gestao_pmd.model.RepositorioTarefasExibicao;
 import com.tub.p10_gestao_pmd.repository.CatalogoMensagensRapidasRepository;
 import com.tub.p10_gestao_pmd.repository.MensagemPMDRepository;
 import com.tub.p10_gestao_pmd.repository.RepositorioTarefasExibicaoRepository;
-import com.tub.p10_gestao_pmd.service.ServicoPaineis;
+import com.tub.p10_gestao_pmd.service.PainelService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ import java.util.*;
 public class ControladorPublicacaoMensagem {
 
     @Autowired
-    private ServicoPaineis painelService;
+    private PainelService painelService;
 
     @Autowired
     private MensagemPMDRepository mensagemRepository;
@@ -58,24 +58,15 @@ public class ControladorPublicacaoMensagem {
         try {
             String panelId = payload.get("panelId");
             String message = payload.get("message");
-            String prioridade = payload.get("prioridade");
 
             if (panelId == null || message == null || message.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("{\"erro\": \"Dados incompletos.\"}");
             }
 
-            if (message.length() > 160) {
-                return ResponseEntity.badRequest().body("{\"erro\": \"A mensagem excede o limite de 160 caracteres.\"}");
-            }
-
-            if (prioridade == null || prioridade.trim().isEmpty()) {
-                prioridade = "MEDIA";
-            }
-
             if ("TODOS".equals(panelId)) {
-                painelService.publicarMensagemBroadcast(message, prioridade);
+                painelService.publicarMensagemBroadcast(message);
             } else {
-                painelService.publicarMensagemNumPainel(panelId, message, prioridade);
+                painelService.publicarMensagemNumPainel(panelId, message);
             }
 
             try {
@@ -84,7 +75,7 @@ public class ControladorPublicacaoMensagem {
                         "ATUALIZAR_PAINEL",
                         "Painéis PMD/DMS",
                         getExecutorIp(),
-                        "AVISO",
+                        "INFO",
                         "Mensagem publicada em tempo real no painel " + panelId + ": \"" + message + "\""
                 );
             } catch (Exception e) {
@@ -93,61 +84,7 @@ public class ControladorPublicacaoMensagem {
 
             return ResponseEntity.ok("{\"resultado\": \"Mensagem publicada e guardada na BD com sucesso!\"}");
 
-        } catch (IllegalStateException e) {
-            if (e.getMessage().contains("prioridade superior")) {
-                String panelId = payload.get("panelId");
-                String message = payload.get("message");
-                String prioridade = payload.get("prioridade");
-                if (prioridade == null || prioridade.trim().isEmpty()) prioridade = "MEDIA";
-
-                // Criar e salvar MensagemPMD em estado "AGENDADA" (Pendente)
-                MensagemPMD msg = new MensagemPMD();
-                msg.setTitulo("Mensagem Pendente");
-                msg.setConteudo(message);
-                msg.setPrioridade(prioridade);
-                msg.setEstado("AGENDADA");
-                msg.setPanelId(panelId);
-                msg.setDataCriacao(LocalDateTime.now());
-                msg = mensagemRepository.save(msg);
-
-                // Criar tarefa de exibição para agora (o processador vai re-tentar até conseguir)
-                RepositorioTarefasExibicao tarefa = new RepositorioTarefasExibicao();
-                tarefa.setMensagemId(msg.getId());
-                tarefa.setDataHoraExibicao(LocalDateTime.now());
-                tarefa.setConcluida(false);
-                tarefasRepository.save(tarefa);
-
-                try {
-                    auditService.registar(
-                            getExecutorEmail(),
-                            "ATUALIZAR_PAINEL",
-                            "Painéis PMD/DMS",
-                            getExecutorIp(),
-                            "AVISO",
-                            "Mensagem em tempo real enviada para fila pendente (Prioridade inferior) no painel " + panelId
-                    );
-                } catch (Exception ex) {
-                    System.err.println("Erro ao registar auditoria: " + ex.getMessage());
-                }
-
-                return ResponseEntity.ok("{\"resultado\": \"Painel ocupado com msg de maior prioridade! A sua mensagem foi guardada nos PENDENTES e será exibida quando o painel ficar livre.\"}");
-            }
-            
-            // Outras exceções de estado (ex: Degradado)
-            try {
-                auditService.registar(
-                        getExecutorEmail(),
-                        "ATUALIZAR_PAINEL",
-                        "Painéis PMD/DMS",
-                        getExecutorIp(),
-                        "ERRO",
-                        "Falha ao publicar mensagem em tempo real: " + e.getMessage()
-                );
-            } catch (Exception ex) {
-                System.err.println("Erro ao registar auditoria: " + ex.getMessage());
-            }
-            return ResponseEntity.badRequest().body("{\"erro\": \"" + e.getMessage() + "\"}");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalStateException | IllegalArgumentException e) {
             try {
                 auditService.registar(
                         getExecutorEmail(),
@@ -188,24 +125,12 @@ public class ControladorPublicacaoMensagem {
             String conteudo = payload.get("mensagem");
             String dataStr = payload.get("data");
             String horaStr = payload.get("hora");
-            String prioridade = payload.get("prioridade");
 
             if (panelId == null || conteudo == null || dataStr == null || horaStr == null) {
                 return ResponseEntity.badRequest().body("{\"erro\": \"Parâmetros obrigatórios ausentes.\"}");
             }
 
-            if (conteudo.length() > 160) {
-                return ResponseEntity.badRequest().body("{\"erro\": \"A mensagem excede o limite de 160 caracteres.\"}");
-            }
-
             LocalDateTime dataHora = LocalDateTime.parse(dataStr + "T" + horaStr + ":00");
-            if (dataHora.isBefore(LocalDateTime.now())) {
-                return ResponseEntity.badRequest().body("{\"erro\": \"Não é possível agendar mensagens para datas/horas passadas.\"}");
-            }
-
-            if (prioridade == null || prioridade.trim().isEmpty()) {
-                prioridade = "MEDIA";
-            }
 
             // Validar conflitos temporais (+/- 10 minutos)
             List<RepositorioTarefasExibicao> tarefasPendentes = tarefasRepository.findAll().stream()
@@ -231,7 +156,7 @@ public class ControladorPublicacaoMensagem {
             MensagemPMD msg = new MensagemPMD();
             msg.setTitulo("Mensagem Programada");
             msg.setConteudo(conteudo);
-            msg.setPrioridade(prioridade);
+            msg.setPrioridade("MEDIA");
             msg.setEstado("AGENDADA");
             msg.setPanelId(panelId);
             msg.setDataCriacao(LocalDateTime.now());
@@ -250,7 +175,7 @@ public class ControladorPublicacaoMensagem {
                         "ATUALIZAR_PAINEL",
                         "Painéis PMD/DMS",
                         getExecutorIp(),
-                        "AVISO",
+                        "INFO",
                         "Mensagem agendada para o painel " + panelId + " na data/hora " + dataHora + ": \"" + conteudo + "\""
                 );
             } catch (Exception e) {
@@ -283,58 +208,6 @@ public class ControladorPublicacaoMensagem {
     public ResponseEntity<List<CatalogoMensagensRapidas>> obterModelos() {
         List<CatalogoMensagensRapidas> modelos = modelosRepository.findAll();
         return ResponseEntity.ok(modelos);
-    }
-
-    /**
-     * Cria um novo modelo de mensagem rápida.
-     */
-    @PostMapping("/modelos")
-    public ResponseEntity<?> criarModelo(@RequestBody Map<String, String> payload) {
-        try {
-            String nomeModelo = payload.get("nomeModelo");
-            String categoria = payload.get("categoria");
-            String conteudoModelo = payload.get("conteudoModelo");
-
-            if (nomeModelo == null || conteudoModelo == null) {
-                return ResponseEntity.badRequest().body("{\"erro\": \"Nome e conteúdo são obrigatórios.\"}");
-            }
-
-            CatalogoMensagensRapidas modelo = new CatalogoMensagensRapidas();
-            modelo.setNomeModelo(nomeModelo);
-            modelo.setCategoria(categoria != null ? categoria : "Geral");
-            modelo.setConteudoModelo(conteudoModelo);
-
-            CatalogoMensagensRapidas salvo = modelosRepository.save(modelo);
-
-            try {
-                auditService.registar(
-                        getExecutorEmail(),
-                        "ATUALIZAR_PAINEL",
-                        "Painéis PMD/DMS",
-                        getExecutorIp(),
-                        "AVISO",
-                        "Modelo de mensagem criado: " + nomeModelo
-                );
-            } catch (Exception e) {
-                System.err.println("Erro ao registar auditoria: " + e.getMessage());
-            }
-
-            return ResponseEntity.ok(salvo);
-        } catch (Exception e) {
-            try {
-                auditService.registar(
-                        getExecutorEmail(),
-                        "ATUALIZAR_PAINEL",
-                        "Painéis PMD/DMS",
-                        getExecutorIp(),
-                        "ERRO",
-                        "Falha ao criar modelo de mensagem: " + e.getMessage()
-                );
-            } catch (Exception ex) {
-                System.err.println("Erro ao registar auditoria: " + ex.getMessage());
-            }
-            return ResponseEntity.internalServerError().body("{\"erro\": \"" + e.getMessage() + "\"}");
-        }
     }
 
     /**
@@ -387,7 +260,7 @@ public class ControladorPublicacaoMensagem {
                         "ATUALIZAR_PAINEL",
                         "Painéis PMD/DMS",
                         getExecutorIp(),
-                        "AVISO",
+                        "INFO",
                         "Agendamento de mensagem cancelado (Tarefa ID: " + id + ")"
                 );
             } catch (Exception e) {
@@ -409,37 +282,6 @@ public class ControladorPublicacaoMensagem {
                 System.err.println("Erro ao registar auditoria: " + e.getMessage());
             }
             return ResponseEntity.badRequest().body("{\"erro\": \"Agendamento não encontrado.\"}");
-        }
-    }
-
-    /**
-     * Limpa/desativa a mensagem ativa atual num painel.
-     */
-    @PostMapping("/limpar/{panelId}")
-    public ResponseEntity<?> limparMensagemPainel(@PathVariable String panelId) {
-        try {
-            // Update display panel message to empty string (cleared)
-            painelService.atualizarMensagemPainelSemNovoLog(panelId, "", null);
-
-            // Mark previous active messages as INATIVA
-            painelService.desativarMensagensAnteriores(panelId);
-
-            try {
-                auditService.registar(
-                        getExecutorEmail(),
-                        "ATUALIZAR_PAINEL",
-                        "Painéis PMD/DMS",
-                        getExecutorIp(),
-                        "AVISO",
-                        "Mensagem limpa/desativada no painel: " + panelId
-                );
-            } catch (Exception e) {
-                System.err.println("Erro ao registar auditoria: " + e.getMessage());
-            }
-
-            return ResponseEntity.ok("{\"resultado\": \"Mensagem limpa com sucesso!\"}");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("{\"erro\": \"" + e.getMessage() + "\"}");
         }
     }
 }

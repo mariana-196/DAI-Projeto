@@ -13,16 +13,10 @@ import com.tub.p1_autenticacao.annotation.RequerCargo;
 public class ControloPoliticasSistema {
 
     private final com.tub.p6_auditoria.service.ControloPoliticasSistema auditPolicyService;
-    private final com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService;
-
-    @org.springframework.beans.factory.annotation.Autowired
-    private jakarta.servlet.http.HttpServletRequest request;
 
     public ControloPoliticasSistema(
-            com.tub.p6_auditoria.service.ControloPoliticasSistema auditPolicyService,
-            com.tub.p6_auditoria.service.ControloConsultaAuditoria auditService) {
+            com.tub.p6_auditoria.service.ControloPoliticasSistema auditPolicyService) {
         this.auditPolicyService = auditPolicyService;
-        this.auditService = auditService;
     }
 
     @GetMapping
@@ -32,21 +26,6 @@ public class ControloPoliticasSistema {
 
     @PutMapping
     public EntidadeConfiguracoesAuditoria atualizarPolitica(@RequestBody EntidadeConfiguracoesAuditoria politica) {
-        EntidadeConfiguracoesAuditoria res = auditPolicyService.atualizarPolitica(politica);
-        try {
-            String email = (String) request.getAttribute("utilizador_email");
-            String ip = request.getRemoteAddr();
-            auditService.registar(
-                    email != null ? email : "Sistema",
-                    "ALTERAR_CONFIGURACAO",
-                    "Auditoria",
-                    ip,
-                    "AVISO",
-                    "Configurações de auditoria alteradas: retenção=" + politica.getDiasRetencao() + " dias, nível=" + politica.getNivelMinimo()
-            );
-        } catch (Exception e) {
-            System.err.println("Erro ao registar auditoria: " + e.getMessage());
-        }
-        return res;
+        return auditPolicyService.atualizarPolitica(politica);
     }
 }

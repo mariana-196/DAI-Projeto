@@ -13,14 +13,14 @@ import java.util.List;
 public class SincronizacaoAgendadorService {
 
     private final ConnectionService connectionService;
-    private final ProcessadorArmazenamento procesadorArmazenamento;
+    private final ProcesadorArmazenamento procesadorArmazenamento;
     private final ConfiguracaoIntegracaoRepository configRepository;
     
     private LocalDateTime ultimaExecucao = null;
 
     public SincronizacaoAgendadorService(
             ConnectionService connectionService,
-            ProcessadorArmazenamento procesadorArmazenamento,
+            ProcesadorArmazenamento procesadorArmazenamento,
             ConfiguracaoIntegracaoRepository configRepository
     ) {
         this.connectionService = connectionService;

@@ -60,7 +60,6 @@ public class ControloConsultaAuditoria {
         List<RegistoAuditoria> logs = auditService.pesquisarLogs(utilizador, acao, modulo, nivel, dataInicio, dataFim);
     
         StringBuilder csv = new StringBuilder();
-        csv.append('\ufeff');
         csv.append("Data;Utilizador;Acao;Modulo;IP;Nivel;Detalhe\n"); // Cabeçalho (usamos ';' para o Excel em PT abrir bem)
     
         for (RegistoAuditoria log : logs) {
@@ -81,7 +80,20 @@ public class ControloConsultaAuditoria {
     }
 
     private String anonimizarIp(String ip) {
-        return "***.***.***.***";
+        if (ip == null || ip.isBlank()) {
+            return "";
+        }
+
+        if (ip.contains(".")) {
+            return ip.replaceFirst("\\d+$", "0");
+        }
+
+        int ultimoSeparador = ip.lastIndexOf(":");
+        if (ultimoSeparador > 0) {
+            return ip.substring(0, ultimoSeparador + 1) + "0000";
+        }
+
+        return "ip_anonimizado";
     }
 
     private String campoCsv(Object valor) {

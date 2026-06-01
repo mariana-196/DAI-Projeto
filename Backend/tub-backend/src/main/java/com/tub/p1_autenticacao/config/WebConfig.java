@@ -3,14 +3,14 @@ package com.tub.p1_autenticacao.config;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import com.tub.p1_autenticacao.interceptor.InterceptorSeguranca;
+import com.tub.p1_autenticacao.interceptor.SecurityInterceptor;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    private final InterceptorSeguranca securityInterceptor;
+    private final SecurityInterceptor securityInterceptor;
 
-    public WebConfig(InterceptorSeguranca securityInterceptor) {
+    public WebConfig(SecurityInterceptor securityInterceptor) {
         this.securityInterceptor = securityInterceptor;
     }
 
@@ -18,11 +18,6 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(securityInterceptor)
                 .addPathPatterns("/api/**")
-                .excludePathPatterns(
-                        "/api/auth/**",
-                        "/api/paineis",
-                        "/api/previsoes/paineis-pmd",
-                        "/api/previsoes/consulta/**"
-                );
+                .excludePathPatterns("/api/auth/**");
     }
 }
