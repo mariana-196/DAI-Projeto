@@ -1,321 +1,933 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TUB – Relatórios Operacionais</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="shared/style.css">
-    <style>
-        .report-meta-box {
-            background: #F4F6F9;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px;
-            margin-bottom: 20px;
-            font-size: 13.5px;
-            color: var(--t2);
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .report-meta-box strong {
-            color: var(--t1);
-        }
-    </style>
-</head>
-<body>
-    <div id="app">
-        <!-- SIDEBAR -->
-        <nav class="sidebar">
-            <div class="sidebar-logo">
-                <img src="images/tubwhite.png" alt="TUB Logo" style="height: 28px; width: auto; display: block;">
-                <div class="logo-text">
-                    <strong>Gestão Urbana</strong>
-                    <span>Plataforma TUB</span>
-                </div>
-            </div>
-            
-            <div class="sidebar-nav">
-                <div class="nav-section"><span>Principal</span></div>
-                <a href="dashboard.html" class="nav-item" id="nav-dashboard">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
-                    <span>Dashboard</span>
-                </a>
-                <a href="frota.html" class="nav-item" id="nav-frota">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                    <span>Frota & GIS</span>
-                </a>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>TUB – Relatórios Operacionais</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="shared/style.css" />
+        <style>
+            .report-meta-box {
+                background: #f4f6f9;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 14px;
+                margin-bottom: 20px;
+                font-size: 13.5px;
+                color: var(--t2);
+                display: flex;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .report-meta-box strong {
+                color: var(--t1);
+            }
 
-                <div class="nav-section"><span>Operações</span></div>
-                <a href="bilhetica.html" class="nav-item" id="nav-bilhetica">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
-                    <span>Bilhética</span>
-                </a>
-                <a href="lotacao.html" class="nav-item" id="nav-lotacao">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
-                    <span>Lotação (IoT)</span>
-                </a>
-                <a href="paineis.html" class="nav-item" id="nav-dms">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M8 21h8M12 17v4"/></svg>
-                    <span>Painéis DMS</span>
-                </a>
+            /* PRINT STYLES */
+            @media print {
+                body * {
+                    visibility: hidden;
+                }
+                .sidebar,
+                .topbar,
+                .filters-card,
+                #btn-descarregar-pdf,
+                .card-header .card-title-icon {
+                    display: none !important;
+                }
+                .main-content {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    width: 100% !important;
+                }
+                #report-result-card,
+                #report-result-card * {
+                    visibility: visible;
+                }
+                #report-result-card {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    margin: 0 !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                }
+                #print-header {
+                    display: flex !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <!-- SIDEBAR -->
+            <nav class="sidebar">
+                <div class="sidebar-logo">
+                    <img
+                        src="images/tubwhite.png"
+                        alt="TUB Logo"
+                        style="height: 28px; width: auto; display: block"
+                    />
+                    <div class="logo-text">
+                        <strong>Gestão Urbana</strong>
+                        <span>Plataforma TUB</span>
+                    </div>
+                </div>
 
-                <div class="nav-section"><span>Administração</span></div>
-                <a href="auditoria.html" class="nav-item" id="nav-auditoria">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                    <span>Auditoria</span>
-                </a>
-                <a href="utilizadores.html" class="nav-item" id="nav-utilizadores" style="display:none;">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <span>Utilizadores</span>
-                </a>
-                <a href="relatorios.html" class="nav-item active" id="nav-relatorios">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                    <span>Relatórios</span>
-                </a>
-            </div>
-            
-            <div class="sidebar-user">
-                <div class="user-avatar" id="sidebar-user-avatar">??</div>
-                <div class="user-info">
-                    <strong id="sidebar-user-name">Carregando...</strong>
-                    <span id="sidebar-user-email">...</span>
-                </div>
-                <span class="user-role-badge" id="sidebar-user-role">...</span>
-            </div>
-        </nav>
-        
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-            <!-- TOPBAR -->
-            <header class="topbar">
-                <div class="breadcrumb">
-                    <span>Administração</span>
-                    <svg class="sep" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    <strong>Relatórios</strong>
-                </div>
-                <div class="topbar-actions">
-                    <a href="utilizadores.html?tab=perfil" class="user-chip" title="O Meu Perfil" style="text-decoration:none;">
-                        <div class="user-avatar" id="topbar-user-avatar" style="width:28px;height:28px;font-size:11px;">??</div>
-                        <span id="topbar-user-name">...</span>
+                <div class="sidebar-nav">
+                    <div class="nav-section"><span>Principal</span></div>
+                    <a
+                        href="dashboard.html"
+                        class="nav-item"
+                        id="nav-dashboard"
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <rect
+                                x="3"
+                                y="3"
+                                width="7"
+                                height="7"
+                                rx="1"
+                                stroke-width="2"
+                            />
+                            <rect
+                                x="14"
+                                y="3"
+                                width="7"
+                                height="7"
+                                rx="1"
+                                stroke-width="2"
+                            />
+                            <rect
+                                x="3"
+                                y="14"
+                                width="7"
+                                height="7"
+                                rx="1"
+                                stroke-width="2"
+                            />
+                            <rect
+                                x="14"
+                                y="14"
+                                width="7"
+                                height="7"
+                                rx="1"
+                                stroke-width="2"
+                            />
+                        </svg>
+                        <span>Dashboard</span>
                     </a>
-                    <button class="btn btn-outline btn-sm" id="btn-logout" style="color:var(--danger); border-color:var(--danger);">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                        Sair
-                    </button>
+                    <a href="frota.html" class="nav-item" id="nav-frota">
+                        <svg
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                            />
+                        </svg>
+                        <span>Frota & GIS</span>
+                    </a>
+
+                    <div class="nav-section"><span>Operações</span></div>
+                    <a
+                        href="bilhetica.html"
+                        class="nav-item"
+                        id="nav-bilhetica"
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+                            />
+                        </svg>
+                        <span>Bilhética</span>
+                    </a>
+                    <a href="lotacao.html" class="nav-item" id="nav-lotacao">
+                        <svg
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"
+                            />
+                        </svg>
+                        <span>Lotação (IoT)</span>
+                    </a>
+                    <a href="paineis.html" class="nav-item" id="nav-dms">
+                        <svg
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <rect
+                                x="2"
+                                y="3"
+                                width="20"
+                                height="14"
+                                rx="2"
+                                stroke-width="2"
+                            />
+                            <path
+                                stroke-linecap="round"
+                                stroke-width="2"
+                                d="M8 21h8M12 17v4"
+                            />
+                        </svg>
+                        <span>Painéis DMS</span>
+                    </a>
+
+                    <div class="nav-section"><span>Administração</span></div>
+                    <a
+                        href="auditoria.html"
+                        class="nav-item"
+                        id="nav-auditoria"
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                            />
+                        </svg>
+                        <span>Auditoria</span>
+                    </a>
+                    <a
+                        href="utilizadores.html"
+                        class="nav-item"
+                        id="nav-utilizadores"
+                        style="display: none"
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                            />
+                        </svg>
+                        <span>Utilizadores</span>
+                    </a>
+                    <a
+                        href="relatorios.html"
+                        class="nav-item active"
+                        id="nav-relatorios"
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                            />
+                        </svg>
+                        <span>Relatórios</span>
+                    </a>
                 </div>
-            </header>
 
-            <!-- PAGE CONTENT -->
-            <main class="page-content">
-                <div class="page-header">
-                    <h1>Centro de Relatórios & Tarefas</h1>
-                    <p>Geração de relatórios operacionais consolidados e administração de tarefas automatizadas</p>
+                <div class="sidebar-user">
+                    <div class="user-avatar" id="sidebar-user-avatar">??</div>
+                    <div class="user-info">
+                        <strong id="sidebar-user-name">Carregando...</strong>
+                        <span id="sidebar-user-email">...</span>
+                    </div>
+                    <span class="user-role-badge" id="sidebar-user-role"
+                        >...</span
+                    >
                 </div>
+            </nav>
 
-                <div class="col-7-5">
-                    <!-- Setup Form -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Parâmetros de Relatório</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-field" style="margin-bottom:12px;">
-                                <label>Tipo de Relatório</label>
-                                <select id="rep-tipo-select">
-                                    <option value="operacional">Relatório Operacional (Pontualidade/Lotação)</option>
-                                    <option value="auditoria">Relatório de Auditoria (Anonimizado)</option>
-                                </select>
+            <!-- MAIN CONTENT -->
+            <div class="main-content">
+                <!-- TOPBAR -->
+                <header class="topbar">
+                    <div class="breadcrumb">
+                        <span>Administração</span>
+                        <svg
+                            class="sep"
+                            width="14"
+                            height="14"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5l7 7-7 7"
+                            />
+                        </svg>
+                        <strong>Relatórios</strong>
+                    </div>
+                    <div class="topbar-actions">
+                        <button class="btn btn-blue btn-sm" id="btn-sincronizar-topbar" style="margin-right: 12px; height: 28px; padding: 0 10px;">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            Sincronizar Dados
+                        </button>
+                        <a
+                            href="utilizadores.html?tab=perfil"
+                            class="user-chip"
+                            title="O Meu Perfil"
+                            style="text-decoration: none"
+                        >
+                            <div
+                                class="user-avatar"
+                                id="topbar-user-avatar"
+                                style="
+                                    width: 28px;
+                                    height: 28px;
+                                    font-size: 11px;
+                                "
+                            >
+                                ??
                             </div>
-                            <div class="form-row">
-                                <div class="form-field"><label>Data Início</label><input type="date" id="rep-data-inicio" value="2026-05-19"></div>
-                                <div class="form-field"><label>Data Fim</label><input type="date" id="rep-data-fim" value="2026-05-20"></div>
-                            </div>
-                            <div class="form-row" style="margin-top:12px; margin-bottom:16px;">
-                                <div class="form-field"><label>Filtrar por Linha</label><input type="text" id="rep-linha" placeholder="ex: 43"></div>
-                                <div class="form-field"><label>Filtrar por Veículo</label><input type="text" id="rep-veiculo" placeholder="ex: BUS-102"></div>
-                            </div>
+                            <span id="topbar-user-name">...</span>
+                        </a>
+                        <button
+                            class="btn btn-outline btn-sm"
+                            id="btn-logout"
+                            style="
+                                color: var(--danger);
+                                border-color: var(--danger);
+                            "
+                        >
+                            <svg
+                                width="14"
+                                height="14"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                />
+                            </svg>
+                            Sair
+                        </button>
+                    </div>
+                </header>
 
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                                <button class="btn btn-blue" id="btn-gerar-relatorio" style="justify-content:center;">
-                                    Gerar Relatório
-                                </button>
-                                <button class="btn btn-orange" id="btn-descarregar-pdf" style="justify-content:center;">
-                                    Descarregar PDF
-                                </button>
-                            </div>
-                        </div>
+                <!-- PAGE CONTENT -->
+                <main class="page-content">
+                    <div class="page-header">
+                        <h1>Centro de Relatórios & Tarefas</h1>
+                        <p>
+                            Geração de relatórios operacionais consolidados e
+                            administração de tarefas automatizadas
+                        </p>
                     </div>
 
-                    <!-- Novo Agendamento de Envio -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Novo Agendamento de Envio</h3>
-                        </div>
-                        <div class="card-body">
-                            <p style="color:var(--t2); font-size:13px; margin-bottom:12px;">
-                                Configure o envio automático periódico de relatórios (4SRS U 7.4.1).
-                            </p>
-                            <div class="form-field" style="margin-bottom:10px;">
-                                <label>E-mail Destinatário</label>
-                                <input type="email" id="sched-email" placeholder="exemplo@tub.pt">
+                    <div class="col-7-5">
+                        <!-- Setup Form -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Parâmetros de Relatório</h3>
                             </div>
-                            <div class="form-row" style="margin-bottom:10px;">
-                                <div class="form-field">
-                                    <label>Periodicidade</label>
-                                    <select id="sched-periodicidade">
-                                        <option value="DIARIA">Diária (02:00 AM)</option>
-                                        <option value="SEMANAL">Semanal (Segunda-feira)</option>
-                                        <option value="MENSAL">Mensal (Dia 1)</option>
+                            <div class="card-body">
+                                <div
+                                    class="form-field"
+                                    style="margin-bottom: 12px"
+                                >
+                                    <label>Tipo de Relatório</label>
+                                    <select id="rep-tipo-select">
+                                        <option value="operacional">
+                                            Relatório Operacional
+                                            (Pontualidade/Lotação)
+                                        </option>
+                                        <option value="auditoria">
+                                            Relatório de Auditoria (Completo)
+                                        </option>
                                     </select>
                                 </div>
-                                <div class="form-field">
-                                    <label>Formato</label>
-                                    <select id="sched-formato">
-                                        <option value="PDF">PDF</option>
-                                        <option value="CSV">CSV</option>
-                                    </select>
+                                <div class="form-row">
+                                    <div class="form-field">
+                                        <label>Data Início</label
+                                        ><input
+                                            type="date"
+                                            id="rep-data-inicio"
+                                            value="2026-05-19"
+                                        />
+                                    </div>
+                                    <div class="form-field">
+                                        <label>Data Fim</label
+                                        ><input
+                                            type="date"
+                                            id="rep-data-fim"
+                                            value="2026-05-20"
+                                        />
+                                    </div>
+                                </div>
+                                <div id="report-warning" class="annotation-box" style="margin-top:12px; display:none; background:#FFF7E6; border-color:#B76E00; color:#7A4A00;"></div>
+                                <div
+                                    class="form-row"
+                                    style="
+                                        margin-top: 12px;
+                                        margin-bottom: 16px;
+                                    "
+                                >
+                                    <div class="form-field">
+                                        <label>Filtrar por Linha</label
+                                        ><input
+                                            type="text"
+                                            id="rep-linha"
+                                            placeholder="ex: 43"
+                                        />
+                                    </div>
+                                    <div class="form-field">
+                                        <label>Filtrar por Veículo</label
+                                        ><input
+                                            type="text"
+                                            id="rep-veiculo"
+                                            placeholder="ex: BUS-102"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 10px;">
+                                    <button
+                                        class="btn btn-blue"
+                                        id="btn-gerar-relatorio"
+                                        style="justify-content: center; width: 100%;"
+                                    >
+                                        Gerar Relatório
+                                    </button>
                                 </div>
                             </div>
-                            <div class="form-field" style="margin-bottom:14px;">
-                                <label>Tipo de Relatório</label>
-                                <select id="sched-tipo">
-                                    <option value="OPERACIONAL">Relatório Operacional</option>
-                                    <option value="AUDITORIA">Relatório de Auditoria</option>
-                                </select>
+                        </div>
+
+                        <!-- Novo Agendamento de Envio -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Novo Agendamento de Envio</h3>
                             </div>
-                            <button class="btn btn-blue" id="btn-salvar-agendamento" style="width:100%; justify-content:center;">
-                                Salvar Agendamento
-                            </button>
-                            <div id="sched-create-feedback" class="annotation-box" style="margin-top:10px; display:none; background:#E6F4EA; border-color:#1A6B35; color:#1A6B35; font-size:12.5px;">
-                                ✓ Novo agendamento configurado e ativo!
+                            <div class="card-body">
+                                <p
+                                    style="
+                                        color: var(--t2);
+                                        font-size: 13px;
+                                        margin-bottom: 12px;
+                                    "
+                                >
+                                    Configure o envio automático periódico de
+                                    relatórios.
+                                </p>
+                                <div
+                                    class="form-field"
+                                    style="margin-bottom: 10px"
+                                >
+                                    <label>E-mail Destinatário</label>
+                                    <input
+                                        type="email"
+                                        id="sched-email"
+                                        placeholder="exemplo@tub.pt"
+                                    />
+                                </div>
+                                <div
+                                    class="form-row"
+                                    style="margin-bottom: 10px"
+                                >
+                                    <div class="form-field">
+                                        <label>Periodicidade</label>
+                                        <select id="sched-periodicidade">
+                                            <option value="DIARIA">
+                                                Diária (02:00 AM)
+                                            </option>
+                                            <option value="SEMANAL">
+                                                Semanal (Segunda-feira)
+                                            </option>
+                                            <option value="MENSAL">
+                                                Mensal (Dia 1)
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-field">
+                                        <label>Formato</label>
+                                        <select id="sched-formato">
+                                            <option value="PDF">PDF</option>
+                                            <option value="CSV">CSV</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div
+                                    class="form-field"
+                                    style="margin-bottom: 14px"
+                                >
+                                    <label>Tipo de Relatório</label>
+                                    <select id="sched-tipo">
+                                        <option value="OPERACIONAL">
+                                            Relatório Operacional
+                                        </option>
+                                        <option value="AUDITORIA">
+                                            Relatório de Auditoria
+                                        </option>
+                                    </select>
+                                </div>
+                                <button
+                                    class="btn btn-blue"
+                                    id="btn-salvar-agendamento"
+                                    style="width: 100%; justify-content: center"
+                                >
+                                    Salvar Agendamento
+                                </button>
+                                <div
+                                    id="sched-create-feedback"
+                                    class="annotation-box"
+                                    style="
+                                        margin-top: 10px;
+                                        display: none;
+                                        background: #e6f4ea;
+                                        border-color: #1a6b35;
+                                        color: #1a6b35;
+                                        font-size: 12.5px;
+                                    "
+                                >
+                                    ✓ Novo agendamento configurado e ativo!
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Agendamentos Configurados -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Agendamentos Automáticos</h3>
+                            </div>
+                            <div class="card-body">
+                                <div
+                                    id="sched-list"
+                                    style="
+                                        display: flex;
+                                        flex-direction: column;
+                                        gap: 10px;
+                                    "
+                                >
+                                    <p
+                                        style="
+                                            color: var(--t3);
+                                            font-size: 13px;
+                                            text-align: center;
+                                        "
+                                    >
+                                        Nenhum agendamento ativo.
+                                    </p>
+                                </div>
+                                <div
+                                    style="
+                                        margin-top: 15px;
+                                        display: flex;
+                                        gap: 10px;
+                                    "
+                                >
+                                    <button
+                                        class="btn btn-outline btn-sm"
+                                        id="btn-disparar-agendador"
+                                        style="
+                                            width: 100%;
+                                            justify-content: center;
+                                        "
+                                    >
+                                        Disparar Agendamentos Agora
+                                    </button>
+                                </div>
+                                <div
+                                    id="scheduler-feedback"
+                                    class="annotation-box"
+                                    style="
+                                        margin-top: 14px;
+                                        display: none;
+                                        background: #e6f4ea;
+                                        border-color: #1a6b35;
+                                        color: #1a6b35;
+                                    "
+                                >
+                                    ✓ Tarefas automáticas de envio executadas
+                                    com sucesso!
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Lista de Agendamentos Configurados -->
-                    <div class="card">
+                    <!-- Report Result Container -->
+                    <div
+                        class="card"
+                        id="report-result-card"
+                        style="margin-top: 24px; display: none"
+                    >
+                        <!-- Print Only Header -->
+                        <div
+                            id="print-header"
+                            style="
+                                display: none;
+                                align-items: center;
+                                gap: 16px;
+                                margin-bottom: 24px;
+                                padding-bottom: 16px;
+                                border-bottom: 2px solid #e2e8f0;
+                            "
+                        >
+                            <img
+                                src="images/tubwhite.png"
+                                alt="TUB Logo"
+                                style="
+                                    height: 40px;
+                                    background-color: var(--brand);
+                                    padding: 6px 12px;
+                                    border-radius: 4px;
+                                "
+                            />
+                            <div>
+                                <h2
+                                    style="
+                                        margin: 0;
+                                        font-size: 18px;
+                                        color: var(--brand);
+                                    "
+                                >
+                                    Plataforma de Gestão Urbana
+                                </h2>
+                                <p
+                                    style="
+                                        margin: 0;
+                                        font-size: 12px;
+                                        color: var(--t3);
+                                    "
+                                >
+                                    Transportes Urbanos de Braga
+                                </p>
+                            </div>
+                        </div>
+
                         <div class="card-header">
-                            <h3>Agendamentos Configurados</h3>
+                            <svg
+                                width="18"
+                                height="18"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                class="card-title-icon"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
+                            </svg>
+                            <h3 id="report-title-lbl">Relatório Gerado</h3>
                         </div>
                         <div class="card-body">
-                            <div id="sched-list" style="display:flex; flex-direction:column; gap:10px;">
-                                <p style="color:var(--t3); font-size:13px; text-align:center;">Nenhum agendamento ativo.</p>
+                            <div
+                                style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                    margin-bottom: 20px;
+                                "
+                            >
+                                <div>
+                                    <h4
+                                        id="report-output-title"
+                                        style="
+                                            font-size: 16px;
+                                            font-weight: 600;
+                                            color: var(--t1);
+                                        "
+                                    >
+                                        Relatório Operacional Completo
+                                    </h4>
+                                    <p
+                                        id="report-output-meta"
+                                        style="
+                                            font-size: 12px;
+                                            color: var(--t3);
+                                            margin-top: 2px;
+                                        "
+                                    >
+                                        Gerado hoje às 14:32
+                                    </p>
+                                </div>
+                                <div style="display: flex; gap: 10px">
+                                    <button
+                                        class="btn btn-outline"
+                                        id="btn-exportar-csv"
+                                        onclick="exportLogsCsv()"
+                                        style="justify-content: center; display: none;"
+                                    >
+                                        📥 Exportar CSV
+                                    </button>
+                                    <button
+                                        class="btn btn-orange pdf-download"
+                                        id="btn-descarregar-pdf"
+                                        style="justify-content: center"
+                                    >
+                                        Descarregar PDF
+                                    </button>
+                                </div>
                             </div>
-                            <div style="margin-top:15px; display:flex; gap:10px;">
-                                <button class="btn btn-outline btn-sm" id="btn-disparar-agendador" style="width:100%; justify-content:center;">
-                                    Disparar Agendamentos Agora
-                                </button>
+
+                            <div class="two-col" id="report-kpi-container" style="margin-bottom: 24px">
+                                <div
+                                    class="card"
+                                    style="
+                                        background: #fafbfd;
+                                        border-color: var(--border);
+                                    "
+                                >
+                                    <div class="report-stat">
+                                        <div
+                                            class="rs-value"
+                                            id="resumo-pontualidade"
+                                        >
+                                            -
+                                        </div>
+                                        <div class="rs-label">
+                                            Pontualidade Média
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="card"
+                                    style="
+                                        background: #fafbfd;
+                                        border-color: var(--border);
+                                    "
+                                >
+                                    <div class="report-stat">
+                                        <div
+                                            class="rs-value"
+                                            id="resumo-lotacao"
+                                        >
+                                            -
+                                        </div>
+                                        <div class="rs-label">
+                                            Lotação Média
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="scheduler-feedback" class="annotation-box" style="margin-top:14px; display:none; background:#E6F4EA; border-color:#1A6B35; color:#1A6B35;">
-                                ✓ Tarefas automáticas de envio executadas com sucesso!
+
+                            <div class="card">
+                                <div
+                                    class="card-header"
+                                    style="
+                                        border-bottom: none;
+                                        padding-bottom: 0;
+                                    "
+                                >
+                                    <h4
+                                        style="
+                                            font-size: 14px;
+                                            font-weight: 600;
+                                            color: var(--t1);
+                                        "
+                                    >
+                                        Detalhamento por Linha
+                                    </h4>
+                                </div>
+                                <div
+                                    class="card-body"
+                                    style="padding-top: 10px"
+                                >
+                                    <table
+                                        class="data-table"
+                                        id="report-lines-table"
+                                    >
+                                        <thead id="report-table-head">
+                                            <tr>
+                                                <th>Linha</th>
+                                                <th>Serviços</th>
+                                                <th>Passageiros</th>
+                                                <th>Pontualidade</th>
+                                                <th>Lotação Máx.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="report-table-body">
+                                            <!-- Dynamic rows -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Report Result Container -->
-                <div class="card" id="report-result-card" style="margin-top:24px; display:none;">
-                    <div class="card-header">
-                        <h3 id="report-title-lbl">Relatório Gerado</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="report-meta-box">
-                            <div>Tipo: <strong id="report-type-lbl">-</strong></div>
-                            <div>Gerado em: <strong id="report-date-lbl">-</strong></div>
-                            <div>Responsável: <strong id="report-user-lbl">-</strong></div>
-                        </div>
-
-                        <table class="data-table">
-                            <thead id="report-table-head">
-                                <!-- Headers loaded dynamically -->
-                            </thead>
-                            <tbody id="report-table-body">
-                                <!-- Data loaded dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </main>
+                </main>
+            </div>
         </div>
-    </div>
 
-    <script src="shared/api.js"></script>
-    <script>
-        // Session Verification
-        const userToken = sessionStorage.getItem("user_token");
-        const userName = sessionStorage.getItem("user_name");
-        const userEmail = sessionStorage.getItem("user_email");
-        const userRole = sessionStorage.getItem("user_role");
+        <script src="shared/api.js"></script>
+        <script>
+            // Session Verification
+            const userToken = sessionStorage.getItem("user_token");
+            const userName = sessionStorage.getItem("user_name");
+            const userEmail = sessionStorage.getItem("user_email");
+            const userRole = sessionStorage.getItem("user_role");
+            let currentReportType = "";
 
-        if (!userToken) {
-            window.location.href = "login.html";
-        }
+            // Restringir datas futuras
+            const today = new Date().toISOString().split("T")[0];
+            document.getElementById("rep-data-inicio").setAttribute("max", today);
+            document.getElementById("rep-data-fim").setAttribute("max", today);
 
-        // Setup User Info
-        document.getElementById("sidebar-user-name").textContent = userName || "Carlos Silva";
-        document.getElementById("sidebar-user-email").textContent = userEmail || "admin@tub.pt";
-        document.getElementById("sidebar-user-role").textContent = userRole || "Admin";
-        document.getElementById("sidebar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
-
-        document.getElementById("topbar-user-name").textContent = userName || "Carlos Silva";
-        document.getElementById("topbar-user-avatar").textContent = (userName || "CS").split(" ").map(n => n[0]).join("").toUpperCase();
-
-        const navUtilizadores = document.getElementById("nav-utilizadores");
-        if (navUtilizadores) {
-            navUtilizadores.style.display = "flex";
-            if (userRole !== "ADMINISTRADOR") {
-                const span = navUtilizadores.querySelector("span");
-                if (span) span.textContent = "O Meu Perfil";
-            }
-        }
-
-        if (userRole !== "ADMINISTRADOR") {
-            const cards = document.querySelectorAll(".col-7-5 > .card");
-            if (cards.length >= 3) {
-                cards[1].style.display = "none";
-                cards[2].style.display = "none";
+            if (!userToken) {
+                window.location.href = "login.html";
             }
 
-            const selectTipo = document.getElementById("rep-tipo-select");
-            if (selectTipo) {
-                const optAuditoria = selectTipo.querySelector('option[value="auditoria"]');
-                if (optAuditoria) optAuditoria.remove();
+            // Setup User Info
+            document.getElementById("sidebar-user-name").textContent =
+                userName || "Carlos Silva";
+            document.getElementById("sidebar-user-email").textContent =
+                userEmail || "admin@tub.pt";
+            document.getElementById("sidebar-user-role").textContent =
+                userRole || "Admin";
+            document.getElementById("sidebar-user-avatar").textContent = (
+                userName || "CS"
+            )
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase();
+
+            document.getElementById("topbar-user-name").textContent =
+                userName || "Carlos Silva";
+            document.getElementById("topbar-user-avatar").textContent = (
+                userName || "CS"
+            )
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase();
+
+            const navUtilizadores = document.getElementById("nav-utilizadores");
+            if (navUtilizadores) {
+                navUtilizadores.style.display = "flex";
+                if (userRole !== "ADMINISTRADOR") {
+                    const span = navUtilizadores.querySelector("span");
+                    if (span) span.textContent = "O Meu Perfil";
+                }
             }
-        }
 
-        document.getElementById("btn-logout").addEventListener("click", () => {
-            sessionStorage.clear();
-            window.location.href = "login.html";
-        });
-
-        // Função para carregar e exibir os agendamentos configurados
-        async function carregarAgendamentos() {
-            try {
-                const response = await fetch("http://localhost:8081/api/relatorios/agendamentos", {
-                    headers: { 'Authorization': 'Bearer ' + userToken }
+            document
+                .getElementById("btn-logout")
+                .addEventListener("click", () => {
+                    sessionStorage.clear();
+                    window.location.href = "login.html";
                 });
-                if (response.ok) {
-                    const agendamentos = await response.json();
-                    const listContainer = document.getElementById("sched-list");
-                    listContainer.innerHTML = "";
-                    
-                    if (agendamentos.length === 0) {
-                        listContainer.innerHTML = `<p style="color:var(--t3); font-size:13px; text-align:center;">Nenhum agendamento ativo.</p>`;
-                        return;
+
+            // Cancel scheduling function
+            window.cancelarAgendamento = async function (id) {
+                if (
+                    !confirm(
+                        "Tem a certeza que deseja cancelar este agendamento automático?",
+                    )
+                ) {
+                    return;
+                }
+                try {
+                    const response = await fetch(
+                        `http://localhost:8081/api/relatorios/agendamentos/${id}`,
+                        {
+                            method: "DELETE",
+                            headers: { Authorization: "Bearer " + userToken },
+                        },
+                    );
+                    if (response.ok) {
+                        carregarAgendamentos();
+                    } else {
+                        alert("Erro ao cancelar o agendamento.");
                     }
-                    
-                    agendamentos.forEach(a => {
-                        if (a.emailDestinatario == null) return; // ignora logs antigos de execução sem parametrização
-                        const div = document.createElement("div");
-                        div.style.cssText = "background:#FAFBFD; border:1px solid var(--border); padding:10px 12px; border-radius:8px; display:flex; flex-direction:column; gap:4px;";
-                        
-                        div.innerHTML = `
+                } catch (err) {
+                    console.error("Erro ao cancelar agendamento:", err);
+                    alert("Erro ao cancelar o agendamento: " + err);
+                }
+            };
+
+            // Função para carregar e exibir os agendamentos configurados
+            async function carregarAgendamentos() {
+                try {
+                    const response = await fetch(
+                        "http://localhost:8081/api/relatorios/agendamentos",
+                        {
+                            headers: { Authorization: "Bearer " + userToken },
+                        },
+                    );
+                    if (response.ok) {
+                        const agendamentos = await response.json();
+                        const listContainer =
+                            document.getElementById("sched-list");
+                        listContainer.innerHTML = "";
+
+                        if (agendamentos.length === 0) {
+                            listContainer.innerHTML = `<p style="color:var(--t3); font-size:13px; text-align:center;">Nenhum agendamento ativo.</p>`;
+                            return;
+                        }
+
+                        agendamentos.forEach((a) => {
+                            if (a.emailDestinatario == null) return;
+                            const div = document.createElement("div");
+                            div.style.cssText =
+                                "background:#FAFBFD; border:1px solid var(--border); padding:10px 12px; border-radius:8px; display:flex; flex-direction:column; gap:4px;";
+
+                            div.innerHTML = `
                             <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <strong style="color:var(--t1); font-size:13px; font-weight:600;">${a.tipoRelatorio === 'OPERACIONAL' ? 'Relatório Operacional' : 'Relatório de Auditoria'}</strong>
-                                <span style="font-size:10px; padding:2px 6px; border-radius:4px; font-weight:600; background:#E2E8F0; color:#4A5568;">${a.formato}</span>
+                                <strong style="color:var(--t1); font-size:13px; font-weight:600;">${a.tipoRelatorio === "OPERACIONAL" ? "Relatório Operacional" : "Relatório de Auditoria"}</strong>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <span style="font-size:10px; padding:2px 6px; border-radius:4px; font-weight:600; background:#E2E8F0; color:#4A5568;">${a.formato}</span>
+                                    <button onclick="cancelarAgendamento(${a.id})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:14px; padding:0;" title="Cancelar Agendamento">🗑️</button>
+                                </div>
                             </div>
                             <div style="font-size:11.5px; color:var(--t2);">
                                 <strong>Destinatário:</strong> ${a.emailDestinatario}
@@ -325,125 +937,207 @@
                                 <span>Estado: <span style="font-weight:600; color:#2B6CB0;">${a.estado}</span></span>
                             </div>
                         `;
-                        listContainer.appendChild(div);
-                    });
+                            listContainer.appendChild(div);
+                        });
+                    }
+                } catch (err) {
+                    console.error("Erro ao carregar agendamentos:", err);
                 }
-            } catch (err) {
-                console.error("Erro ao carregar agendamentos:", err);
             }
-        }
 
-        // Carrega inicialmente os agendamentos ao abrir a página
-        if (userRole === "ADMINISTRADOR") {
-            carregarAgendamentos();
-        }
-
-        // Submeter novo agendamento
-        document.getElementById("btn-salvar-agendamento").addEventListener("click", async () => {
-            const email = document.getElementById("sched-email").value.trim();
-            const periodicidade = document.getElementById("sched-periodicidade").value;
-            const formato = document.getElementById("sched-formato").value;
-            const tipo = document.getElementById("sched-tipo").value;
-            
-            if (!email) {
-                alert("Por favor, insira o e-mail do destinatário.");
-                return;
+            // Carrega inicialmente os agendamentos ao abrir a página
+            if (userRole === "ADMINISTRADOR") {
+                carregarAgendamentos();
             }
-            
-            const payload = {
-                emailDestinatario: email,
-                periodicidade: periodicidade,
-                formato: formato,
-                tipoRelatorio: tipo
-            };
-            
-            try {
-                const response = await fetch("http://localhost:8081/api/relatorios/agendamentos", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + userToken
-                    },
-                    body: JSON.stringify(payload)
+
+            // Submeter novo agendamento
+            document
+                .getElementById("btn-salvar-agendamento")
+                .addEventListener("click", async () => {
+                    const email = document
+                        .getElementById("sched-email")
+                        .value.trim();
+                    const periodicidade = document.getElementById(
+                        "sched-periodicidade",
+                    ).value;
+                    const formato =
+                        document.getElementById("sched-formato").value;
+                    const tipo = document.getElementById("sched-tipo").value;
+
+                    if (!email) {
+                        alert("Por favor, insira o e-mail do destinatário.");
+                        return;
+                    }
+                    const emailRegex =
+                        /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+                    if (!emailRegex.test(email)) {
+                        alert("Por favor, introduza um e-mail válido.");
+                        return;
+                    }
+
+                    const payload = {
+                        emailDestinatario: email,
+                        periodicidade: periodicidade,
+                        formato: formato,
+                        tipoRelatorio: tipo,
+                    };
+
+                    try {
+                        const response = await fetch(
+                            "http://localhost:8081/api/relatorios/agendamentos",
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: "Bearer " + userToken,
+                                },
+                                body: JSON.stringify(payload),
+                            },
+                        );
+
+                        if (response.ok) {
+                            // Limpar campo de input
+                            document.getElementById("sched-email").value = "";
+
+                            // Mostrar feedback
+                            const fb = document.getElementById(
+                                "sched-create-feedback",
+                            );
+                            fb.style.display = "block";
+                            setTimeout(() => (fb.style.display = "none"), 4000);
+
+                            // Atualizar a lista
+                            carregarAgendamentos();
+                        } else {
+                            alert("Erro ao salvar o agendamento.");
+                        }
+                    } catch (err) {
+                        alert("Erro ao comunicar com o servidor: " + err);
+                    }
                 });
-                
-                if (response.ok) {
-                    // Limpar campo de input
-                    document.getElementById("sched-email").value = "";
-                    
-                    // Mostrar feedback
-                    const fb = document.getElementById("sched-create-feedback");
-                    fb.style.display = "block";
-                    setTimeout(() => fb.style.display = "none", 4000);
-                    
-                    // Atualizar a lista
-                    carregarAgendamentos();
-                } else {
-                    alert("Erro ao salvar o agendamento.");
-                }
-            } catch (err) {
-                alert("Erro ao comunicar com o servidor: " + err);
-            }
-        });
 
-        // Disparar execução manual dos agendamentos
-        document.getElementById("btn-disparar-agendador").addEventListener("click", async () => {
-            try {
-                const response = await fetch("http://localhost:8081/api/relatorios/agendamentos/executar-agora", {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + userToken }
+            // Disparar execução manual dos agendamentos
+            document
+                .getElementById("btn-disparar-agendador")
+                .addEventListener("click", async () => {
+                    try {
+                        const response = await fetch(
+                            "http://localhost:8081/api/relatorios/agendamentos/executar-agora",
+                            {
+                                method: "POST",
+                                headers: {
+                                    Authorization: "Bearer " + userToken,
+                                },
+                            },
+                        );
+
+                        if (response.ok) {
+                            const feedback =
+                                document.getElementById("scheduler-feedback");
+                            feedback.style.display = "block";
+                            setTimeout(
+                                () => (feedback.style.display = "none"),
+                                5000,
+                            );
+                            // Atualizar a lista para ver a alteração de estado das tarefas executadas
+                            carregarAgendamentos();
+                        }
+                    } catch (err) {
+                        alert("Erro ao disparar agendador: " + err);
+                    }
                 });
+
+            function validarDatasRelatorio() {
+                const elInicio = document.getElementById("rep-data-inicio");
+                const elFim = document.getElementById("rep-data-fim");
+                const warnBox = document.getElementById("report-warning");
                 
-                if (response.ok) {
-                    const feedback = document.getElementById("scheduler-feedback");
-                    feedback.style.display = "block";
-                    setTimeout(() => feedback.style.display = "none", 5000);
-                    // Atualizar a lista para ver a alteração de estado das tarefas executadas
-                    carregarAgendamentos();
+                elInicio.classList.remove("field-error");
+                elFim.classList.remove("field-error");
+                
+                if (elInicio.value && elFim.value && elInicio.value > elFim.value) {
+                    elInicio.classList.add("field-error");
+                    elFim.classList.add("field-error");
+                    warnBox.textContent = "Defina um intervalo temporal válido. A data de início não pode ser superior à data de fim.";
+                    warnBox.style.display = "flex";
+                    return false;
                 }
-            } catch (err) {
-                alert("Erro ao disparar agendador: " + err);
-            }
-        });
-
-        // Generate report POST
-        document.getElementById("btn-gerar-relatorio").addEventListener("click", async () => {
-            const tipo = document.getElementById("rep-tipo-select").value;
-            const dataInicio = document.getElementById("rep-data-inicio").value;
-            const dataFim = document.getElementById("rep-data-fim").value;
-            const linha = document.getElementById("rep-linha").value;
-            const veiculo = document.getElementById("rep-veiculo").value;
-
-            try {
-                // Determine URL
-                const endpoint = tipo === 'operacional' ? '/api/relatorios/operacional' : '/api/relatorios/auditoria';
                 
-                const queryParams = [];
-                if (dataInicio) queryParams.push(`dataInicio=${dataInicio}`);
-                if (dataFim) queryParams.push(`dataFim=${dataFim}`);
-                if (linha) queryParams.push(`linha=${encodeURIComponent(linha)}`);
-                if (veiculo) queryParams.push(`veiculo=${encodeURIComponent(veiculo)}`);
+                warnBox.style.display = "none";
+                return true;
+            }
 
-                const url = endpoint + (queryParams.length > 0 ? '?' + queryParams.join('&') : '');
+            // Generate report POST
+            document
+                .getElementById("btn-gerar-relatorio")
+                .addEventListener("click", async () => {
+                    if (!validarDatasRelatorio()) return;
+                    
+                    const tipo =
+                        document.getElementById("rep-tipo-select").value;
+                    const dataInicio =
+                        document.getElementById("rep-data-inicio").value;
+                    const dataFim =
+                        document.getElementById("rep-data-fim").value;
+                    const linha = document.getElementById("rep-linha").value;
+                    const veiculo =
+                        document.getElementById("rep-veiculo").value;
 
-                // POST to generate report
-                const res = await apiPost(url);
+                    try {
+                        // Determine URL
+                        const endpoint =
+                            tipo === "operacional"
+                                ? "/api/relatorios/operacional"
+                                : "/api/relatorios/auditoria";
 
-                if (res) {
-                    document.getElementById("report-title-lbl").textContent = res.titulo;
-                    document.getElementById("report-type-lbl").textContent = res.tipo;
-                    document.getElementById("report-date-lbl").textContent = res.geradoEm.replace('T', ' ').substring(0, 16);
-                    document.getElementById("report-user-lbl").textContent = res.geradoPor;
+                        const queryParams = [];
+                        if (dataInicio)
+                            queryParams.push(`dataInicio=${dataInicio}`);
+                        if (dataFim) queryParams.push(`dataFim=${dataFim}`);
+                        if (linha)
+                            queryParams.push(
+                                `linha=${encodeURIComponent(linha)}`,
+                            );
+                        if (veiculo)
+                            queryParams.push(
+                                `veiculo=${encodeURIComponent(veiculo)}`,
+                            );
 
-                    // Table Head
-                    const thead = document.getElementById("report-table-head");
-                    const tbody = document.getElementById("report-table-body");
-                    thead.innerHTML = "";
-                    tbody.innerHTML = "";
+                        const url =
+                            endpoint +
+                            (queryParams.length > 0
+                                ? "?" + queryParams.join("&")
+                                : "");
 
-                    if (tipo === 'operacional') {
-                        // Headers
-                        thead.innerHTML = `
+                        // POST to generate report
+                        const res = await apiPost(url);
+
+                        if (res) {
+                            document.getElementById(
+                                "report-title-lbl",
+                            ).textContent = res.titulo;
+                            document.getElementById(
+                                "report-output-title",
+                            ).textContent = res.titulo;
+                            document.getElementById(
+                                "report-output-meta",
+                            ).textContent =
+                                `Gerado por ${res.geradoPor} em ${res.geradoEm.replace("T", " ").substring(0, 16)} | Tipo: ${res.tipo}`;
+                            currentReportType = res.tipo;
+
+                            // Table Head
+                            const thead =
+                                document.getElementById("report-table-head");
+                            const tbody =
+                                document.getElementById("report-table-body");
+                            thead.innerHTML = "";
+                            tbody.innerHTML = "";
+
+                            if (tipo === "operacional") {
+                                document.getElementById("report-kpi-container").style.display = "";
+                                document.getElementById("btn-exportar-csv").style.display = "none";
+                                // Headers
+                                thead.innerHTML = `
                             <tr>
                                 <th>Linha</th>
                                 <th>Veículo</th>
@@ -454,78 +1148,166 @@
                             </tr>
                         `;
 
-                        // Rows (filter summary record generated by backend motorGrafico)
-                        res.dados.forEach(row => {
-                            if (row.linha) { // Skip summary metric object
-                                const tr = document.createElement("tr");
-                                tr.innerHTML = `
-                                    <td><strong>${row.linha}</strong></td>
-                                    <td>${row.veiculo}</td>
-                                    <td>${row.paragem}</td>
-                                    <td>${row.lotacaoMedia}</td>
-                                    <td>${row.passageirosTransportados}</td>
-                                    <td>${row.atrasoMedio}</td>
-                                `;
-                                tbody.appendChild(tr);
-                            }
-                        });
-                    } else {
-                        // Auditoria headers (anonimizado)
-                        thead.innerHTML = `
+                                let sumAtraso = 0;
+                                let sumLotacao = 0;
+                                let countRows = 0;
+
+                                // Rows (filter summary record generated by backend motorGrafico)
+                                res.dados.forEach((row) => {
+                                    if (row.linha) {
+                                        // Skip summary metric object
+                                        const tr = document.createElement("tr");
+                                        tr.innerHTML = `
+                                            <td><strong>${row.linha}</strong></td>
+                                            <td>${row.veiculo}</td>
+                                            <td>${row.paragem}</td>
+                                            <td>${row.lotacaoMedia}</td>
+                                            <td>${row.passageirosTransportados}</td>
+                                            <td>${row.atrasoMedio}</td>
+                                        `;
+                                        tbody.appendChild(tr);
+
+                                        sumLotacao += parseInt(row.lotacaoMedia) || 0;
+                                        sumAtraso += parseInt(row.atrasoMedio) || 0;
+                                        countRows++;
+                                    }
+                                });
+
+                                // Update KPIs
+                                if (countRows > 0) {
+                                    const avgLotacao = Math.round(sumLotacao / countRows);
+                                    const avgAtraso = sumAtraso / countRows;
+                                    const pontualidadePct = Math.max(0, Math.round(100 - (avgAtraso / 0.6)));
+                                    
+                                    document.getElementById("resumo-pontualidade").textContent = pontualidadePct + "%";
+                                    document.getElementById("resumo-lotacao").textContent = avgLotacao + "%";
+                                } else {
+                                    document.getElementById("resumo-pontualidade").textContent = "-";
+                                    document.getElementById("resumo-lotacao").textContent = "-";
+                                }
+                            } else {
+                                document.getElementById("report-kpi-container").style.display = "none";
+                                document.getElementById("btn-exportar-csv").style.display = "block";
+                                // Auditoria headers (Completo)
+                                thead.innerHTML = `
                             <tr>
-                                <th>Timestamp</th>
-                                <th>Utilizador (Anonimizado)</th>
-                                <th>Ação Realizada</th>
-                                <th>Módulo Acedido</th>
-                                <th>IP Origem</th>
+                                <th>Data/Hora</th>
+                                <th>Utilizador</th>
+                                <th>Módulo</th>
+                                <th>Ação</th>
+                                <th>Nível</th>
                             </tr>
                         `;
 
-                        // Auditoria rows
-                        res.dados.forEach(row => {
-                            const tr = document.createElement("tr");
-                            tr.innerHTML = `
-                                <td>${row.timestamp ? row.timestamp.substring(0, 16) : 'N/A'}</td>
+                                // Auditoria rows
+                                res.dados.forEach((row) => {
+                                    let badgeColor = "#E2E8F0";
+                                    let textColor = "#4A5568";
+                                    if (
+                                        row.nivel === "CRÍTICO" ||
+                                        row.nivel === "CRITICO"
+                                    ) {
+                                        badgeColor = "#FEE2E2";
+                                        textColor = "#DC2626";
+                                    } else if (row.nivel === "AVISO") {
+                                        badgeColor = "#FEF3C7";
+                                        textColor = "#D97706";
+                                    } else if (row.nivel === "INFO") {
+                                        badgeColor = "#DCFCE7";
+                                        textColor = "#16A34A";
+                                    }
+
+                                    const tr = document.createElement("tr");
+                                    tr.innerHTML = `
+                                <td>${row.timestamp ? row.timestamp.replace("T", " ").substring(0, 16) : "N/A"}</td>
                                 <td><strong>${row.utilizador}</strong></td>
-                                <td>${row.acao}</td>
                                 <td>${row.modulo}</td>
-                                <td><code>${row.ipOrigem}</code></td>
+                                <td>${row.acao}</td>
+                                <td><span style="font-size:10px; padding:2px 6px; border-radius:4px; font-weight:600; background:${badgeColor}; color:${textColor};">${row.nivel || "-"}</span></td>
                             `;
-                            tbody.appendChild(tr);
-                        });
+                                    tbody.appendChild(tr);
+                                });
+                            }
+
+                            document.getElementById(
+                                "report-result-card",
+                            ).style.display = "block";
+                        }
+                    } catch (err) {
+                        alert("Erro ao gerar relatório: " + err);
+                    }
+                });
+
+            // Exportar CSV
+            window.exportLogsCsv = async function() {
+                if (!validarDatasRelatorio()) return;
+                
+                const dataInicio = document.getElementById("rep-data-inicio").value;
+                const dataFim = document.getElementById("rep-data-fim").value;
+
+                let endpoint = "/api/auditoria/exportar";
+                const params = [];
+                if (dataInicio) params.push(`dataInicio=${dataInicio}T00:00:00`);
+                if (dataFim) params.push(`dataFim=${dataFim}T23:59:59`);
+
+                if (params.length > 0) {
+                    endpoint += "?" + params.join("&");
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                        method: "GET",
+                        headers: getHeaders()
+                    });
+
+                    if (response.status === 401 || response.status === 403) {
+                        await handleResponse(response, endpoint);
+                        return;
                     }
 
-                    document.getElementById("report-result-card").style.display = "block";
-                }
-            } catch (err) {
-                alert("Erro ao gerar relatório: " + err);
-            }
-        });
-
-        // Download Simulated PDF POST
-        document.getElementById("btn-descarregar-pdf").addEventListener("click", async () => {
-            try {
-                const res = await apiPost("/api/relatorios/exportar/pdf");
-                if (res && res.conteudoBase64) {
-                    const byteCharacters = atob(res.conteudoBase64);
-                    const byteNumbers = new Array(byteCharacters.length);
-                    for (let i = 0; i < byteCharacters.length; i++) {
-                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    if (!response.ok) {
+                        const erro = await response.text();
+                        throw new Error(erro || response.statusText);
                     }
-                    const blob = new Blob([new Uint8Array(byteNumbers)], { type: res.tipoConteudo || "application/pdf" });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = res.nomeFicheiro || "relatorio_sistema.pdf";
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                    URL.revokeObjectURL(url);
+
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.style.display = "none";
+                    a.href = url;
+                    a.download = "relatorio_auditoria_tub_anonimizado.csv";
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                } catch (err) {
+                    alert("Erro ao exportar CSV: " + err.message);
                 }
-            } catch (err) {
-                alert("Erro ao exportar PDF: " + err);
-            }
-        });
-    </script>
-</body>
+            };
+
+            // Download PDF via Browser Print
+            document
+                .getElementById("btn-descarregar-pdf")
+                .addEventListener("click", () => {
+                    window.print();
+                });
+
+            // Sincronizar Dados Manuais
+            document.getElementById("btn-sincronizar-topbar").addEventListener("click", async () => {
+                try {
+                    const btn = document.getElementById("btn-sincronizar-topbar");
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Sincronizando...`;
+                    
+                    await apiGet("/api/monitorizacao/sincronizar");
+                    await apiGet("/api/bilhetica/sincronizar");
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                    }, 800);
+                } catch (err) {
+                    console.error("Erro na sincronização:", err);
+                }
+            });
+        </script>
+    </body>
 </html>

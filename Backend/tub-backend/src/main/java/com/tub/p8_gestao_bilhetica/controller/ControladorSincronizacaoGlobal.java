@@ -18,7 +18,7 @@ import com.tub.p8_gestao_bilhetica.repository.LoteDadosBilheticaRepository;
 import com.tub.p8_gestao_bilhetica.service.ConnectionService;
 import com.tub.p8_gestao_bilhetica.service.GestorExtracao;
 import com.tub.p8_gestao_bilhetica.service.ProcessadorValidacao;
-import com.tub.p8_gestao_bilhetica.service.ProcesadorArmazenamento;
+import com.tub.p8_gestao_bilhetica.service.ProcessadorArmazenamento;
 import com.tub.p8_gestao_bilhetica.service.ImportadorCSV;
 import com.tub.p1_autenticacao.annotation.RequerCargo;
 import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
@@ -32,7 +32,7 @@ public class ControladorSincronizacaoGlobal {
     private final GestorExtracao gestorExtracao;
     private final ProcessadorValidacao processadorValidacao;
     private final LoteDadosBilheticaRepository loteDadosBilheticaRepository;
-    private final ProcesadorArmazenamento procesadorArmazenamento;
+    private final ProcessadorArmazenamento procesadorArmazenamento;
     private final ImportadorCSV importadorCSV;
     private final ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository;
     private final ControloConsultaAuditoria auditService;
@@ -45,7 +45,7 @@ public class ControladorSincronizacaoGlobal {
             GestorExtracao gestorExtracao,
             ProcessadorValidacao processadorValidacao,
             LoteDadosBilheticaRepository loteDadosBilheticaRepository,
-            ProcesadorArmazenamento procesadorArmazenamento,
+            ProcessadorArmazenamento procesadorArmazenamento,
             ImportadorCSV importadorCSV,
             ConfiguracaoIntegracaoRepository configuracaoIntegracaoRepository,
             ControloConsultaAuditoria auditService
@@ -108,7 +108,7 @@ public class ControladorSincronizacaoGlobal {
                     "ALTERAR_CONFIGURACAO",
                     "Bilhética",
                     getExecutorIp(),
-                    "INFO",
+                    "AVISO",
                     "Configuração de sincronização e simulação de lotação alterada: ativa=" + config.getAtiva() +
                     ", intervalo=" + config.getIntervaloMinutos() + "m, maxDelta=" + config.getSimulacaoMaxEntradasSaidas() +
                     ", maxOcupacao=" + config.getSimulacaoMaxOcupacaoPercentual() + "%"

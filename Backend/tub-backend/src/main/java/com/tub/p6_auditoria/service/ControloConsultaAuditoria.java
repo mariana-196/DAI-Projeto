@@ -16,13 +16,30 @@ public class ControloConsultaAuditoria {
 
     private final RegistoAuditoriaRepository registoAuditoriaRepository;
     private final RegraNotificacaoRepository regraNotificacaoRepository;
+    private final com.tub.p6_auditoria.repository.PoliticasAuditoriaRepository politicasAuditoriaRepository;
 
-    // Construtor atualizado para injetar também o repositório de regras de notificação
+    private static final java.util.Map<String, Integer> NIVEL_PRIORIDADE = java.util.Map.of(
+            "INFO", 0, "AVISO", 1, "WARNING", 1, "ERRO", 2, "ERROR", 2, "CRÍTICO", 3, "CRITICO", 3, "CRITICAL", 3
+    );
+
     public ControloConsultaAuditoria(
             RegistoAuditoriaRepository registoAuditoriaRepository,
-            RegraNotificacaoRepository regraNotificacaoRepository) {
+            RegraNotificacaoRepository regraNotificacaoRepository,
+            com.tub.p6_auditoria.repository.PoliticasAuditoriaRepository politicasAuditoriaRepository) {
         this.registoAuditoriaRepository = registoAuditoriaRepository;
         this.regraNotificacaoRepository = regraNotificacaoRepository;
+        this.politicasAuditoriaRepository = politicasAuditoriaRepository;
+    }
+
+    private boolean deveRegistarLog(String nivel) {
+        if (nivel == null) return true;
+        com.tub.p6_auditoria.model.EntidadeConfiguracoesAuditoria politica = politicasAuditoriaRepository.findAll().stream().findFirst().orElse(null);
+        if (politica != null && politica.getNivelMinimo() != null) {
+            int nivelLog = NIVEL_PRIORIDADE.getOrDefault(nivel.toUpperCase(), 0);
+            int nivelMinimo = NIVEL_PRIORIDADE.getOrDefault(politica.getNivelMinimo().toUpperCase(), 0);
+            return nivelLog >= nivelMinimo;
+        }
+        return true;
     }
 
     public List<RegistoAuditoria> pesquisarLogs(
@@ -140,6 +157,9 @@ public class ControloConsultaAuditoria {
     public RegistoAuditoria guardarLog(RegistoAuditoria registo) {
         Objects.requireNonNull(registo, "O registo de auditoria não pode ser null");
         try {
+            if (!deveRegistarLog(registo.getNivel())) {
+                return registo;
+            }
             registo.setAcao(normalizarAcao(registo.getAcao()));
             registo.setIpOrigem(normalizarIp(registo.getIpOrigem()));
             RegistoAuditoria logGuardado = registoAuditoriaRepository.save(registo);
@@ -157,6 +177,9 @@ public class ControloConsultaAuditoria {
 
     public void registar(String utilizador, String acao, String modulo, String ipOrigem, String nivel, String detalhe) {
         try {
+            if (!deveRegistarLog(nivel)) {
+                return;
+            }
             RegistoAuditoria registo = new RegistoAuditoria(
                     utilizador, normalizarAcao(acao), modulo, normalizarIp(ipOrigem), nivel, detalhe
             );

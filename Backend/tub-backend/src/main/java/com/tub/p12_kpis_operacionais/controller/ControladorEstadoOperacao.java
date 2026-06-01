@@ -20,6 +20,7 @@ import com.tub.p10_gestao_pmd.model.DisplayPanel;
 import com.tub.p10_gestao_pmd.repository.DisplayPanelRepository;
 import com.tub.p11_gestao_alertas.model.AlertaOperacional;
 import com.tub.p11_gestao_alertas.repository.AlertaOperacionalRepository;
+import com.tub.p6_auditoria.service.ControloConsultaAuditoria;
 import org.springframework.http.ResponseEntity;
 
 
@@ -34,6 +35,7 @@ public class ControladorEstadoOperacao {
     private final LotacaoViaturaRepository lotacaoViaturaRepository;
     private final DisplayPanelRepository displayPanelRepository;
     private final AlertaOperacionalRepository alertaOperacionalRepository;
+    private final ControloConsultaAuditoria auditService;
 
     // CONSTRUTOR UNIFICADO (Resolve o conflito das dependências)
     public ControladorEstadoOperacao( ProcessadorTriagemAlertas alertCenterService, 
@@ -41,13 +43,15 @@ public class ControladorEstadoOperacao {
                                MotorCalculoAnalitico analiseService,
                                LotacaoViaturaRepository lotacaoViaturaRepository,
                                DisplayPanelRepository displayPanelRepository,
-                               AlertaOperacionalRepository alertaOperacionalRepository) {
+                               AlertaOperacionalRepository alertaOperacionalRepository,
+                               ControloConsultaAuditoria auditService) {
         this.alertCenterService = alertCenterService;
         this.dashboardService = dashboardService;
         this.analiseService = analiseService;
         this.lotacaoViaturaRepository = lotacaoViaturaRepository;
         this.displayPanelRepository = displayPanelRepository;
         this.alertaOperacionalRepository = alertaOperacionalRepository;
+        this.auditService = auditService;
     }
 
     // --- LINHA 43: ANÁLISE DE RESULTADOS ---
@@ -131,13 +135,28 @@ public class ControladorEstadoOperacao {
             AlertaOperacional alerta = alertaOpt.get();
             alerta.setEstado(novoEstado);
             
-            String logMsg = "Estado alterado para " + formatarEstado(novoEstado) + " por Operador CCO.";
+            String logMsg = "Estado alterado para " + formatarEstado(novoEstado) + " por Operador.";
             if (comentario != null && !comentario.trim().isEmpty()) {
                 logMsg += " Comentário: \"" + comentario.trim() + "\"";
             }
             alerta.adicionarLogHistorico(logMsg);
             
             alertaOperacionalRepository.save(alerta);
+
+            // Registar na Auditoria (Sistema Central)
+            try {
+                auditService.registar(
+                        "Operador (Dashboard)",
+                        "RESOLVER_ALERTA",
+                        "Alertas",
+                        "127.0.0.1",
+                        "AVISO",
+                        "Alerta '" + alerta.getTitulo() + "' (ID: " + alerta.getId() + ") alterado para: " + formatarEstado(novoEstado)
+                );
+            } catch (Exception e) {
+                System.err.println("Erro ao registar auditoria de alerta: " + e.getMessage());
+            }
+
             res.put("status", "Sucesso");
             return ResponseEntity.ok(res);
         }

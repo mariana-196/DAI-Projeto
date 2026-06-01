@@ -30,6 +30,8 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .lot-card-title {
             font-size: 15px;
@@ -51,6 +53,16 @@
         .lot-percentage.green { color: var(--success); }
         .lot-percentage.orange { color: var(--warn); }
         .lot-percentage.red { color: var(--danger); }
+        .lot-percentage.gray { color: var(--t3); }
+        .progress-fill.green { background: var(--success) !important; }
+        .progress-fill.orange { background: var(--warn) !important; }
+        .progress-fill.red { background: var(--danger) !important; }
+        .progress-fill.gray { background: var(--t3) !important; }
+        .lot-card.offline {
+            opacity: 0.7;
+            background: #F8FAFC;
+            border-color: var(--border);
+        }
     </style>
 </head>
 <body>
@@ -125,6 +137,10 @@
                     <strong>Lotação (IoT)</strong>
                 </div>
                 <div class="topbar-actions">
+                    <button class="btn btn-blue btn-sm" id="btn-sincronizar-topbar" style="margin-right: 12px; height: 28px; padding: 0 10px;">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        Sincronizar Dados
+                    </button>
                     <a href="utilizadores.html?tab=perfil" class="user-chip" title="O Meu Perfil" style="text-decoration:none;">
                         <div class="user-avatar" id="topbar-user-avatar" style="width:28px;height:28px;font-size:11px;">??</div>
                         <span id="topbar-user-name">...</span>
@@ -142,11 +158,6 @@
                     <div>
                         <h1>Monitorização de Lotação (Wavecom IoT)</h1>
                         <p>Ocupações em tempo real enviadas por sensores infravermelhos das portas dos autocarros</p>
-                    </div>
-                    <div>
-                        <button class="btn btn-orange" id="btn-sync-sensors">
-                            📥 Sincronizar Sensores IoT
-                        </button>
                     </div>
                 </div>
 
@@ -166,10 +177,6 @@
                             <option value="ONLINE">Sensores Online</option>
                             <option value="OFFLINE">Sensores Sem Sinal (Offline)</option>
                         </select>
-
-                        <div id="sync-success-msg" style="margin-left:auto; display:none; color:var(--success); font-weight:600; font-size:13px;">
-                            ✓ Sensores sincronizados com sucesso!
-                        </div>
                     </div>
                 </div>
 
@@ -242,8 +249,8 @@
                 
                 // Occupancy filter
                 const matchesOcc = occFilter === 'ALL' || 
-                                  (occFilter === 'CRITICAL' && tax >= 90) ||
-                                  (occFilter === 'NORMAL' && tax < 90);
+                                  (occFilter === 'CRITICAL' && tax >= 80) ||
+                                  (occFilter === 'NORMAL' && tax < 80);
 
                 // Signal filter
                 const matchesSig = sigFilter === 'ALL' || 
@@ -262,23 +269,24 @@
                 const passageiros = v.sinal ? (v.passageiros || 0) : 0;
                 const tax = v.capacidade > 0 ? (passageiros / v.capacidade * 100) : 0;
                 const roundedTax = Math.round(tax);
-                const isCritical = roundedTax >= 90;
-                const isMedium = roundedTax >= 50 && roundedTax < 90;
+                const isCritical = v.sinal && roundedTax >= 90;
+                const isMedium = v.sinal && roundedTax >= 60 && roundedTax < 90;
+                const isLow = v.sinal && roundedTax < 60;
 
-                const colorClass = isCritical ? 'red' : (isMedium ? 'orange' : 'green');
-                const badgeColor = v.sinal ? 'badge-green' : 'badge-red';
+                const colorClass = v.sinal ? (isCritical ? 'red' : (isMedium ? 'orange' : 'green')) : 'gray';
+                const badgeColor = v.sinal ? 'badge-green' : 'badge-gray';
                 const badgeLabel = v.sinal ? 'ONLINE' : 'SEM SINAL';
 
                 const card = document.createElement("div");
-                card.className = "lot-card";
-                if (isCritical) {
+                card.className = v.sinal ? "lot-card" : "lot-card offline";
+                if (v.sinal && isCritical) {
                     card.style.border = "1.5px solid var(--danger)";
                 }
 
                 card.innerHTML = `
-                    <div class="lot-card-header">
+                    <div class="lot-card-header" style="flex-wrap: wrap;">
                         <span class="lot-card-title">Viatura #${v.id}</span>
-                        <div style="display:flex; gap:6px; align-items:center;">
+                        <div style="display:flex; gap:6px; align-items:center; flex-wrap: wrap; margin-top: 4px;">
                             ${isCritical ? '<span class="badge badge-red" style="animation: pulse 2s infinite;">⚠️ CRÍTICO</span>' : ''}
                             <span class="badge ${badgeColor}">${badgeLabel}</span>
                         </div>
@@ -290,12 +298,12 @@
                     
                     <div style="margin: 14px 0 8px;">
                         <span class="kpi-label">Ocupação Atual</span>
-                        <div class="lot-percentage ${colorClass}">${roundedTax}%</div>
+                        <div class="lot-percentage ${colorClass}">${v.sinal ? roundedTax : 0}%</div>
                     </div>
 
                     <div class="vc-bar" style="margin-bottom: 12px;">
                         <div class="progress-bar">
-                            <div class="progress-fill ${colorClass}" style="width: ${roundedTax}%"></div>
+                            <div class="progress-fill ${colorClass}" style="width: ${v.sinal ? roundedTax : 0}%"></div>
                         </div>
                     </div>
 
@@ -308,31 +316,31 @@
             });
         }
 
-        function applyFilters() {
-            renderGrid();
-        }
-
-        // Trigger Sync via API
-        document.getElementById("btn-sync-sensors").addEventListener("click", async () => {
+        // Sincronizar Dados Manuais
+        document.getElementById("btn-sincronizar-topbar").addEventListener("click", async () => {
             try {
-                const res = await apiGet("/api/monitorizacao/sincronizar");
-                const feedback = document.getElementById("sync-success-msg");
-                feedback.textContent = `✓ Sincronizados ${res.length} contagens dos validadores Wavecom!`;
-                feedback.style.display = "block";
+                const btn = document.getElementById("btn-sincronizar-topbar");
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Sincronizando...`;
+                
+                await apiGet("/api/monitorizacao/sincronizar");
+                await apiGet("/api/bilhetica/sincronizar");
                 
                 loadIoTData();
-
-                setTimeout(() => feedback.style.display = "none", 5000);
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 800);
             } catch (err) {
-                alert("Erro ao sincronizar sensores: " + err);
+                console.error("Erro na sincronização:", err);
             }
         });
 
-        // Initial Loading
         loadIoTData();
+        setInterval(loadIoTData, 5000);
 
-        // Polling status
-        setInterval(loadIoTData, 10000);
+        // Polling status every 5 seconds
+        setInterval(loadIoTData, 5000);
     </script>
 </body>
 </html>
