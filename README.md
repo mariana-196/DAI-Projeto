@@ -8,11 +8,11 @@ O nosso grupo foca o desenvolvimento nos seguintes módulos específicos do cade
 
 * 3.4 Integração com Contagem de Passageiros:** Monitorização em tempo real do fluxo de entradas e saídas e padrões de ocupação.
 
-* 3.5 Integração com Painéis de Mensagem Dinâmica (DMS):** Visualização do estado operacional e conteúdos de painéis e-paper, LED e TFT.
+* 3.5 Integração com Painéis de Mensagem Dinâmica (DMS):** Visualização do estado operacional e conteúdos de painéis.
 
 ## Estrutura do Repositório
 * `/Backend`: Código-fonte da API (Java/Spring Boot) e ficheiros de configuração da Base de Dados (Docker).
-* `/Frontend`: Aplicação cliente (HTML/JS/Vue) com as interfaces gráficas da plataforma.
+* `/Frontend`: Aplicação cliente (HTML/JS) com as interfaces gráficas da plataforma.
 * `/.vscode`: Configurações do ambiente de desenvolvimento.
 
 
